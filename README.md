@@ -9,7 +9,7 @@ Just specify the libray, the symbol, it's return value and
 the argument values.
 
 ```
--lm cos double double # load cosine function for libm.so
+-lm cos double double # load cosine function from libm.so
 cos 0 # call cos(0) and push on stack
 printf %g @ # call printf("%g", cos(0))
 ```
