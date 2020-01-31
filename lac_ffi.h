@@ -13,6 +13,12 @@ extern "C" {
 }
 #endif
 
+#define cbrt(X) _Generic((X), \
+	long double: cbrtl, \
+	default: cbrt,  \
+    float: cbrtf  \
+)(X)
+
 //    FFI_TYPE             type          ffi_type             union
 #define FFI_TYPE_TABLE(X) \
 	X(FFI_TYPE_INT,        int,         &ffi_type_sint,       i   ) \
@@ -33,6 +39,7 @@ extern "C" {
 	// X(FFI_TYPE_COMPLEX
 	// X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer,    std::monostate ) \
 
+// variant data type 
 typedef struct {
 	union {
 #define X(a,b,c,d) b d;
@@ -53,16 +60,10 @@ inline lac_variant lac_variant_parse_int(const char* b, const char* e)
 }
 */
 
-// function and argument types
-typedef struct {
-	void* func;
-	ffi_cif cif;
-	ffi_type* type[1]; // argument types
-} lac_cif;
+ffi_cif* lac_cif_alloc(int);
+void lac_cif_free(ffi_cif*);
 
-lac_cif* lac_cif_alloc(int);
-lac_cif* lac_cif_alloc_types(ffi_type*, int, ffi_type**);
-void lac_cif_free(lac_cif*);
+//ffi_cif* lac_cif_alloc_types(ffi_type* rtype, ffi_type** arg_types);
 
 // argument stack
 #ifndef STACK_SIZE

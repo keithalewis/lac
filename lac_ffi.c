@@ -41,17 +41,11 @@ lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e)
 	return v;
 }
 
-lac_cif* lac_cif_alloc(int n)
+ffi_cif* lac_cif_alloc(int n)
 {
-	lac_cif* p = (lac_cif*)malloc(sizeof(lac_cif) + n*sizeof(ffi_type*));
-
-	if (!p) return p;
-
-	p->cif.arg_types = &p->type[0];
-
-	return p;
+	return 0;
 }
-
+/*
 lac_cif* lac_cif_alloc_types(ffi_type* ret, int n, ffi_type** type)
 {
 	lac_cif* p = lac_cif_alloc(n);
@@ -68,9 +62,11 @@ lac_cif* lac_cif_alloc_types(ffi_type* ret, int n, ffi_type** type)
 
 	return p;
 }
-
-void lac_cif_free(lac_cif* p)
+*/
+void lac_cif_free(ffi_cif* p)
 {
+	double x;
+	double y = cbrt(x);
 	free(p);
 }
 
