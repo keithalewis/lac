@@ -10,6 +10,7 @@ int test_lac_variant_parse()
 		lac_variant v = lac_variant_parse(&ffi_type_sint, VIEW("123"));
 		assert (&ffi_type_sint == v.type);
 		assert (123 == v.value.i);
+		assert (lac_variant_address(&v) == &v.value.i);
 	}
 	{
 		lac_variant v = lac_variant_parse(&ffi_type_sint, VIEW("123 ") - 1);

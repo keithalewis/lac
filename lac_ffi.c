@@ -1,6 +1,14 @@
 // lac_ffi.c
 #include "lac_ffi.h"
 
+inline void* lac_variant_address(lac_variant* pv)
+{
+#define X(a,b,c,d) if (c == pv->type) return &pv->value.d;	
+	FFI_TYPE_TABLE(X)
+#undef X
+	return 0;
+}
+
 lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e)
 {
 	lac_variant v;

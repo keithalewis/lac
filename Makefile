@@ -1,23 +1,39 @@
-SRCS = lac_dbm.c lac_ffi.c lac_parse.c
-TSTS = lac_dbm.t.c lac_ffi.t.c lac_parse.t.c
+LAC_ = lac_dbm.c lac_ffi.c lac_parse.c
+SRCS = lac.c $(LAC_)
+OBJS = $(SRCS:.c=.o)
+LAC_T = lac_dbm.t.c lac_ffi.t.c lac_parse.t.c
+SRCS_T = lac.t.c $(LAC_) $(LAC_T)
+OBJS_T = $(SRCS_T:.c=.o)
 
 CFLAGS = -g
 LDLIBS = -ldl -lffi -lgdbm
 
-lac: $(SRCS)
-	$(CC) $(CFLAGS) -o $@ lac.c $^ $(LDLIBS)
+lac: $(OBJS)
 
-lac.t: $(TSTS) $(SRCS)
-	$(CC) $(CFLAGS) -o $@ lac.t.c $^ $(LDLIBS)
+lac.t: $(OBJS_T)
 
 test: lac.t
+	rm -f *gdb
 	./lac.t
 
+.PHONY : clean
 clean:
-	@rm lac lac.t
+	rm -f lac lac.t *.o *.gdb
 
-# r!cc -MM lac.c
-lac.o: lac.c $(SRCS) lac.h lac_dbm.h lac_ffi.h lac_parse.h
+valgrind: lac
+	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./lac
 
-# r!cc -MM lac.t.c
-lac.t.o: lac.t.c $(SRCS) $(TSTS) lac_dbm.h lac_ffi.h lac_parse.h
+valgrind_t: lac.t
+	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./lac.t
+
+deps: $(SRCS_T)
+	$(foreach c, $(SRCS_T), cc -MM $(c);)
+
+# r!make deps
+lac.t.o: lac.t.c lac_dbm.h lac_ffi.h lac_parse.h
+lac_dbm.o: lac_dbm.c lac_dbm.h
+lac_ffi.o: lac_ffi.c lac_ffi.h
+lac_parse.o: lac_parse.c lac_parse.h
+lac_dbm.t.o: lac_dbm.t.c lac_dbm.h
+lac_ffi.t.o: lac_ffi.t.c lac_ffi.h
+lac_parse.t.o: lac_parse.t.c lac_parse.h

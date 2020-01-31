@@ -26,7 +26,7 @@ extern "C" {
     X(FFI_TYPE_SINT32,     int32_t,     &ffi_type_sint32,     i32 ) \
 	X(FFI_TYPE_UINT64,     uint64_t,    &ffi_type_uint64,     u64 ) \
 	X(FFI_TYPE_SINT64,     int64_t,     &ffi_type_sint64,     i64 ) \
-	X(FFI_TYPE_POINTER,    void*,       &ffi_type_pointer,    vp  ) \
+	X(FFI_TYPE_POINTER,    void*,       &ffi_type_pointer,    p   ) \
 
 	// X(FFI_TYPE_VOID,       void,        &ffi_type_void,       std::monostate, v   ) \
 	// X(FFI_TYPE_LONGDOUBLE, long double, &ffi_type_longdouble, std::monostate ) \
@@ -42,7 +42,16 @@ typedef struct {
 	ffi_type* type;
 } lac_variant;
 
+// ??? Use _Generic
+void* lac_variant_address(lac_variant* pv);
 lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e);
+
+/*
+inline lac_variant lac_variant_parse_int(const char* b, const char* e)
+{
+	return lac_variant_parse(&ffi_type_sint, b, e);
+}
+*/
 
 // function and argument types
 typedef struct {

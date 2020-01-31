@@ -5,7 +5,7 @@
 #include "lac_ffi.h"
 #include "lac_parse.h"
 
-int test_lac()
+int test_lac(void)
 {
 	ffi_type* pt[1];
 	pt[0] = &ffi_type_double;
@@ -27,15 +27,17 @@ int test_lac()
 
 int main()
 {
-	int test_lac_dbm();
-	int test_lac_ffi();
-	int test_lac_parse();
+	int test_lac_dbm(void);
+	int test_lac_ffi(void);
+	int test_lac_parse(void);
 
 	test_lac_dbm();
+	/*
 	test_lac_ffi();
 	test_lac_parse();
 
 	test_lac();
+	*/
 
 	return 0;
 }
