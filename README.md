@@ -33,8 +33,8 @@ The possible stack types are `int`, `float`, `double`, `uint8_t`, `int8_t`, `uin
 Tokens are separated by whitespace using `isspace` from `<ctypes.h>`. If a string contains
 whitespace enclose it with double quotes. The token `"Hello World!"` will result in a `void*`
 pointer to the null terminated characters `Hello World!\0` on the stack. To include a `"`
-character in a string escape it with a backslash `"Like \"this\""` to get the
-string `Like "this"`.
+character in a string escape it with a backslash `"like \"this\""` to get the
+string `like "this"`.
 
 ## Load
 
@@ -52,10 +52,10 @@ This information is required to call the function.
 
 ## Call
 
-Lines starting with functions that have been loaded get called with the
-arguments that follow.  Any missing arguments must be supplied on the
-stack. All arguments must have the same type specified by the signature of
-the function.
+Lines starting with functions that have been loaded into the dictionary
+get called with the arguments that follow.  Any missing arguments must
+be supplied on the stack. All arguments must have the same type specified
+by the signature of the function.
 
 ## Variables
 
@@ -88,30 +88,20 @@ The function `printf` is loaded by `lac` at startup. It has a variable number of
 arguments and all arguments must be specified on the line.
 See [] for how to load and call vararg functions at runtime.
 
-
-A line starting with `-` results in a function being loaded that will 
-
-If a string argument includes spaces, use double quotes 
-
-Variables can be defined by
-
-```
-:var expr
-```
-
-
 ## Variadic Functions
 
-Variadic C functions have a fixed number of required arguments and a variable number
-of optional arguments. They are loaded by specifying the required arguments. They
-are called by providing the variable arguments on the line on which they are called.
-They don't read arguments from the stack becuase they don't know how many
-arguments to read.
+Variadic C functions have a fixed number of required arguments and a
+variable number of optional arguments. They are loaded by specifying
+the required arguments. They are called by providing both the fixed and
+the variable arguments on the line on which they are called.  They don't
+read arguments from the stack because they don't know how many arguments
+to read.
 
 # Unfiled
 
 # wc
 
+```
 line: int 0
 word: int 0
 char: int 0
@@ -130,19 +120,4 @@ while != EOF c {
 }
 printf "%d %d %d\n" line word char
 pop --
-
-lac
-
-line: -...
-      :...
-	  else
-
--l<lib> <sym> <ret> <arg>...
-
-lacod
-
-sym val... -> push ret on stack
-
-:name line
-
-
+```
