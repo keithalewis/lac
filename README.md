@@ -11,7 +11,7 @@ cos 0                 # call cos(0.) and push the result on the stack
 ```
 
 The symbol `cos` will be added to the _dictionary_ and lines starting with `cos`
-will expect to find a `double` argument either on the line or on the _stack_
+will expect to find a `double` argument either on the rest of the line or on the _stack_
 and call the C function. The argument is consumed and the result is pushed
 on the stack.
 
@@ -22,9 +22,9 @@ double 0
 cos
 ```
 
-The first line pushes 0 as a double on to the stack. When `cos` is evaluated without
-specifying an argument on the same line it will look for the arguments it needs
-on the stack.
+The first line pushes 0 as a double on to the stack.
+When `cos` is evaluated without specifying an argument on the same line
+it will look for the arguments it needs on the stack.
 
 The possible stack types are `int`, `float`, `double`, `uint8_t`, `int8_t`, `uint16_t`, `int16_t`,
 `uint32_t`, `int32_t`, `uint64_t`, `int64_t`, and `void*`.
@@ -35,6 +35,7 @@ whitespace enclose it with double quotes. The token `"Hello World!"` will result
 pointer to the null terminated characters `Hello World!\0` on the stack. To include a `"`
 character in a string escape it with a backslash `"like \"this\""` to get the
 string `like "this"`.
+
 
 ## Load
 
@@ -57,6 +58,7 @@ get called with the arguments that follow.  Any missing arguments must
 be supplied on the stack. All arguments must have the same type specified
 by the signature of the function.
 
+
 ## Variables
 
 Lines starting with `:` define variables.
@@ -66,6 +68,7 @@ Lines starting with `:` define variables.
 ```
 
 pushes 123 as an `int` on the stack and any future occurrence of `i` will be replaced by 123.
+Values are pushed on the stack from right to left.
 
 ```
 :var line ...
@@ -73,10 +76,13 @@ pushes 123 as an `int` on the stack and any future occurrence of `i` will be rep
 
 evaluates `line ...` and assignes the resulting top of stack to `var`.
 
-To delay evaluation enclose lines with brackets: `{line ...}`. Future occurences of `var`
+To delay evaluation enclose `line ...` with brackets: `{line ...}`. Future occurences of `var`
 will be substitued by `line ...` and evaluated using the current dictionary and stack.
 
-Brackets can be nested, `{a {b} c}` pushes the string `a {b} c` onto the stack.
+Brackets can be nested, `{a {b} c}` pushes the string `a {b} c` onto the stack. As with strings,
+right brackets can be escaped if immediately preceeded by a backslash.
+
+## Stack Manipulation
 
 Use `@<n>` to interpoate the n-th item on the stack into the
 commandline, where `@` is shorthand for `@1`.  Use `!<n>`
@@ -87,6 +93,26 @@ to interpolate the n-th item on the stack and remove it from the stack.
 The function `printf` is loaded by `lac` at startup. It has a variable number of
 arguments and all arguments must be specified on the line.
 See [] for how to load and call vararg functions at runtime.
+
+## Control Flows
+
+Lines starting with keywords have special interpretation.
+
+```
+if expr {
+	body
+}
+```
+
+executes `body` when `expr` evaluates to a non-zero value
+
+```
+while expr {
+	body
+}
+```
+
+executes `body` as long as `expr` evaluates to a non-zero value.
 
 ## Variadic Functions
 
@@ -100,6 +126,8 @@ to read.
 # Unfiled
 
 # wc
+
+A crappy version of the unix function for counting lines, words, and characters.
 
 ```
 line: int 0
