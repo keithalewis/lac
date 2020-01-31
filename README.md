@@ -29,11 +29,11 @@ on the stack.
 The possible stack types are `int`, `float`, `double`, `uint8_t`, `int8_t`, `uint16_t`, `int16_t`,
 `uint32_t`, `int32_t`, `uint64_t`, `int64_t`, and `void*`.
 
-`lac` is line oriented. Use backslash ('\') at the end of a line to continue parsing to the next line.  
+`lac` is line oriented. Use backslash ('\\') at the end of a line to continue parsing to the next line.  
 Tokens are separated by whitespace using `isspace` from `<ctypes.h>`. If a string contains
-whitespace enclose it with double quotes. The token`"Hello World!" will result in a `void*`
+whitespace enclose it with double quotes. The token `"Hello World!"` will result in a `void*`
 pointer to the null terminated characters `Hello World!\0` on the stack. To include a `"`
-character in a string escape it with a backslash, `"Like \"this\""` to get the
+character in a string escape it with a backslash `"Like \"this\""` to get the
 string `Like "this"`.
 
 ## Load
@@ -67,7 +67,6 @@ Lines starting with `:` define variables.
 
 pushes 123 as an `int` on the stack and any future occurrence of `i` will be replaced by 123.
 
-
 ```
 :var line ...
 ```
@@ -75,18 +74,15 @@ pushes 123 as an `int` on the stack and any future occurrence of `i` will be rep
 evaluates `line ...` and assignes the resulting top of stack to `var`.
 
 To delay evaluation enclose lines with brackets: `{line ...}`. Future occurences of `var`
-will be substitued by `line ...` and evaluated in the current context.
+will be substitued by `line ...` and evaluated using the current dictionary and stack.
 
 Brackets can be nested, `{a {b} c}` pushes the string `a {b} c` onto the stack.
-
-printf %g\n @         # call printf("%g\n", cos(0.))
-```
 
 Use `@<n>` to interpoate the n-th item on the stack into the
 commandline, where `@` is shorthand for `@1`.  Use `!<n>`
 to interpolate the n-th item on the stack and remove it from the stack.
 
-??? This is similar to `ROLL <n>` in forth except subsequent parameters are push on the stack.
+??? This is similar to `ROLL <n>` in forth except subsequent parameters on a line are push on the stack.
 
 The function `printf` is loaded by `lac` at startup. It has a variable number of
 arguments and all arguments must be specified on the line.
