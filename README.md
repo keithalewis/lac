@@ -23,20 +23,41 @@ cos
 ```
 
 The first line pushes 0 as a double on to the stack. When `cos` is evaluated without
-specifying an argument on the same line it will look for the arguments in needs
+specifying an argument on the same line it will look for the arguments it needs
 on the stack.
 
 The possible stack types are `int`, `float`, `double`, `uint8_t`, `int8_t`, `uint16_t`, `int16_t`,
 `uint32_t`, `int32_t`, `uint64_t`, `int64_t`, and `void*`.
 
 `lac` is line oriented. Use backslash ('\') at the end of a line to continue parsing to the next line.  
+Tokens are separated by whitespace using `isspace` from `<ctypes.h>`. If a string contains
+whitespace enclose it with double quotes. The token`"Hello World!" will result in a `void*`
+pointer to the null terminated characters `Hello World!\0` on the stack. To include a `"`
+character in a string escape it with a backslash, `"Like \"this\""` to get the
+string `Like "this"`.
+
+## Load
 
 Lines starting with  `-` load functions that can be called.
+The characters immediately following `-` are the same as used on
+the link line for the library. The next token is the
+symbol to load from the library using `dlsym(3)` declared in
+`<dlfcn.h>`. This returns a `void*` pointer but does not
+provide any information about the signature of the function
+it points to.
+
+The token following the symbol name is the return type of the function.
+The tokens after that are the argument types of the function.
+This information is required to call the function.
+
+## Call
 
 Lines starting with functions that have been loaded get called with the
 arguments that follow.  Any missing arguments must be supplied on the
 stack. All arguments must have the same type specified by the signature of
 the function.
+
+## Variables
 
 Lines starting with `:` define variables.
 
@@ -44,7 +65,7 @@ Lines starting with `:` define variables.
 :i int 123
 ```
 
-pushes 123, as an `int`, on the stack and any future occurrence of `i` will be replaced by 123.
+pushes 123 as an `int` on the stack and any future occurrence of `i` will be replaced by 123.
 
 
 ```
@@ -53,8 +74,10 @@ pushes 123, as an `int`, on the stack and any future occurrence of `i` will be r
 
 evaluates `line ...` and assignes the resulting top of stack to `var`.
 
-To delay evaluation enclose lines with brackets: `{line}`. Future occurences of `var`
+To delay evaluation enclose lines with brackets: `{line ...}`. Future occurences of `var`
 will be substitued by `line ...` and evaluated in the current context.
+
+Brackets can be nested, `{a {b} c}` pushes the string `a {b} c` onto the stack.
 
 printf %g\n @         # call printf("%g\n", cos(0.))
 ```
@@ -86,8 +109,31 @@ Variables can be defined by
 Variadic C functions have a fixed number of required arguments and a variable number
 of optional arguments. They are loaded by specifying the required arguments. They
 are called by providing the variable arguments on the line on which they are called.
+They don't read arguments from the stack becuase they don't know how many
+arguments to read.
 
 # Unfiled
+
+# wc
+
+line: int 0
+word: int 0
+char: int 0
+
+fopen file.txt r -- FILE*
+c: {fgetc @}
+
+while != EOF c {
+	incr &char
+	if isspace c {
+		incr &word
+	}
+	if == \n c {
+		incr &line
+	}
+}
+printf "%d %d %d\n" line word char
+pop --
 
 lac
 
