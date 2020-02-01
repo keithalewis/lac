@@ -20,6 +20,7 @@ int   lac_dbm_replace(lac_dbm dbm, lac_datum key, lac_datum val);
 int   lac_dbm_insert (lac_dbm dbm, lac_datum key, lac_datum val);
 
 // data = 0 on failure
+// data must be freed after fetch
 lac_datum lac_dbm_fetch (lac_dbm dbm, lac_datum key);
 int       lac_dbm_delete(lac_dbm dbm, lac_datum key);
 

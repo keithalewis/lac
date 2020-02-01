@@ -51,19 +51,32 @@ typedef struct {
 	ffi_type* type;
 } lac_variant;
 
-// ??? Use _Generic
+// pointer address of variant value
 void* lac_variant_address(lac_variant* pv);
+
 lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e);
 
-/*
-inline lac_variant lac_variant_parse_int(const char* b, const char* e)
-{
-	return lac_variant_parse(&ffi_type_sint, b, e);
-}
-*/
+// E.g., int32_t i = lac_variant_parse_i32(b,e).i32;
+#define X(A,B,C,D) lac_variant lac_variant_parse_##D(const char* b, const char* e);
+	FFI_TYPE_TABLE(X)
+#undef X
 
-ffi_cif* lac_cif_alloc(int);
-void lac_cif_free(ffi_cif*);
+// value corresponding to string name of symbol
+typedef struct {
+	void* sym;
+	ffi_cif cif;
+	ffi_type* arg_types[1]; // realiy arg_types[nargs]
+} lac_cif;
+
+lac_cif* lac_cif_alloc(int nargs);
+void lac_cif_free(lac_cif* cif);
+size_t lac_cif_size(lac_cif* cif);
+
+// call ffi_prep_cif using cif->cif.nargs
+ffi_status lac_cif_prep(lac_cif* cif, ffi_type* rtype, ffi_type**arg_types);
+//lac_cif_prep_var // variadic functions
+// call ffi_call
+void lac_cif_call(lac_cif* cif, ffi_arg* ret, void** args);
 
 //ffi_cif* lac_cif_alloc_types(ffi_type* rtype, ffi_type** arg_types);
 
@@ -75,8 +88,11 @@ void lac_cif_free(ffi_cif*);
 typedef struct {
 	size_t sp;
 	lac_variant data[STACK_SIZE];
+	void* addr[STACK_SIZE];
 } lac_stack;
 
 void lac_stack_push(lac_stack* stack, lac_variant v);
 void lac_stack_pop(lac_stack* stack);
 lac_variant* lac_stack_top(lac_stack* stack);
+// pointer to void* stack item addresses
+lac_variant* lac_stack_addr(lac_stack* stack);

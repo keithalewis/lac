@@ -37,7 +37,7 @@ static inline int lac_dbm_flock(lac_dbm dbm, int flag)
 
 lac_dbm lac_dbm_open(const char* name)
 {
-	return (lac_dbm)gdbm_open(gdb(name), 0, GDBM_WRCREAT|GDBM_NOLOCK, 0664, 0);
+	return (lac_dbm)gdbm_open(gdb(name), 0, GDBM_NEWDB|GDBM_NOLOCK, 0664, 0);
 }
 
 void lac_dbm_close(lac_dbm dbm)
@@ -51,9 +51,9 @@ int lac_dbm_replace(lac_dbm dbm, lac_datum key, lac_datum val)
 {
 	int ret;
 
-	//lac_dbm_flock(dbm, LOCK_EX);
-	ret = gdbm_store((GDBM_FILE)dbm, DATUM(key), DATUM(val), GDBM_REPLACE);
 	//lac_dbm_flock(dbm, LOCK_UN);
+	ret = gdbm_store((GDBM_FILE)dbm, DATUM(key), DATUM(val), GDBM_REPLACE);
+	//lac_dbm_flock(dbm, LOCK_EX);
 
 	return ret;
 }
@@ -61,9 +61,9 @@ int lac_dbm_insert (lac_dbm dbm, lac_datum key, lac_datum val)
 {
 	int ret;
 
-	//lac_dbm_flock(dbm, LOCK_EX);
-	ret = gdbm_store((GDBM_FILE)dbm, DATUM(key), DATUM(val), GDBM_INSERT);
 	//lac_dbm_flock(dbm, LOCK_UN);
+	ret = gdbm_store((GDBM_FILE)dbm, DATUM(key), DATUM(val), GDBM_INSERT);
+	//lac_dbm_flock(dbm, LOCK_EX);
 
 	return ret;
 }
@@ -79,9 +79,9 @@ int lac_dbm_delete(lac_dbm dbm, lac_datum key)
 {
 	int ret;
 
-	//lac_dbm_flock(dbm, LOCK_EX);
-	ret = gdbm_delete((GDBM_FILE)dbm, DATUM(key));
 	//lac_dbm_flock(dbm, LOCK_UN);
+	ret = gdbm_delete((GDBM_FILE)dbm, DATUM(key));
+	//lac_dbm_flock(dbm, LOCK_EX);
 
 	return ret;
 }
