@@ -65,8 +65,6 @@ lac_cif* lac_cif_alloc_types(ffi_type* ret, int n, ffi_type** type)
 */
 void lac_cif_free(ffi_cif* p)
 {
-	double x;
-	double y = cbrt(x);
 	free(p);
 }
 

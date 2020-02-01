@@ -13,11 +13,13 @@ extern "C" {
 }
 #endif
 
+/*
 #define cbrt(X) _Generic((X), \
 	long double: cbrtl, \
 	default: cbrt,  \
     float: cbrtf  \
 )(X)
+*/
 
 //    FFI_TYPE             type          ffi_type             union
 #define FFI_TYPE_TABLE(X) \

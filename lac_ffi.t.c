@@ -43,6 +43,7 @@ int test_lac_variant_parse()
 		lac_variant v = lac_variant_parse(&ffi_type_double, VIEW("1.23"));
 		assert (&ffi_type_double == v.type);
 		assert (1.23 == v.value.d);
+		assert (lac_variant_address(&v) == &v.value.d);
 	}
 }
 int test_lac_ffi()
