@@ -30,8 +30,8 @@ The possible stack types are `int`, `float`, `double`, `uint8_t`, `int8_t`, `uin
 `uint32_t`, `int32_t`, `uint64_t`, `int64_t`, and `void*`.
 
 `lac` is line oriented. Use backslash ('\\') at the end of a line to continue parsing to the next line.  
-Tokens are separated by whitespace using `isspace` from `<ctypes.h>`. If a string contains
-whitespace enclose it with double quotes. The token `"Hello World!"` will result in a `void*`
+Tokens are separated by whitespace using `isspace` from `<ctypes.h>`. A string containing
+whitespace can be enclosed with double quotes. The token `"Hello World!"` will result in a `void*`
 pointer to the null terminated characters `Hello World!\0` on the stack. To include a `"`
 character in a string escape it with a backslash `"like \"this\""` to get the
 string `like "this"`.
@@ -39,7 +39,7 @@ string `like "this"`.
 
 ## Load
 
-Lines starting with  `-` load functions that can be called.
+Lines starting with  `-` load functions from a library into the dictionary.
 The characters immediately following `-` are the same as used on
 the link line for the library. The next token is the
 symbol to load from the library using `dlsym(3)` declared in
@@ -49,7 +49,9 @@ it points to.
 
 The token following the symbol name is the return type of the function.
 The tokens after that are the argument types of the function.
-This information is required to call the function.
+The signature of the function is also stored in the dictionary.
+
+
 
 ## Call
 
@@ -104,7 +106,7 @@ if expr {
 }
 ```
 
-executes `body` when `expr` evaluates to a non-zero value
+executes `body` if `expr` evaluates to a non-zero value
 
 ```
 while expr {
