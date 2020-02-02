@@ -151,3 +151,19 @@ while != EOF c {
 printf "%d %d %d\n" line word char
 pop --
 ```
+
+## Misc
+
+f a1 ... an # call f, push return to top of stack
+f a1 ... an ; # call f, remove a1 ... an, push return to top of stack
+
+Stack operations
+
+@n # a1 ... an -- an a1 ... an
+!n # a1 ... an -- an a1 ... an-1 similar to roll n
+!-n # a1 ... an -- an # clear to n
+
+Control flow
+
+:lable # with no arguments stores current state
+jump lable # got to label are reexecute

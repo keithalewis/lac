@@ -13,7 +13,6 @@ lac: $(OBJS)
 lac.t: $(OBJS_T)
 
 test: lac.t
-	rm -f *gdb
 	./lac.t
 
 .PHONY : clean
