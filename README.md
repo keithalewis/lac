@@ -132,38 +132,70 @@ to read.
 A crappy version of the unix function for counting lines, words, and characters.
 
 ```
-line: int 0
-word: int 0
-char: int 0
+line: int 0 ; -- add line to dictionary with integer value 0
+word: int 0 ;
+char: int 0 ;
 
-fopen file.txt r -- FILE*
-c: {fgetc @}
+fopen file.txt r ; -- FILE* since ; removes args from stack
 
-while != EOF c {
+{
+	fgetc -- c FILE*
+	== EOF -- (EOF == c) c FILE*
+	? break -- c FILE* since ? eats tos and breaks out of block if nonzero
 	incr &char
-	if isspace c {
-		incr &word
-	}
-	if == \n c {
-		incr &line
-	}
+	isspace c -- bool/int c FILE*
+	? incr &word -- c FILE* since ? eats tos then executes line if nonzero
+	== '\n' -- bool/int c FILE*
+	? incr &line -- c FILE*
+	!! --  FILE*
 }
-printf "%d %d %d\n" line word char
-pop --
-```
 
+printf "%d %d %d\n" line word char
+```
 ## Misc
 
-f a1 ... an # call f, push return to top of stack
-f a1 ... an ; # call f, remove a1 ... an, push return to top of stack
+f a0 ... an -- f(a0,...,an) a1 ... an # call f, push return on top of stack
+f a0 ... an ; -- f(a0,...an) # call f, remove a0 ... an, push return to top of stack
 
-Stack operations
+## Stack operations
 
-@n # a1 ... an -- an a1 ... an
-!n # a1 ... an -- an a1 ... an-1 similar to roll n
-!-n # a1 ... an -- an # clear to n
+Pull n-th item and push on stack. @ is the same as @0 which duplicates the top of stack.  
+Similar to forth pick n.  
+@n # a0 ... an -- an a0 ... an
 
-Control flow
+Roll n items on the stack.  ! is the same as !1 which swaps the top two items on the stack
+!n # a0 ... an -- an a1 ... an
 
-:lable # with no arguments stores current state
-jump lable # got to label are reexecute
+Pop n items from stack. !! is the same as !!1
+!!n # a0 ... an -- 
+
+## Control flow
+
+## lac
+
+Read from FILE*
+
+get_token into a buffer
+
+switch on first character
+
+-lxxx sym ret arg ... creates a thunk with key "sym"
+
+A _thunk_ (`lac_cif`) can be called given a stack
+
+if not special, look up "sym" in dictionary to get thunk
+
+The thunk knows what argument types it needs.
+
+push remaining arguments on the line right-to-left on stack using the symbol argument signature.
+
+check missing arguments on stack using signature
+
+call corresponding symbol
+
+if line ends in ; pop arguments from stack
+
+The result is pushed on the stack.
+
+If an argument starts with '{' then everything to the matching '}' gets evaluated recursively and pushed on the stack.
+

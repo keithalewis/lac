@@ -66,29 +66,11 @@ lac_cif* lac_cif_alloc(int n)
 
 	return p;
 }
-/*
-lac_cif* lac_cif_alloc_types(ffi_type* ret, int n, ffi_type** type)
-{
-	lac_cif* p = lac_cif_alloc(n);
 
-	if (!p) return p;
-
-	p->cif.rtype = ret;
-	for (int i = 0; i < n; ++i) {
-		p->type[i] = type[i];
-	}
-
-	p->cif.arg_types = &p->type[0];
-	ffi_prep_cif((ffi_cif*)p, FFI_DEFAULT_ABI, n, ret, type);
-
-	return p;
-}
-*/
 void lac_cif_free(lac_cif* p)
 {
 	free(p);
 }
-
 
 ffi_status lac_cif_prep(lac_cif* cif, ffi_type* rtype, ffi_type**arg_types)
 {
@@ -107,6 +89,15 @@ lac_variant* lac_stack_top(lac_stack* stack)
 {
 	return stack->data + stack->sp;
 }
+void* lac_stack_address(lac_stack* stack)
+{
+	return stack->addr + stack->sp;
+}
+size_t lac_stack_size(lac_stack* stack)
+{
+	return stack->sp - STACK_SIZE;
+}
+
 void lac_stack_push(lac_stack* stack, lac_variant v)
 {
 	stack->data[stack->sp] = v;
@@ -118,4 +109,27 @@ void lac_stack_pop(lac_stack* stack)
 	if (stack->sp < STACK_SIZE - 1) {
 		++stack->sp;
 	}
+}
+
+lac_variant* lac_stack_pull(lac_stack* stack, size_t n)
+{
+	assert (n < lac_stack_size(stack));
+
+	lac_stack_push(stack, stack->data[stack->sp + n - 1]);
+
+	return lac_stack_top(stack);
+}
+
+lac_variant* lac_stack_roll(lac_stack* stack, size_t n)
+{
+	lac_variant v = stack->data[stack->sp + n - 1];
+	void* p = stack->addr[stack->sp + n - 1];
+
+	memmove(stack->data + 1, stack->data, (n - 1)*sizeof(lac_variant));
+	memmove(stack->addr + 1, stack->addr, (n - 1)*sizeof(void*));
+
+	stack->data[stack->sp] = v;
+	stack->addr[stack->sp] = p;
+
+	return lac_stack_top(stack);
 }

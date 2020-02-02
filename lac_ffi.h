@@ -85,14 +85,22 @@ void lac_cif_call(lac_cif* cif, ffi_arg* ret, void** args);
 #define STACK_SIZE 1024
 #endif
 
+// fixed stack that grows upward
 typedef struct {
 	size_t sp;
-	lac_variant data[STACK_SIZE];
-	void* addr[STACK_SIZE];
+	lac_variant data[STACK_SIZE + 1];
+	void* addr[STACK_SIZE + 1];
 } lac_stack;
+// initialize with lac_stack s = {STACK_SIZE};
 
 void lac_stack_push(lac_stack* stack, lac_variant v);
 void lac_stack_pop(lac_stack* stack);
 lac_variant* lac_stack_top(lac_stack* stack);
 // pointer to void* stack item addresses
-lac_variant* lac_stack_addr(lac_stack* stack);
+void* lac_stack_address(lac_stack* stack);
+size_t lac_stack_size(lac_stack* stack);
+// push n-th item on top of stack
+// a1 a2 ... an -- an a1 ... an
+lac_variant* lac_stack_pull(lac_stack* stack, size_t n);
+// a1 a2 ... an -- an a1 ... an-1
+lac_variant* lac_stack_roll(lac_stack* stack, size_t n);

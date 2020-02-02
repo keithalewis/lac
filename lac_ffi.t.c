@@ -106,6 +106,44 @@ test_lac_cif ()
 
 }
 
+int test_lac_stack()
+{
+	lac_stack s = {STACK_SIZE};
+	assert (0 == lac_stack_size(&s));
+	lac_variant v1, v2;
+
+	v1.type = &ffi_type_sint;
+	v1.value.i = 123;
+
+	v2.type = &ffi_type_double;
+	v2.value.d = 1.23;
+
+	lac_stack_push(&s, v1);
+	assert (1 == lac_stack_size(&s));
+
+	lac_variant* tos;
+	tos = lac_stack_top(&s);
+	assert (tos->type == v1.type);
+	assert (tos->value.i == v1.value.i);
+	assert (lac_variant_address(tos) == &v1.value.i);
+
+	lac_stack_push(&s, v2);
+	assert (1 == lac_stack_size(&s));
+
+	tos = lac_stack_top(&s);
+	assert (tos->type == v2.type);
+	assert (tos->value.i == v2.value.i);
+	assert (lac_variant_address(tos) == &v2.value.d);
+
+	lac_stack_pop(&s);
+	tos = lac_stack_top(&s);
+	assert (tos->type == v1.type);
+	assert (tos->value.i == v1.value.i);
+	assert (lac_variant_address(tos) == &v1.value.i);
+
+	return 0;
+}
+
 int
 test_lac_ffi ()
 {
