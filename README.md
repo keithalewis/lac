@@ -199,3 +199,4 @@ The result is pushed on the stack.
 
 If an argument starts with '{' then everything to the matching '}' gets evaluated recursively and pushed on the stack.
 
+FP* -> tokens to '\n' -> thunk
