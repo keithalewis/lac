@@ -17,7 +17,7 @@ int test_lac_dbm()
 	kv = lac_dbm_fetch(foo, DATUM("foo"));
 	assert (0 == kv.data);
 
-	ret = lac_dbm_dump(foo, "bar");
+	ret = lac_dbm_save(foo, "bar");
 	assert (0 == ret);
 
 	ret = lac_dbm_delete(foo, DATUM("key"));

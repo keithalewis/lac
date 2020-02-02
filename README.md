@@ -6,7 +6,7 @@ This little language makes it possible to dynamically load C
 functions from shared libraries at runtime and call them.
 
 ```
--lm cos double double # load double cos(double) from libm.so/.dll
+-lm double cos double # load double cos(double) from libm.so/.dll
 cos 0                 # call cos(0.) and push the result on the stack
 ```
 
@@ -39,17 +39,15 @@ string `like "this"`.
 
 ## Load
 
-Lines starting with  `-` load functions from a library into the dictionary.
-The characters immediately following `-` are the same as used on
-the link line for the library. The next token is the
-symbol to load from the library using `dlsym(3)` declared in
-`<dlfcn.h>`. This returns a `void*` pointer but does not
-provide any information about the signature of the function
-it points to.
-
-The token following the symbol name is the return type of the function.
-The tokens after that are the argument types of the function.
-The signature of the function is also stored in the dictionary.
+Lines starting with  `-` load functions from a library into the
+dictionary.  The characters immediately following `-` are the same as
+used on the link line for the library. The next token is the return
+value of the function.  The following token is the symbol to load from
+the library using `dlsym(3)` declared in `<dlfcn.h>`. This returns a
+`void*` pointer but does not provide any information about the signature
+of the function it points to.  The tokens after that are the argument
+types of the function.  The signature of the function is also stored in
+the dictionary. The symbol+signature is called a _thunk_.
 
 
 
@@ -59,6 +57,9 @@ Lines starting with functions that have been loaded into the dictionary
 get called with the arguments that follow.  Any missing arguments must
 be supplied on the stack. All arguments must have the same type specified
 by the signature of the function.
+
+By default, arguments are left on the stack. Lines ending with the semi-colon
+charater (';') cause arguments to be removed from the stack.
 
 
 ## Variables
@@ -73,12 +74,13 @@ pushes 123 as an `int` on the stack and any future occurrence of `i` will be rep
 Values are pushed on the stack from right to left.
 
 ```
-:var line ...
+:var line arg ...
 ```
 
-evaluates `line ...` and assignes the resulting top of stack to `var`.
+evaluates `line(arg, ...)` and assignes the resulting top of stack to `var`.
 
-To delay evaluation enclose `line ...` with brackets: `{line ...}`. Future occurences of `var`
+To delay evaluation enclose `line ...` with brackets: `{line ...}`.
+Future occurences of `var`
 will be substitued by `line ...` and evaluated using the current dictionary and stack.
 
 Brackets can be nested, `{a {b} c}` pushes the string `a {b} c` onto the stack. As with strings,
@@ -87,18 +89,29 @@ right brackets can be escaped if immediately preceeded by a backslash.
 ## Stack Manipulation
 
 Use `@<n>` to interpoate the n-th item on the stack into the
-commandline, where `@` is shorthand for `@1`.  Use `!<n>`
-to interpolate the n-th item on the stack and remove it from the stack.
+commandline, where `@` is shorthand for `@1`. Stack indexing is 0-based
+so `@0` has no effect on the stack.
 
-??? This is similar to `ROLL <n>` in forth except subsequent parameters on a line are push on the stack.
+Use `!<n>`
+to interpolate the n-th item on the stack and remove it from the stack.
+`!` is equivalent to `!1` and swaps the two top stack items.
+
+This is similar to `ROLL <n>` in forth except subsequent parameters on a line are push on the stack.
+
+## Predefined functions
 
 The function `printf` is loaded by `lac` at startup. It has a variable number of
 arguments and all arguments must be specified on the line.
 See [] for how to load and call vararg functions at runtime.
 
-## Control Flows
+## Control Flow
 
-Lines starting with keywords have special interpretation.
+Lines starting with keycharacters have special interpretation.
+
+```
+? {expr} body
+```
+evaluates `expr` and if the top of stack is non-zero it evaluates `body`.
 
 ```
 if expr {
@@ -200,3 +213,9 @@ The result is pushed on the stack.
 If an argument starts with '{' then everything to the matching '}' gets evaluated recursively and pushed on the stack.
 
 FP* -> tokens to '\n' -> thunk
+
+Load varargs function.
+```
+-lc int printf void* ...
+```
+Must be call with exact number of arguments needed on same line.

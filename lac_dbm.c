@@ -80,13 +80,14 @@ int lac_dbm_delete(lac_dbm dbm, lac_datum key)
 	int ret;
 
 	//lac_dbm_flock(dbm, LOCK_UN);
+	// ???rename(2) or unlink(2)
 	ret = gdbm_delete((GDBM_FILE)dbm, DATUM(key));
 	//lac_dbm_flock(dbm, LOCK_EX);
 
 	return ret;
 }
 
-int lac_dbm_dump(lac_dbm dbm, const char* file)
+int lac_dbm_save(lac_dbm dbm, const char* file)
 {
 	int ret;
 	

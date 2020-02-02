@@ -53,9 +53,9 @@ lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e)
 	return v;
 }
 
-size_t lac_cif_size(lac_cif* cif)
+size_t lac_cif_size(lac_cif* pcif)
 {
-	return sizeof(lac_cif) + cif->cif.nargs*sizeof(void*);
+	return sizeof(lac_cif) + pcif->cif.nargs*sizeof(void*);
 }
 
 // Allocate and set nargs
@@ -66,23 +66,39 @@ lac_cif* lac_cif_alloc(int n)
 
 	return p;
 }
+lac_cif* lac_cif_realloc(lac_cif* p, int n)
+{
+	p = (lac_cif*)realloc(p, sizeof(lac_cif) + n*sizeof(void*));
+	p->cif.nargs = n;
+
+	return p;
+}
 
 void lac_cif_free(lac_cif* p)
 {
 	free(p);
 }
 
-ffi_status lac_cif_prep(lac_cif* cif, ffi_type* rtype, ffi_type**arg_types)
+ffi_status lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type**arg_types)
 {
-	cif->cif.arg_types = &cif->arg_types[0];
-	memcpy(cif->arg_types, arg_types, cif->cif.nargs*sizeof(void*));
+	pcif->cif.arg_types = &pcif->arg_types[0];
+	memcpy(pcif->arg_types, arg_types, pcif->cif.nargs*sizeof(void*));
 
-	return ffi_prep_cif(&cif->cif, FFI_DEFAULT_ABI, cif->cif.nargs, rtype, cif->arg_types);
+	return ffi_prep_cif(&pcif->cif, FFI_DEFAULT_ABI, pcif->cif.nargs, rtype, pcif->arg_types);
 }
 
-void lac_cif_call(lac_cif* cif, ffi_arg* ret, void** args)
+ffi_status lac_cif_prep_var(lac_cif* pcif, unsigned nargs, ffi_type**arg_types)
 {
-	ffi_call(&cif->cif, cif->sym, ret, args);
+	unsigned nfix = pcif->cif.nargs; // number of fixed args
+	void* types[nfix + nargs];
+	memcpy(types, pcif->cif.arg_types, pcif->cif.nargs*sizeof(void*));
+
+	return ffi_prep_cif_var(&pcif->cif, FFI_DEFAULT_ABI, nfix, nfix + nargs, pcif->cif.rtype, &types);
+}
+
+void lac_cif_call(lac_cif* pcif, ffi_arg* ret, void** args)
+{
+	ffi_call(&pcif->cif, pcif->sym, ret, args);
 }
 
 lac_variant* lac_stack_top(lac_stack* stack)
