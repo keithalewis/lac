@@ -59,17 +59,21 @@ size_t lac_cif_size(lac_cif* pcif)
 }
 
 // Allocate and set nargs
-lac_cif* lac_cif_alloc(int n)
+lac_cif* lac_cif_alloc(unsigned n)
 {
 	lac_cif* p = (lac_cif*)malloc(sizeof(lac_cif) + n*sizeof(void*));
 	p->cif.nargs = n;
+	p->cif.arg_types = &p->arg_types[0];
 
 	return p;
 }
-lac_cif* lac_cif_realloc(lac_cif* p, int n)
+// preserve existing arg_types
+lac_cif* lac_cif_realloc(lac_cif* p, unsigned n)
 {
+	unsigned nfix = p->cif.nargs;
 	p = (lac_cif*)realloc(p, sizeof(lac_cif) + n*sizeof(void*));
 	p->cif.nargs = n;
+	p->cif.arg_types = &p->arg_types[0];
 
 	return p;
 }
@@ -79,21 +83,26 @@ void lac_cif_free(lac_cif* p)
 	free(p);
 }
 
-ffi_status lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type**arg_types)
+ffi_status
+lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type**arg_types)
 {
 	pcif->cif.arg_types = &pcif->arg_types[0];
 	memcpy(pcif->arg_types, arg_types, pcif->cif.nargs*sizeof(void*));
 
-	return ffi_prep_cif(&pcif->cif, FFI_DEFAULT_ABI, pcif->cif.nargs, rtype, pcif->arg_types);
+	return ffi_prep_cif(&pcif->cif, FFI_DEFAULT_ABI,
+	                    pcif->cif.nargs, rtype, pcif->arg_types);
 }
 
-ffi_status lac_cif_prep_var(lac_cif* pcif, unsigned nargs, ffi_type**arg_types)
+// prepare additional args for vararg functions
+ffi_status
+lac_cif_prep_var(lac_cif** ppcif, unsigned nargs, ffi_type** arg_types)
 {
-	unsigned nfix = pcif->cif.nargs; // number of fixed args
-	void* types[nfix + nargs];
-	memcpy(types, pcif->cif.arg_types, pcif->cif.nargs*sizeof(void*));
+	unsigned nfix = (*ppcif)->cif.nargs; // number of fixed args
+	*ppcif = (lac_cif*)lac_cif_realloc(*ppcif, nfix + nargs);
+	memcpy((*ppcif)->arg_types + nfix, arg_types, nargs*sizeof(void*));
 
-	return ffi_prep_cif_var(&pcif->cif, FFI_DEFAULT_ABI, nfix, nfix + nargs, pcif->cif.rtype, &types);
+	return ffi_prep_cif_var(&(*ppcif)->cif, FFI_DEFAULT_ABI, nfix,
+                   	nfix + nargs, (*ppcif)->cif.rtype, (*ppcif)->arg_types);
 }
 
 void lac_cif_call(lac_cif* pcif, ffi_arg* ret, void** args)

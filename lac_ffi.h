@@ -68,15 +68,19 @@ typedef struct {
 	ffi_type* arg_types[1]; // realiy arg_types[nargs]
 } lac_cif;
 
-lac_cif* lac_cif_alloc(int nargs);
-void lac_cif_free(lac_cif* cif);
-size_t lac_cif_size(lac_cif* cif);
+// allocate n args and set cif.arg_types to arg_types
+lac_cif* lac_cif_alloc(unsigned nargs);
+// reallocate n args and set cif.arg_types to arg_types
+// preserve existing arg types
+lac_cif* lac_cif_realloc(lac_cif* pcif, unsigned nargs);
+void lac_cif_free(lac_cif* pcif);
+size_t lac_cif_size(lac_cif* pcif);
 
 // call ffi_prep_cif using cif->cif.nargs
-ffi_status lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type**arg_types);
+ffi_status lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type** arg_types);
 // call ffi_prep_cif_var for variadic functions where nargs is the number of variable args
 // unlike ffi_prep_cif_var, arg_types only has nargs items
-ffi_status lac_cif_prep_var(lac_cif* pcif, unsigned nargs, ffi_type**arg_types);
+ffi_status lac_cif_prep_var(lac_cif** pcif, unsigned nargs, ffi_type** arg_types);
 // call ffi_call
 void lac_cif_call(lac_cif* pcif, ffi_arg* ret, void** args);
 

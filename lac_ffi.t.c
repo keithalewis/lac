@@ -68,17 +68,17 @@ test_lac_cif ()
     /* Initialize the cif */
     if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, 1, &ffi_type_sint, args) ==
 	FFI_OK)
-      {
-	s = "Hello World!";
-	ffi_call (&cif, (void *) puts, &rc, values);
-	/* rc now holds the result of the call to puts */
+    {
+		s = "Hello World!";
+		ffi_call (&cif, (void *) puts, &rc, values);
+		/* rc now holds the result of the call to puts */
 
-	/* values holds a pointer to the function's arg, so to 
-	   call puts() again all we need to do is change the 
-	   value of s */
-	s = "This is cool!";
-	ffi_call (&cif, (void *) puts, &rc, values);
-      }
+		/* values holds a pointer to the function's arg, so to 
+		   call puts() again all we need to do is change the 
+		   value of s */
+		s = "This is cool!";
+		ffi_call (&cif, (void *) puts, &rc, values);
+    }
   }
   {
     lac_cif *pcif = lac_cif_alloc (1);
@@ -99,6 +99,33 @@ test_lac_cif ()
     s = "Hello World!";
     lac_cif_call (pcif, &rc, values);
     s = "This is cool!";
+    lac_cif_call (pcif, &rc, values);
+
+	lac_cif_free(pcif);
+  }
+  {
+    lac_cif *pcif = lac_cif_alloc (1);
+    pcif->sym = printf;
+    ffi_type *args[2];
+    void *values[2];
+    char *s, *fmt;
+    ffi_arg rc;
+
+    /* Initialize the argument info vectors */
+    args[0] = &ffi_type_pointer;
+    values[0] = &fmt;
+	fmt = "%s\n";
+
+    /* Initialize the cif */
+    ffi_status ret = lac_cif_prep (pcif, &ffi_type_sint, args);
+    assert (FFI_OK == ret);
+
+	args[1] = &ffi_type_pointer;
+	values[1] = &s;
+	s = "Hi";
+	ret = lac_cif_prep_var(&pcif, 1, &args[1]);
+    s = "Hello varargs";
+
     lac_cif_call (pcif, &rc, values);
 
 	lac_cif_free(pcif);
