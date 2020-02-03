@@ -122,11 +122,13 @@ token_view lac_getline(FILE* fp)
 
 	int c = fgetc(fp);
 	while (EOF != c) {
-		*e = c;
 		if ('\\' == c) {
+			*e++ = c;
 			c = fgetc(fp);
-			*++e = c;
-			++e;
+			if (EOF == c) {
+
+				break;
+			}
 		}
 		else if ('\n' == c) {
 
@@ -139,10 +141,8 @@ token_view lac_getline(FILE* fp)
 
 			break;
 		}
-		else {
-			++e;
-		}
 
+		*e++ = c;
 		c = fgetc(fp);
 	}
 	assert (e - b < LINE_MAX);
