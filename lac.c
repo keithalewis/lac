@@ -14,12 +14,11 @@
 lac_dbm dictionary;
 lac_dbm library;
 
-
 lac_stack stack = (lac_stack){STACK_SIZE - 1, STACK_SIZE - 1};
 
-inline lac_datum make_datum(token_view t)
+lac_datum make_datum(token_view t)
 {
-	return (lac_datum){t.b, t.e - t.b};
+	return (lac_datum){(char*)t.b, t.e - t.b};
 }
 
 void evaluate_line(FILE* fp)
@@ -86,6 +85,7 @@ void load_library(FILE* fp)
 	int ret = lac_dbm_replace(dictionary, (lac_datum){key, strlen(key)-1}, (lac_datum){(char*)h, (int)sizeof(void*)});
 }
 
+/*
 void evaluate(FILE* fp)
 {
 	token_view t = get_token(fp);
@@ -109,6 +109,47 @@ void evaluate(FILE* fp)
 
 	evaluate(fp);
 }
+*/
+#define MAX_LINE 1024
+// read line into static buffer
+token_view lac_getline(FILE* fp)
+{
+	static char line[MAX_LINE];
+
+	line[0] = 0;
+	char* b = line;
+	char* e = line;
+
+	int c = fgetc(fp);
+	while (EOF != c) {
+		*e = c;
+		if ('\\' == c) {
+			c = fgetc(fp);
+			*++e = c;
+			++e;
+		}
+		else if ('\n' == c) {
+
+			break;
+		}
+		else if ('#' == c) {
+			do {
+				c = fgetc(fp);
+			} while (EOF != c && '\n' != c);
+
+			break;
+		}
+		else {
+			++e;
+		}
+
+		c = fgetc(fp);
+	}
+	assert (e - b < LINE_MAX);
+	*e = 0;
+
+	return (token_view){b,e};
+}
 
 int main(int ac, const char* av[])
 {
@@ -122,7 +163,24 @@ int main(int ac, const char* av[])
 	library = lac_dbm_open("library");
 
 	// setjmp/longjmp for error handling
-	evaluate(fp);
+	//evaluate(fp);
+	while (true) {
+		token_view line = lac_getline(fp);
+		if (token_view_error(line)) {
+			perror(line.b);
+
+			break;
+		}
+		else if (token_view_empty(line)) {
+			perror("empty token_view");
+
+			break;
+		}
+		else {
+			puts(line.b);
+		// eval line
+		}
+	}
 
 	lac_dbm_close(library);
 	lac_dbm_close(dictionary);

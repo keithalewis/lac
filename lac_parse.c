@@ -6,11 +6,13 @@ bool token_view_empty(const token_view t)
 {
 	return t.b == t.e;
 }
+
 // return information if error
 const char* token_view_error(const token_view t)
 {
 	return t.e == 0 ? t.b : 0;
 }
+
 // skip space or nonspace
 const char* skip_space(const char* b, const char* e, bool space)
 {
@@ -75,7 +77,6 @@ const char* next_quote(const char* b, const char* e,
 token_view get_token(const char* b, const char* e)
 {
 	const char* e_;
-	token_view t = {0,0};
 
 	b = skip_space(b, e, true);
 	if (!b || b == e) {
@@ -90,6 +91,15 @@ token_view get_token(const char* b, const char* e)
 	}
 	else {
 		e_ = skip_space(b, e, false);
+	}
+
+	if (e_ == 0) {
+		return (token_view){b,0}; // error
+	}
+
+	// tokens must be space separated
+	if (e_ != e && !isspace(*e_)) {
+		return (token_view){b,0};
 	}
 
 	return (token_view){b, e_};
