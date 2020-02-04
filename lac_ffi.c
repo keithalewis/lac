@@ -1,8 +1,158 @@
 // lac_ffi.c
 #include "lac_ffi.h"
 
+ffi_type* ffi_type_lookup(const char* name)
+{
+	if ('d' == *name) {
+		return &ffi_type_double;
+	}
+	if ('f' == *name) {
+		return &ffi_type_float;
+	}
+	if ('v' == *name) {
+		return 0 == strchr(name + 1, '*') ? &ffi_type_void : &ffi_type_pointer;
+	}
+	if ('i' == *name) {
+		const char* d = strpbrk(name + 1, "8136");	
+		switch (*d) {
+			case '8': return &ffi_type_sint8;
+			case '1': return &ffi_type_sint16;
+			case '3': return &ffi_type_sint32;
+			case '6': return &ffi_type_sint64;
+		}
+		return &ffi_type_sint;
+	}
+	if ('u' == *name) {
+		const char* d = strpbrk(name + 1, "8136");	
+		switch (*d) {
+			case '8': return &ffi_type_uint8;
+			case '1': return &ffi_type_uint16;
+			case '3': return &ffi_type_uint32;
+			case '6': return &ffi_type_uint64;
+		}
+		return &ffi_type_sint;
+	}
+
+	return 0;
+}
+
+int lac_parse_i(const char* b, const char* e)
+{
+	int i;
+	char* e_;
+
+	i = (int)strtol(b, &e_, 0);
+	assert (e == e_);
+
+	return i;
+}
+float lac_parse_f(const char* b, const char* e)
+{
+	float f;
+	char* e_;
+
+	f = strtof(b, &e_);
+	assert (e == e_);
+
+	return f;
+}
+double lac_parse_d(const char* b, const char* e)
+{
+	double d;
+	char* e_;
+
+	d = strtod(b, &e_);
+	assert (e == e_);
+
+	return d;
+}
+uint8_t lac_parse_u8(const char* b, const char* e)
+{
+	uint8_t u;
+	char* e_;
+
+	u = (uint8_t)strtoul(b, &e_, 0);
+	assert (e == e_);
+
+	return u;
+}
+int8_t lac_parse_i8(const char* b, const char* e)
+{
+	int8_t i;
+	char* e_;
+
+	i = (int8_t)strtol(b, &e_, 0);
+	assert (e == e_);
+
+	return i;
+}
+uint16_t lac_parse_u16(const char* b, const char* e)
+{
+	uint16_t u;
+	char* e_;
+
+	u = (uint16_t)strtoul(b, &e_, 0);
+	assert (e == e_);
+
+	return u;
+}
+int16_t lac_parse_i16(const char* b, const char* e)
+{
+	int16_t i;
+	char* e_;
+
+	i = (int16_t)strtol(b, &e_, 0);
+	assert (e == e_);
+
+	return i;
+}
+uint32_t lac_parse_u32(const char* b, const char* e)
+{
+	uint32_t u;
+	char* e_;
+
+	u = (uint32_t)strtoul(b, &e_, 0);
+	assert (e == e_);
+
+	return u;
+}
+int32_t lac_parse_i32(const char* b, const char* e)
+{
+	int32_t i;
+	char* e_;
+
+	i = (int32_t)strtol(b, &e_, 0);
+	assert (e == e_);
+
+	return i;
+}
+uint64_t lac_parse_u64(const char* b, const char* e)
+{
+	uint64_t u;
+	char* e_;
+
+	u = (uint64_t)strtoull(b, &e_, 0);
+	assert (e == e_);
+
+	return u;
+}
+int64_t lac_parse_i64(const char* b, const char* e)
+{
+	int64_t i;
+	char* e_;
+
+	i = (int64_t)strtoll(b, &e_, 0);
+	assert (e == e_);
+
+	return i;
+}
+void* lac_parse_p(const char* b, const char* e)
+{
+	return (void*)b;
+}
+
 #define X(A,B,C,D) lac_variant lac_variant_parse_##D(const char* b, const char* e) \
-{	return lac_variant_parse(C, b, e); }
+	{ lac_variant v; v.type = C; v.value.D = lac_parse_##D(b,e); return v; }
 	FFI_TYPE_TABLE(X)
 #undef X
 
@@ -25,30 +175,9 @@ lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e)
 {
 	lac_variant v;
 
-	v.type = type;
-	if (&ffi_type_sint == type) {
-		char* e_;
-		// check size!!!
-		v.value.i = (int)strtol(b, &e_, 0);
-		assert (e == e_);
-	}
-	else if (&ffi_type_uint32 == type) {
-		char* e_;
-		// check size!!!
-		v.value.u32 = (uint32_t)strtoul(b, &e_, 0);
-		assert (e == e_);
-	}
-	else if (&ffi_type_float == type) {
-		char* e_;
-		v.value.f = strtof(b, &e_);
-		assert (e == e_);
-	}
-	else if (&ffi_type_double == type) {
-		char* e_;
-		v.value.d = strtod(b, &e_);
-		assert (e == e_);
-	}
-	// etc!!!
+#define X(A,B,C,D) if (C == type) { v = lac_variant_parse_##D(b,e); }
+	FFI_TYPE_TABLE(X)
+#undef X
 
 	return v;
 }
@@ -86,6 +215,7 @@ void lac_cif_free(lac_cif* p)
 ffi_status
 lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type**arg_types)
 {
+	pcif->result.type = rtype;
 	pcif->cif.arg_types = &pcif->arg_types[0];
 	memcpy(pcif->arg_types, arg_types, pcif->cif.nargs*sizeof(void*));
 
@@ -105,9 +235,9 @@ lac_cif_prep_var(lac_cif** ppcif, unsigned nargs, ffi_type** arg_types)
                    	nfix + nargs, (*ppcif)->cif.rtype, (*ppcif)->arg_types);
 }
 
-void lac_cif_call(lac_cif* pcif, ffi_arg* ret, void** args)
+void lac_cif_call(lac_cif* pcif, void** args)
 {
-	ffi_call(&pcif->cif, pcif->sym, ret, args);
+	ffi_call(&pcif->cif, pcif->sym, lac_variant_address(&pcif->result), args);
 }
 
 lac_variant* lac_stack_top(lac_stack* stack)
@@ -136,16 +266,14 @@ void lac_stack_pop(lac_stack* stack)
 	}
 }
 
-lac_variant* lac_stack_pull(lac_stack* stack, size_t n)
+void lac_stack_pick(lac_stack* stack, size_t n)
 {
 	assert (n < lac_stack_size(stack));
 
 	lac_stack_push(stack, stack->data[stack->sp + n - 1]);
-
-	return lac_stack_top(stack);
 }
 
-lac_variant* lac_stack_roll(lac_stack* stack, size_t n)
+void lac_stack_roll(lac_stack* stack, size_t n)
 {
 	lac_variant v = stack->data[stack->sp + n - 1];
 	void* p = stack->addr[stack->sp + n - 1];
@@ -155,6 +283,4 @@ lac_variant* lac_stack_roll(lac_stack* stack, size_t n)
 
 	stack->data[stack->sp] = v;
 	stack->addr[stack->sp] = p;
-
-	return lac_stack_top(stack);
 }

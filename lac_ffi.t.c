@@ -97,9 +97,9 @@ test_lac_cif ()
     assert (FFI_OK == ret);
 
     s = "Hello World!";
-    lac_cif_call (pcif, &rc, values);
+    lac_cif_call (pcif, values);
     s = "This is cool!";
-    lac_cif_call (pcif, &rc, values);
+    lac_cif_call (pcif, values);
 
 	lac_cif_free(pcif);
   }
@@ -126,7 +126,8 @@ test_lac_cif ()
 	ret = lac_cif_prep_var(&pcif, 1, &args[1]);
     s = "Hello varargs";
 
-    lac_cif_call (pcif, &rc, values);
+    lac_cif_call (pcif, values);
+	assert (pcif->result.value.i == strlen(s) + 1);
 
 	lac_cif_free(pcif);
   }
@@ -135,7 +136,7 @@ test_lac_cif ()
 
 int test_lac_stack()
 {
-	lac_stack s = {STACK_SIZE};
+	LAC_STACK(s);
 	assert (0 == lac_stack_size(&s));
 	lac_variant v1, v2;
 

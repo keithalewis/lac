@@ -41,6 +41,9 @@ extern "C" {
 	// X(FFI_TYPE_COMPLEX
 	// X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer,    std::monostate ) \
 
+// convert string name to ffi type
+ffi_type* ffi_type_lookup(const char* name);
+
 // variant data type 
 typedef struct {
 	union {
@@ -56,6 +59,10 @@ void* lac_variant_address(lac_variant* pv);
 
 lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e);
 
+#define X(A,B,C,D) B lac_parse_##D(const char* b, const char* e);
+	FFI_TYPE_TABLE(X)
+#undef X
+
 // E.g., int32_t i = lac_variant_parse_i32(b,e).i32;
 #define X(A,B,C,D) lac_variant lac_variant_parse_##D(const char* b, const char* e);
 	FFI_TYPE_TABLE(X)
@@ -63,6 +70,7 @@ lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e);
 
 // value corresponding to string name of symbol
 typedef struct {
+	lac_variant result;
 	void* sym;
 	ffi_cif cif;
 	ffi_type* arg_types[1]; // realiy arg_types[nargs]
@@ -74,15 +82,18 @@ lac_cif* lac_cif_alloc(unsigned nargs);
 // preserve existing arg types
 lac_cif* lac_cif_realloc(lac_cif* pcif, unsigned nargs);
 void lac_cif_free(lac_cif* pcif);
+
 size_t lac_cif_size(lac_cif* pcif);
 
 // call ffi_prep_cif using cif->cif.nargs
 ffi_status lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type** arg_types);
+
 // call ffi_prep_cif_var for variadic functions where nargs is the number of variable args
 // unlike ffi_prep_cif_var, arg_types only has nargs items
 ffi_status lac_cif_prep_var(lac_cif** pcif, unsigned nargs, ffi_type** arg_types);
-// call ffi_call
-void lac_cif_call(lac_cif* pcif, ffi_arg* ret, void** args);
+
+// call ffi_call and store result
+void lac_cif_call(lac_cif* pcif, void** args);
 
 // argument stack
 #ifndef STACK_SIZE
@@ -92,10 +103,10 @@ void lac_cif_call(lac_cif* pcif, ffi_arg* ret, void** args);
 // fixed stack that grows upward
 typedef struct {
 	size_t sp;
-	lac_variant data[STACK_SIZE + 1];
-	void* addr[STACK_SIZE + 1];
+	lac_variant data[STACK_SIZE];
+	void* addr[STACK_SIZE];
 } lac_stack;
-// initialize with lac_stack s = {STACK_SIZE};
+#define LAC_STACK(NAME) lac_stack NAME = {STACK_SIZE - 1}
 
 void lac_stack_push(lac_stack* stack, lac_variant v);
 void lac_stack_pop(lac_stack* stack);
@@ -103,8 +114,9 @@ lac_variant* lac_stack_top(lac_stack* stack);
 // pointer to void* stack item addresses
 void* lac_stack_address(lac_stack* stack);
 size_t lac_stack_size(lac_stack* stack);
+
 // push n-th item on top of stack
 // a1 a2 ... an -- an a1 ... an
-lac_variant* lac_stack_pull(lac_stack* stack, size_t n);
+void lac_stack_pick(lac_stack* stack, size_t n);
 // a1 a2 ... an -- an a1 ... an-1
-lac_variant* lac_stack_roll(lac_stack* stack, size_t n);
+void lac_stack_roll(lac_stack* stack, size_t n);

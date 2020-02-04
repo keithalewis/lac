@@ -89,14 +89,19 @@ right brackets can be escaped if immediately preceeded by a backslash.
 ## Stack Manipulation
 
 Use `@<n>` to interpoate the n-th item on the stack into the
-commandline, where `@` is shorthand for `@1`. Stack indexing is 0-based
-so `@0` has no effect on the stack.
+commandline, where `@` is shorthand for `@1`. Stack indexing is 1-based
+
+This is similar to `PICK n` in forth.
 
 Use `!<n>`
 to interpolate the n-th item on the stack and remove it from the stack.
 `!` is equivalent to `!1` and swaps the two top stack items.
 
 This is similar to `ROLL <n>` in forth except subsequent parameters on a line are push on the stack.
+
+Use `@-n` to push first n arguments on stack
+
+Use `!-n` to remove first n arguemts on stack
 
 ## Predefined functions
 
@@ -106,28 +111,18 @@ See [] for how to load and call vararg functions at runtime.
 
 ## Control Flow
 
-Lines starting with keycharacters have special interpretation.
+Lines starting with keywords have special interpretation.
 
 ```
-? {expr} body
+? body
 ```
-evaluates `expr` and if the top of stack is non-zero it evaluates `body`.
+If the top of stack is non-zero evaluate `body`.
 
 ```
-if expr {
-	body
-}
+{ body }
 ```
 
-executes `body` if `expr` evaluates to a non-zero value
-
-```
-while expr {
-	body
-}
-```
-
-executes `body` as long as `expr` evaluates to a non-zero value.
+executes `body` in a loop. Use `break` and `continue` to contol execution
 
 ## Variadic Functions
 
@@ -145,20 +140,20 @@ to read.
 A crappy version of the unix function for counting lines, words, and characters.
 
 ```
-line: int 0 ; -- add line to dictionary with integer value 0
-word: int 0 ;
-char: int 0 ;
+:line int 0 -- add line to dictionary with integer value 0
+:word int 0
+:char int 0
 
 fopen file.txt r ; -- FILE* since ; removes args from stack
-
 {
 	fgetc -- c FILE*
 	== EOF -- (EOF == c) c FILE*
 	? break -- c FILE* since ? eats tos and breaks out of block if nonzero
-	incr &char
-	isspace c -- bool/int c FILE*
-	? incr &word -- c FILE* since ? eats tos then executes line if nonzero
-	== '\n' -- bool/int c FILE*
+	incr &char -- & pushes void* pointer for thunk on the stack
+	isspace c -- int c FILE*
+	? incr &word ; -- c FILE* since ? eats tos then executes line if nonzero
+	#isspace && incr &word
+	== '\n' -- int c FILE*
 	? incr &line -- c FILE*
 	!! --  FILE*
 }
