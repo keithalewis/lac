@@ -7,7 +7,7 @@ functions from shared libraries at runtime and call them.
 ```
 -lm double cos double # load double cos(double) from libm.so/.dll
 ```
-will load the symbol `cos` from `libm.so` and add it to the _dictionary_. 
+will load the symbol `cos` from the C math library and add it to the _dictionary_. 
 Whenever `cos` is a token in the input stream after being loaded `lac` will
 call the cosine function.
 ```
@@ -17,28 +17,36 @@ Another way to call `cos(0.)` is
 
 ```
 double 0
-cos
+cos ;
 ```
 
-will expect to find a `double` argument either on the rest of the line or on the _stack_
-and call the C function. The argument is consumed and the result is pushed
-on the stack.
+The first line pushes 0 on the stack as a double. When `cos` is encountered in the input
+stream it will consume 0 from the stack since the semicolon (`;`) indicates there is no following argument(s).
 
-
-The first line pushes 0 as a double on to the stack.
-When `cos` is evaluated without specifying an argument on the same line
-it will look for the arguments it needs on the stack.
 
 The possible stack types are `int`, `float`, `double`, `uint8_t`, `int8_t`, `uint16_t`, `int16_t`,
 `uint32_t`, `int32_t`, `uint64_t`, `int64_t`, and `void*`.
 
-Tokens are separated by whitespace using `isspace` from `<ctypes.h>`. A string containing
+Tokens are separated by whitespace using `isspace` from `<ctypes.h>`.
+
+## Strings
+
+A string containing
 whitespace can be enclosed with double quotes. The token `"Hello World!"` will result in a `void*`
 pointer to the null terminated characters `Hello World!\0`. To include a `"`
 character in a string escape it with a backslash `"like \"this\""` to get the
 string `like "this"`.
 
-Note that the newline character (`\n`) is whitespace. 
+Note that the newline character (`\n`) is considered to be whitespace and is only significant 
+when loading a function and when calling a function with a variable number of arguments.
+
+In these two cases it in not clear how many arguments a function has. The newline character is
+used to determine this.
+
+In general, whenever a token is encountered in the input stream it is looked up in the dictionary
+and called to consume a known number of arguments. The special character semicolon (`;`) indicates
+to the parser it should stop looking for arguments on the input stream and get the rest of
+the required arguments from the stack.
 
 
 ## Load
@@ -50,6 +58,7 @@ value of the function.  The following token is the symbol to load from
 the library using `dlsym(3)` declared in `<dlfcn.h>`. This returns a
 `void*` pointer but does not provide any information about the signature
 of the function it points to.  The tokens after that are the argument
+up to then next newline are the
 types of the function.  The signature of the function is also stored in
 the dictionary. The symbol+signature is called a _thunk_.
 
@@ -57,14 +66,10 @@ the dictionary. The symbol+signature is called a _thunk_.
 
 ## Call
 
-Lines starting with functions that have been loaded into the dictionary
-get called with the arguments that follow.  Any missing arguments must
-be supplied on the stack. All arguments must have the same type specified
+Token encountered that have been loaded into the dictionary get called
+with the arguments that follow.  Use `;` to have it pop from the stack
+any missing arguments.  All arguments must have the same type specified
 by the signature of the function.
-
-By default, arguments are left on the stack. Lines ending with the semi-colon
-charater (';') cause arguments to be removed from the stack.
-
 
 ## Variables
 
@@ -75,20 +80,6 @@ Lines starting with `:` define variables.
 ```
 
 pushes 123 as an `int` on the stack and any future occurrence of `i` will be replaced by 123.
-Values are pushed on the stack from right to left.
-
-```
-:var line arg ...
-```
-
-evaluates `line(arg, ...)` and assignes the resulting top of stack to `var`.
-
-To delay evaluation enclose `line ...` with brackets: `{line ...}`.
-Future occurences of `var`
-will be substitued by `line ...` and evaluated using the current dictionary and stack.
-
-Brackets can be nested, `{a {b} c}` pushes the string `a {b} c` onto the stack. As with strings,
-right brackets can be escaped if immediately preceeded by a backslash.
 
 ## Stack Manipulation
 
