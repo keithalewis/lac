@@ -25,15 +25,12 @@ lac_dbm dictionary;
 lac_dbm library;
 LAC_STACK(stack);
 
-// return first character after white space
-static int skip(FILE* fp, int(*sp)(int))
+// return first character after white space, or not
+static int skip(FILE* fp, int(*sp)(int), int space)
 {
 	int c = fgetc(fp);
-	ensure (EOF != c);
 
-	while (EOF != c && sp(c)) {
-		if ('\n' == c)
-			break;
+	while (EOF != c && space ? sp(c) : !sp(c)) {
 		c = fgetc(fp);
 	}
 
@@ -57,18 +54,14 @@ static token next_token(FILE* fp)
 
 	v.b = v.e = buf;
 
-	int c = skip(fp, isspace);
-	if (EOF == c || '\n' == c) {
-		return v;
-	}
-
+	int c = skip(fp, isspace, true);
 	// switch c...
-	while (EOF != c && '\n' != c && !isspace(c)) {
+	while (EOF != c && !isspace(c)) {
 		*v.e++ = c;
 		ensure (v.e - v.b < MAX_BUF);
 		c = fgetc(fp);
 	}
-	*v.e = 0;
+	*v.e = c; // include last character
 
 	return v;
 }
@@ -86,6 +79,10 @@ double double_(const char* s)
 {
 	return lac_parse_d(s, s + strlen(s));
 }
+void* pointer_(const char* s)
+{
+	return (void*)s;
+}
 
 void evaluate_line(FILE* fp)
 {
@@ -95,28 +92,6 @@ void evaluate_line(FILE* fp)
 	// call
 }
 
-void load_symbol(FILE* fp)
-{
-	int c;
-	char key[64] = "-";
-	c = fgetc(fp);
-	ensure (c == 'l');
-	strcat(key, "l");
-	c = fgetc(fp);
-	while (c != EOF && !isspace(c)) {
-		strncat(key, (char*)&c, 1);
-	}
-	if (c == EOF) {
-		exit(EOF);
-	}
-	//c = skip(fp, isspace);
-	char sym[64] = {(char)c,0};
-	// get library name +xx -> lib
-	// get symbol name
-	// parse remaining args for cif
-	// add to dictionary
-}
-
 void add_dictionary(FILE* fp)
 {
 	// get name
@@ -124,22 +99,27 @@ void add_dictionary(FILE* fp)
 	// add to dictionary
 }
 
+void* load_lib(FILE* fp)
+{
+	char lib[1024] = "lib";
+
+	token t = next_token(fp);
+	strncat(lib + 3, t.b, t.e - t.b);
+	strcat(lib, ".so.6"); // .dll for Windows .6 for gnu v6?
+
+	return dlopen(lib, RTLD_LAZY);
+}
+
 // "-lxxx" -> dlopen("libxxx.so")
 void load_library(FILE* fp)
 {
 	int c;
 	token t;
-	char lib[1024] = "lib";
 
 	c = fgetc(fp);
-	ensure (EOF != c);
 	ensure (c == 'l');
 	
-	t = next_token(fp);
-	strcat(lib + 3, t.b);
-	strcat(lib, ".so"); // .dll for Windows
-
-	void* hlib = dlopen(lib, RTLD_LAZY);
+	void* lib = load_lib(fp);
 
 	// next token is return type
 	t = next_token(fp);
@@ -149,7 +129,8 @@ void load_library(FILE* fp)
 	// symbol
 	t = next_token(fp);
 	const char* symbol = t.b;
-	void* sym = dlsym(hlib, symbol);
+	*t.e = 0;
+	void* sym = dlsym(lib, symbol);
 	ensure (0 != sym);
 	
 	// arg types
@@ -163,6 +144,9 @@ void load_library(FILE* fp)
 		}
 		args[n] = ffi_type_lookup(t.b);
 		++n;
+		if ('\n' == *t.e) {
+			break;
+		}
 		t = next_token(fp);
 	}
 
@@ -174,38 +158,13 @@ void load_library(FILE* fp)
 	lac_datum val = { (char*)pcif, lac_cif_size(pcif) };
 
 	int ret = lac_dbm_insert(dictionary, key, val);
+	lac_cif_free(pcif);
 	//!!! check if duplicate entry
 }
 
-/*
-void evaluate(FILE* fp)
-{
-	token_view t = get_token(fp);
-
-	if (token_view_empty(t))
-		return;
-
-	switch (*t.b) {
-		case '-':
-			load_library(fp);
-			break;
-		case '+':
-			load_symbol(fp);
-			break;
-		case ':':
-			add_dictionary(fp);
-			break;
-		default:
-			evaluate_line(fp);
-	}
-
-	evaluate(fp);
-}
-*/
-
 void lac_execute(FILE* fp)
 {
-	int c = skip(fp, isspace);
+	int c = skip(fp, isspace, true);
 
 	if (EOF == c) return;
 
@@ -229,53 +188,9 @@ void lac_execute(FILE* fp)
 	lac_execute(fp);
 }
 
-// read line into static buffer, return number of chars
-int lac_getline(FILE* fp, token_view* pv)
-{
-	static char line[MAX_BUF];
-
-	line[0] = 0;
-	char* b = line;
-	char* e = line;
-
-	int c = fgetc(fp);
-	while (EOF != c) {
-		if ('\\' == c) {
-			*e++ = c;
-			c = fgetc(fp);
-			if (EOF == c) {
-
-				break;
-			}
-		}
-		else if ('\n' == c) {
-
-			break;
-		}
-		else if ('#' == c) {
-			do {
-				c = fgetc(fp);
-			} while (EOF != c && '\n' != c);
-
-			break;
-		}
-
-		*e++ = c;
-		c = fgetc(fp);
-	}
-	ensure (e - b < LINE_MAX);
-	*e = 0;
-
-	pv->b = b;
-	pv->e = e;
-
-	return e - b;
-}
-
 int main(int ac, const char* av[])
 {
 	FILE* fp;
-
 	// process args
 	fp = ac > 1 ? fopen(av[1], "r") : stdin;
 	ensure (fp);

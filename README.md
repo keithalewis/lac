@@ -4,23 +4,26 @@ Load and call C functions at runtime.
 
 This little language makes it possible to dynamically load C
 functions from shared libraries at runtime and call them.
-
 ```
 -lm double cos double # load double cos(double) from libm.so/.dll
+```
+will load the symbol `cos` from `libm.so` and add it to the _dictionary_. 
+Whenever `cos` is a token in the input stream after being loaded `lac` will
+call the cosine function.
+```
 cos 0                 # call cos(0.) and push the result on the stack
 ```
-
-The symbol `cos` will be added to the _dictionary_ and lines starting with `cos`
-will expect to find a `double` argument either on the rest of the line or on the _stack_
-and call the C function. The argument is consumed and the result is pushed
-on the stack.
-
 Another way to call `cos(0.)` is
 
 ```
 double 0
 cos
 ```
+
+will expect to find a `double` argument either on the rest of the line or on the _stack_
+and call the C function. The argument is consumed and the result is pushed
+on the stack.
+
 
 The first line pushes 0 as a double on to the stack.
 When `cos` is evaluated without specifying an argument on the same line
@@ -29,12 +32,13 @@ it will look for the arguments it needs on the stack.
 The possible stack types are `int`, `float`, `double`, `uint8_t`, `int8_t`, `uint16_t`, `int16_t`,
 `uint32_t`, `int32_t`, `uint64_t`, `int64_t`, and `void*`.
 
-`lac` is line oriented. Use backslash ('\\') at the end of a line to continue parsing to the next line.  
 Tokens are separated by whitespace using `isspace` from `<ctypes.h>`. A string containing
 whitespace can be enclosed with double quotes. The token `"Hello World!"` will result in a `void*`
-pointer to the null terminated characters `Hello World!\0` on the stack. To include a `"`
+pointer to the null terminated characters `Hello World!\0`. To include a `"`
 character in a string escape it with a backslash `"like \"this\""` to get the
 string `like "this"`.
+
+Note that the newline character (`\n`) is whitespace. 
 
 
 ## Load
@@ -214,3 +218,52 @@ Load varargs function.
 -lc int printf void* ...
 ```
 Must be call with exact number of arguments needed on same line.
+
+## Example
+
+This is how a crumby version of how the unix `wc(1)` could be written in `lac`
+
+```
+:l int 0 # lines
+:w int 0 # words
+:c int 0 # chars
+fopen file.txt r -- FILE* # the top of the stack should be a file pointer
+loop { # use break or continue for control flow
+	fgetc @ -- int FILE*
+	== EOF @ ? break # exit loop if end of file
+	incr &c # increments the value pointed at by c
+	isspace @ ? incr &w # ? consumes top of stack and executes what follows if non zero
+	-- int FILE* # is a function that asserts the first and second stack items are an int and a FILE*
+	# is a function that discards characters in the input stream up to the next newline
+	== '\n' ? incr &l -- FILE* # == looks for its second argument on the stack and consumes it
+	fgetc @ -- FILE* # get the next character from the file
+}
+! ! # pop int and FILE* off the stack even though that is not really needed
+printf "%s %s %s\n" l w c # print lines, words, and characters
+```
+Words can be separated by multiple contiguous space characters so the above version overcounts words.
+Once a space character is seen the unix `wc` program skips these. Define
+```
+:skip_space { -- FILE*
+	loop {
+		isspace fgets @ !? break # exit loop if character is not a space
+	}
+} -- FILE*
+The line involving `isspace` could be replaced with
+```
+	isspace @ ? incr &w skip_space
+```
+except `skip_space` also skips newline characters. Use
+:skip_space { -- FILE*
+	loop {
+		== '\n' fgets @ ? continue
+		isspace fgets @ !? break # exit loop if character is not a space
+	}
+} -- FILE*
+```
+to avoid that.
+
+
+The functions `--` and `#` get immediately executed when they are encounterd in the input stream.
+
+## Unfiled

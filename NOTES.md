@@ -1,5 +1,8 @@
 Get rid of dbm. Use chunk of memory and use string -> pointer table for lac_cif.
 
+thunk - lac_cif = ffi_cif + sym + arg_types
+closure - thunk + partial args
+
 ## Parsing
 
 `lac` uses a file stream to parse white space delimited characters into tokens.
@@ -16,8 +19,8 @@ Some tokens receive special processing.
 
 ### Stack Items
 
-Use `@<n>` to pick the n-th token from the stack.  
-Use `!<n>` to pick the n-th token from the stack and remove it.  
+Use `@<n>` to pick the n-th item from the stack.  
+Use `!<n>` to pick the n-th item from the stack and remove it.  
 
 
 ### Strings
@@ -34,6 +37,11 @@ the same nesting level is encountered.
 ### Variables
 
 Tokens starting with colon (`:`) define variables that are added to the dictionary.  
+
+### Comments
+
+Comments start with an octothorpe (`#`) and end with the next newline character.
+Octothorpes in a string preceded by a backslash (`\`) are escaped.
 
 
 # Unfiled

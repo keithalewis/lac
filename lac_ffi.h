@@ -73,7 +73,7 @@ typedef struct {
 	lac_variant result;
 	void* sym;
 	ffi_cif cif;
-	ffi_type* arg_types[1]; // realiy arg_types[nargs]
+	ffi_type* arg_types[]; // flexible length array
 } lac_cif;
 
 // allocate n args and set cif.arg_types to arg_types
