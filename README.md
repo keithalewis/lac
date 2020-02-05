@@ -21,13 +21,18 @@ cos ;
 ```
 
 The first line pushes 0 on the stack as a double. When `cos` is encountered in the input
-stream it will consume 0 from the stack since the semicolon (`;`) indicates there is no following argument(s).
+stream it will consume 0 from the stack since the semicolon (`;`) indicates there are no following arguments.
 
 
 The possible stack types are `int`, `float`, `double`, `uint8_t`, `int8_t`, `uint16_t`, `int16_t`,
 `uint32_t`, `int32_t`, `uint64_t`, `int64_t`, and `void*`.
 
 Tokens are separated by whitespace using `isspace` from `<ctypes.h>`.
+
+In general, whenever a token is encountered in the input stream it is looked up in the dictionary
+and called to consume a known number of arguments. The special character semicolon (`;`) indicates
+to the parser it should stop looking for arguments on the input stream and pop the rest of
+the required arguments from the stack.
 
 ## Strings
 
@@ -37,17 +42,11 @@ pointer to the null terminated characters `Hello World!\0`. To include a `"`
 character in a string escape it with a backslash `"like \"this\""` to get the
 string `like "this"`.
 
-Note that the newline character (`\n`) is considered to be whitespace and is only significant 
-when loading a function and when calling a function with a variable number of arguments.
+## Blocks
 
-In these two cases it in not clear how many arguments a function has. The newline character is
-used to determine this.
-
-In general, whenever a token is encountered in the input stream it is looked up in the dictionary
-and called to consume a known number of arguments. The special character semicolon (`;`) indicates
-to the parser it should stop looking for arguments on the input stream and get the rest of
-the required arguments from the stack.
-
+Blocks start with the left bracket (`{`) character. A block token ends when the next
+right bracket (`}`) at the same nesting level is encountered. A right bracket can
+be escaped by preceeding it with a backslash ('\').
 
 ## Load
 
@@ -57,12 +56,14 @@ used on the link line for the library. The next token is the return
 value of the function.  The following token is the symbol to load from
 the library using `dlsym(3)` declared in `<dlfcn.h>`. This returns a
 `void*` pointer but does not provide any information about the signature
-of the function it points to.  The tokens after that are the argument
-up to then next newline are the
-types of the function.  The signature of the function is also stored in
+of the function it points to.  The tokens after that up to then next semicolon are the
+are the argument types of the function.
+
+If an argument is an ellipsis (`...`) then the function is _variadic_
+and there is no need for a semicolon.
+
+The signature of the function is also stored in
 the dictionary. The symbol+signature is called a _thunk_.
-
-
 
 ## Call
 
@@ -80,6 +81,14 @@ Lines starting with `:` define variables.
 ```
 
 pushes 123 as an `int` on the stack and any future occurrence of `i` will be replaced by 123.
+
+## Functions
+
+Variable are just a special form of functions. 
+```
+:f {body}
+```
+causes `body` to be executed when the token `f` is encounterd.
 
 ## Stack Manipulation
 
