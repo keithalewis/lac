@@ -19,6 +19,20 @@ Another way to call `cos(0.)` is
 double 0
 cos ;
 ```
+lac_ffi.h:lac_cif* lac_cif_alloc(unsigned nargs);
+lac_ffi.h:lac_cif* lac_cif_realloc(lac_cif* pcif, unsigned nargs);
+lac_ffi.h:void lac_cif_free(lac_cif* pcif);
+lac_ffi.h:size_t lac_cif_size(lac_cif* pcif);
+lac_ffi.h:ffi_status lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type** arg_types);
+lac_ffi.h:ffi_status lac_cif_prep_var(lac_cif** pcif, unsigned nargs, ffi_type** arg_types);
+lac_ffi.h:void lac_cif_call(lac_cif* pcif, void** args);
+
+```
+dlopen libm.so.6 RTLD_LAZY
+dlsym cos
+: cos
+lac_cif_prep 
+```
 
 The first line pushes 0 on the stack as a double. When `cos` is encountered in the input
 stream it will consume 0 from the stack since the semicolon (`;`) indicates there are no following arguments.
@@ -46,7 +60,7 @@ string `like "this"`.
 
 Blocks start with the left bracket (`{`) character. A block token ends when the next
 right bracket (`}`) at the same nesting level is encountered. A right bracket can
-be escaped by preceeding it with a backslash ('\').
+be escaped by preceding it with a backslash ('\').
 
 ## Load
 
@@ -267,3 +281,67 @@ to avoid that.
 The functions `--` and `#` get immediately executed when they are encounterd in the input stream.
 
 ## Unfiled
+
+input stream
+: a `FILE*` pointer
+
+token
+: a string from the input stream delimited by white space
+
+type
+: a C data type known to `lac`. The known types are ...
+
+variant
+: a data type that can hold any `lac` type
+
+stack
+: a FILO stack of variants
+
+string
+: a token beginning and ending with the double quote character (`'"'`).
+Strings may contains white space charaters and the double quote
+character can be escaped by preceding it with a backslash (`'\'`).
+
+block
+: a token beginning with left brace character (`'{'`) and ending
+with a right brace character (`'}'`) at the same nesting level.  The right
+brace character can be escaped by preceding it with a backslash (`'\'`).
+
+thunk
+: a C function together with its signature
+
+dictionary
+: a map from strings to thunks
+
+In general, `lac` reads a token from the input stream, looks up
+the token in the dictionary, and calls the thunk.
+The thunk then reads arguments from the input stream, calls the
+C function associated with the thunk using those arguments,
+and pushes the result on the stack.
+
+If a newline character is encountered before reading the required
+number of arguments it pops the remaining arguments off the stack.
+
+The colon character (`';'`) causes a thunk to call its C function.
+This is necessary for varargs functions to determine the total number
+of arguments.
+
+## Predefined Thunks
+
+`#` &mdash; this thunk discards characters up to and including the next
+newline character. It can be used to include comments in the program text.
+
+`-- type1 ...` &mdash; this thunk is used to verify the stack.  Execution
+stops if the type arguments are not the same as the stack item types.
+
+`: name thunk` &mdash;  this is used to add thunks to the dictionary. Any
+tokens identical to `name` are fetched from the dictionary and
+the corresponding thunk is called.
+
+```
+type double type double ; # return type and arg
+dlopen libm.so.6 RTDL_LAZY -- void*
+dlsym cos # read handle from stack
+: thunk lac_cif_alloc 1 -- cif* symbol* ret arg
+lac_cif_prep 
+```
