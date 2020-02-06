@@ -36,10 +36,10 @@ extern "C" {
 	X(FFI_TYPE_SINT64,     int64_t,     &ffi_type_sint64,     i64 ) \
 	X(FFI_TYPE_POINTER,    void*,       &ffi_type_pointer,    p   ) \
 
-	// X(FFI_TYPE_VOID,       void,        &ffi_type_void,       std::monostate, v   ) \
-	// X(FFI_TYPE_LONGDOUBLE, long double, &ffi_type_longdouble, std::monostate ) \
+	// X(FFI_TYPE_VOID,       void,        &ffi_type_void,
+	// X(FFI_TYPE_LONGDOUBLE, long double, &ffi_type_longdouble,
 	// X(FFI_TYPE_COMPLEX
-	// X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer,    std::monostate ) \
+	// X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer, 
 
 // convert string name to ffi type
 ffi_type* ffi_type_lookup(const char* name);
@@ -95,28 +95,3 @@ ffi_status lac_cif_prep_var(lac_cif** pcif, unsigned nargs, ffi_type** arg_types
 
 // call ffi_call and store result
 void lac_cif_call(lac_cif* pcif, void** args);
-
-// argument stack
-#ifndef STACK_SIZE
-#define STACK_SIZE 1024
-#endif
-
-// fixed stack that grows upward
-typedef struct {
-	size_t sp;
-	lac_variant data[STACK_SIZE];
-	void* addr[STACK_SIZE];
-} lac_ffi_stack;
-
-void lac_ffi_stack_push(lac_ffi_stack* stack, lac_variant v);
-void lac_ffi_stack_pop(lac_ffi_stack* stack);
-lac_variant* lac_ffi_stack_top(lac_ffi_stack* stack);
-// pointer to void* stack item addresses
-void* lac_ffi_stack_address(lac_ffi_stack* stack);
-size_t lac_ffi_stack_size(lac_ffi_stack* stack);
-
-// push n-th item on top of stack
-// a1 a2 ... an -- an a1 ... an
-void lac_ffi_stack_pick(lac_ffi_stack* stack, size_t n);
-// a1 a2 ... an -- an a1 ... an-1
-void lac_ffi_stack_roll(lac_ffi_stack* stack, size_t n);

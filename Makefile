@@ -5,7 +5,7 @@ LAC_T = lac_dbm.t.c lac_ffi.t.c lac_parse.t.c lac_stack.t.c
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 
-CFLAGS = -g
+CFLAGS = -g -Wall
 LDLIBS = -ldl -lffi -lgdbm
 
 lac: $(OBJS)

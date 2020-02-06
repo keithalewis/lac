@@ -86,7 +86,6 @@ test_lac_cif ()
     ffi_type *args[1];
     void *values[1];
     char *s;
-    ffi_arg rc;
 
     /* Initialize the argument info vectors */
     args[0] = &ffi_type_pointer;
@@ -109,7 +108,6 @@ test_lac_cif ()
     ffi_type *args[2];
     void *values[2];
     char *s, *fmt;
-    ffi_arg rc;
 
     /* Initialize the argument info vectors */
     args[0] = &ffi_type_pointer;
@@ -132,51 +130,14 @@ test_lac_cif ()
 	lac_cif_free(pcif);
   }
 
+  return 0;
 }
-
-/*
-int test_lac_ffi_stack()
-{
-	LAC_STACK(s);
-	assert (0 == lac_ffi_stack_size(&s));
-	lac_variant v1, v2;
-
-	v1.type = &ffi_type_sint;
-	v1.value.i = 123;
-
-	v2.type = &ffi_type_double;
-	v2.value.d = 1.23;
-
-	lac_ffi_stack_push(&s, v1);
-	assert (1 == lac_ffi_stack_size(&s));
-
-	lac_variant* tos;
-	tos = lac_ffi_stack_top(&s);
-	assert (tos->type == v1.type);
-	assert (tos->value.i == v1.value.i);
-	assert (lac_variant_address(tos) == &v1.value.i);
-
-	lac_ffi_stack_push(&s, v2);
-	assert (1 == lac_ffi_stack_size(&s));
-
-	tos = lac_ffi_stack_top(&s);
-	assert (tos->type == v2.type);
-	assert (tos->value.i == v2.value.i);
-	assert (lac_variant_address(tos) == &v2.value.d);
-
-	lac_ffi_stack_pop(&s);
-	tos = lac_ffi_stack_top(&s);
-	assert (tos->type == v1.type);
-	assert (tos->value.i == v1.value.i);
-	assert (lac_variant_address(tos) == &v1.value.i);
-
-	return 0;
-}
-*/
 
 int
 test_lac_ffi ()
 {
   test_lac_variant_parse ();
   test_lac_cif ();
+
+  return 0;
 }

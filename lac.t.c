@@ -12,7 +12,6 @@ int test_lac(void)
 		lac_cif* pcif = lac_cif_alloc(1);
 		pcif->sym = puts;
 		ffi_type *args[1];
-		ffi_arg rc;
 		void *values[1];
 		char *s;
 

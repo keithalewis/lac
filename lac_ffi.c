@@ -199,7 +199,6 @@ lac_cif* lac_cif_alloc(unsigned n)
 // preserve existing arg_types
 lac_cif* lac_cif_realloc(lac_cif* p, unsigned n)
 {
-	unsigned nfix = p->cif.nargs;
 	p = (lac_cif*)realloc(p, sizeof(lac_cif) + n*sizeof(void*));
 	p->cif.nargs = n;
 	p->cif.arg_types = &p->arg_types[0];
@@ -238,49 +237,4 @@ lac_cif_prep_var(lac_cif** ppcif, unsigned nargs, ffi_type** arg_types)
 void lac_cif_call(lac_cif* pcif, void** args)
 {
 	ffi_call(&pcif->cif, pcif->sym, lac_variant_address(&pcif->result), args);
-}
-
-lac_variant* lac_ffi_stack_top(lac_ffi_stack* stack)
-{
-	return stack->data + stack->sp;
-}
-void* lac_ffi_stack_address(lac_ffi_stack* stack)
-{
-	return stack->addr + stack->sp;
-}
-size_t lac_ffi_stack_size(lac_ffi_stack* stack)
-{
-	return stack->sp - STACK_SIZE;
-}
-
-void lac_ffi_stack_push(lac_ffi_stack* stack, lac_variant v)
-{
-	stack->data[stack->sp] = v;
-	stack->addr[stack->sp] = lac_variant_address(stack->data + stack->sp);
-	--stack->sp;
-}
-void lac_ffi_stack_pop(lac_ffi_stack* stack)
-{
-	if (stack->sp < STACK_SIZE - 1) {
-		++stack->sp;
-	}
-}
-
-void lac_ffi_stack_pick(lac_ffi_stack* stack, size_t n)
-{
-	assert (n < lac_ffi_stack_size(stack));
-
-	lac_ffi_stack_push(stack, stack->data[stack->sp + n - 1]);
-}
-
-void lac_ffi_stack_roll(lac_ffi_stack* stack, size_t n)
-{
-	lac_variant v = stack->data[stack->sp + n - 1];
-	void* p = stack->addr[stack->sp + n - 1];
-
-	memmove(stack->data + 1, stack->data, (n - 1)*sizeof(lac_variant));
-	memmove(stack->addr + 1, stack->addr, (n - 1)*sizeof(void*));
-
-	stack->data[stack->sp] = v;
-	stack->addr[stack->sp] = p;
 }
