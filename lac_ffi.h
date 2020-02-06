@@ -106,18 +106,17 @@ typedef struct {
 	size_t sp;
 	lac_variant data[STACK_SIZE];
 	void* addr[STACK_SIZE];
-} lac_stack;
-#define LAC_STACK(NAME) lac_stack NAME = {STACK_SIZE - 1}
+} lac_ffi_stack;
 
-void lac_stack_push(lac_stack* stack, lac_variant v);
-void lac_stack_pop(lac_stack* stack);
-lac_variant* lac_stack_top(lac_stack* stack);
+void lac_ffi_stack_push(lac_ffi_stack* stack, lac_variant v);
+void lac_ffi_stack_pop(lac_ffi_stack* stack);
+lac_variant* lac_ffi_stack_top(lac_ffi_stack* stack);
 // pointer to void* stack item addresses
-void* lac_stack_address(lac_stack* stack);
-size_t lac_stack_size(lac_stack* stack);
+void* lac_ffi_stack_address(lac_ffi_stack* stack);
+size_t lac_ffi_stack_size(lac_ffi_stack* stack);
 
 // push n-th item on top of stack
 // a1 a2 ... an -- an a1 ... an
-void lac_stack_pick(lac_stack* stack, size_t n);
+void lac_ffi_stack_pick(lac_ffi_stack* stack, size_t n);
 // a1 a2 ... an -- an a1 ... an-1
-void lac_stack_roll(lac_stack* stack, size_t n);
+void lac_ffi_stack_roll(lac_ffi_stack* stack, size_t n);

@@ -17,12 +17,22 @@ Xlac_stack* Xlac_stack_alloc(size_t size, size_t size_of)
 Xlac_stack* Xlac_stack_realloc(Xlac_stack* stack, size_t size)
 {
 	size_t osize = Xlac_stack_size(stack);
-	size_t count = Xlac_stack_count(stack)
-	if (osize < size) {
-		char* sp = stack->sp - (size - osize)*stack->size_of;
+	size_t count = Xlac_stack_count(stack);
+
+	if (size > osize) {
+		stack = realloc(stack, sizeof(Xlac_stack) + size*stack->size_of);
+		ensure (0 != stack);
+		memcpy(stack->sp + (size - osize)*stack->size_of, stack->sp, count*stack->size_of);
+		stack->sp += (size - osize)*stack->size_of;
 	}
-	else if (osize > size) {
+	else if (size < osize) {
+		if (count > osize - size) {
+			// this will discard items on the bottom of the stack
+			count = osize - size;
+		}
+		memcpy(stack->sp - count*stack->size_of, stack->sp, count*stack->size_of);
 	}
+	stack->size = size;
 
 	return stack;
 }

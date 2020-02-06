@@ -240,40 +240,40 @@ void lac_cif_call(lac_cif* pcif, void** args)
 	ffi_call(&pcif->cif, pcif->sym, lac_variant_address(&pcif->result), args);
 }
 
-lac_variant* lac_stack_top(lac_stack* stack)
+lac_variant* lac_ffi_stack_top(lac_ffi_stack* stack)
 {
 	return stack->data + stack->sp;
 }
-void* lac_stack_address(lac_stack* stack)
+void* lac_ffi_stack_address(lac_ffi_stack* stack)
 {
 	return stack->addr + stack->sp;
 }
-size_t lac_stack_size(lac_stack* stack)
+size_t lac_ffi_stack_size(lac_ffi_stack* stack)
 {
 	return stack->sp - STACK_SIZE;
 }
 
-void lac_stack_push(lac_stack* stack, lac_variant v)
+void lac_ffi_stack_push(lac_ffi_stack* stack, lac_variant v)
 {
 	stack->data[stack->sp] = v;
 	stack->addr[stack->sp] = lac_variant_address(stack->data + stack->sp);
 	--stack->sp;
 }
-void lac_stack_pop(lac_stack* stack)
+void lac_ffi_stack_pop(lac_ffi_stack* stack)
 {
 	if (stack->sp < STACK_SIZE - 1) {
 		++stack->sp;
 	}
 }
 
-void lac_stack_pick(lac_stack* stack, size_t n)
+void lac_ffi_stack_pick(lac_ffi_stack* stack, size_t n)
 {
-	assert (n < lac_stack_size(stack));
+	assert (n < lac_ffi_stack_size(stack));
 
-	lac_stack_push(stack, stack->data[stack->sp + n - 1]);
+	lac_ffi_stack_push(stack, stack->data[stack->sp + n - 1]);
 }
 
-void lac_stack_roll(lac_stack* stack, size_t n)
+void lac_ffi_stack_roll(lac_ffi_stack* stack, size_t n)
 {
 	lac_variant v = stack->data[stack->sp + n - 1];
 	void* p = stack->addr[stack->sp + n - 1];

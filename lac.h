@@ -3,3 +3,4 @@
 #include "lac_dbm.h"
 #include "lac_ffi.h"
 #include "lac_parse.h"
+#include "lac_stack.h"
