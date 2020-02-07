@@ -74,7 +74,7 @@ const char* next_quote(const char* b, const char* e,
 	return next_match(b, e, q, q);
 }
 // copy stream into static buffer and return view
-token_view get_token(const char* b, const char* e)
+token_view token_view_next(const char* b, const char* e)
 {
 	const char* e_;
 

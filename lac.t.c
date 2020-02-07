@@ -38,7 +38,8 @@ int test_lac(void)
 
 		lac_dbm_close(baz);
 		lac_cif_free(pcif);
-
+	}
+	{
 	}
 
 	return 0;

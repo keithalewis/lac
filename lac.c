@@ -1,5 +1,4 @@
 // lac.c - load and call C functions
-#include <assert.h>
 #include <ctype.h>
 #include <dlfcn.h>
 #include <setjmp.h>
@@ -7,10 +6,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <gdbm.h>
+#include "ensure.h"
 #include "lac.h"
 
-#define ensure assert
-// redefine to use setjmp/longjmp for error handling
 #define MAX_BUF 1024
 
 typedef struct {
@@ -23,20 +21,21 @@ const char* file = "";
 
 lac_dbm dictionary;
 lac_dbm library;
-LAC_STACK(stack);
+lac_stack* stack; // == macro
 
-// return first character after white space, or not
-static int skip(FILE* fp, int(*sp)(int), int space)
+// return first character after white or not space
+static int skip(FILE* fp, int(*is)(int), int space)
 {
 	int c = fgetc(fp);
 
-	while (EOF != c && space ? sp(c) : !sp(c)) {
+	while (EOF != c && space ? is(c) : !is(c)) {
 		c = fgetc(fp);
 	}
 
 	return c;
 }
 // return EOF or e
+/*
 static int skip_to(FILE* fp, int e)
 {
 	int c = fgetc(fp);
@@ -47,24 +46,19 @@ static int skip_to(FILE* fp, int e)
 	
 	return c;
 }
-static token next_token(FILE* fp)
+static token_view next_token(FILE* fp)
 {
 	static char buf[MAX_BUF];
-	token v;
 
-	v.b = v.e = buf;
+	const char* b = buf;
+	const char* e = buf + MAX_BUF;
 
-	int c = skip(fp, isspace, true);
+	//int c = skip(fp, isspace, true);
 	// switch c...
-	while (EOF != c && !isspace(c)) {
-		*v.e++ = c;
-		ensure (v.e - v.b < MAX_BUF);
-		c = fgetc(fp);
-	}
-	*v.e = c; // include last character
 
-	return v;
+	return (token_view){b,e};
 }
+*/
 
 lac_datum make_datum(token_view t)
 {
@@ -86,7 +80,7 @@ void* pointer_(const char* s)
 
 void evaluate_line(FILE* fp)
 {
-	//token t = get_token(fp);
+	//token t = token_view_next(fp);
 	// look up token in dictionary
 	// get arguments based on cif
 	// call
@@ -99,27 +93,16 @@ void add_dictionary(FILE* fp)
 	// add to dictionary
 }
 
-void* load_lib(FILE* fp)
-{
-	char lib[1024] = "lib";
-
-	token t = next_token(fp);
-	strncat(lib + 3, t.b, t.e - t.b);
-	strcat(lib, ".so.6"); // .dll for Windows .6 for gnu v6?
-
-	return dlopen(lib, RTLD_LAZY);
-}
-
-// "-lxxx" -> dlopen("libxxx.so")
+/* should not special case this
 void load_library(FILE* fp)
 {
 	int c;
-	token t;
+	token_view t;
 
 	c = fgetc(fp);
 	ensure (c == 'l');
 	
-	void* lib = load_lib(fp);
+	void* lib; // = load_lib(fp);
 
 	// next token is return type
 	t = next_token(fp);
@@ -161,6 +144,7 @@ void load_library(FILE* fp)
 	lac_cif_free(pcif);
 	//!!! check if duplicate entry
 }
+*/
 
 void lac_execute(FILE* fp)
 {
@@ -168,22 +152,9 @@ void lac_execute(FILE* fp)
 
 	if (EOF == c) return;
 
-	if (c == '#') {
-		// skip to next newline
-		c = skip_to(fp, '\n');
-		if (EOF == c)  return;
-
-		lac_execute(fp);
-	}
-
-	switch (c) {
-		case '-':
-			load_library(fp);
-			break;
-		//case ':':
-		//default:
-		//	lac_cif* thunk = lac_compile(fp);
-	}
+	// next_token
+	// lookup
+	// call
 
 	lac_execute(fp);
 }
@@ -198,11 +169,13 @@ int main(int ac, const char* av[])
 
 	dictionary = lac_dbm_open("dictionary");
 	library = lac_dbm_open("library");
+	stack = LAC_STACK_ALLOC(1024, lac_variant);
 
 	// setjmp/longjmp for error handling
 	//evaluate(fp);
 	lac_execute(fp);
 
+	LAC_STACK_FREE(stack);
 	lac_dbm_close(library);
 	lac_dbm_close(dictionary);
 

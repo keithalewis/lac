@@ -1,6 +1,8 @@
 // lac_ffi.t.c - test ffi header
-#include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
+#include <time.h>
+#include "ensure.h"
 #include "lac_ffi.h"
 
 #define VIEW(s) s, s + sizeof(s) - 1
@@ -10,50 +12,84 @@ test_lac_variant_parse ()
 {
   {
     lac_variant v = lac_variant_parse (&ffi_type_sint, VIEW ("123"));
-    assert (&ffi_type_sint == v.type);
-    assert (123 == v.value.i);
-    assert (lac_variant_address (&v) == &v.value.i);
+    ensure (&ffi_type_sint == v.type);
+    ensure (123 == v.value.i);
+    ensure (lac_variant_address (&v) == &v.value.i);
   }
   {
     lac_variant v = lac_variant_parse (&ffi_type_sint, VIEW ("123 ") - 1);
-    assert (&ffi_type_sint == v.type);
-    assert (123 == v.value.i);
+    ensure (&ffi_type_sint == v.type);
+    ensure (123 == v.value.i);
   }
   {
     lac_variant v = lac_variant_parse (&ffi_type_sint, VIEW ("123x") - 1);
-    assert (&ffi_type_sint == v.type);
-    assert (123 == v.value.i);
+    ensure (&ffi_type_sint == v.type);
+    ensure (123 == v.value.i);
   }
   {
     lac_variant v = lac_variant_parse (&ffi_type_sint, VIEW ("012"));
-    assert (&ffi_type_sint == v.type);
-    assert (8 + 2 == v.value.i);
+    ensure (&ffi_type_sint == v.type);
+    ensure (8 + 2 == v.value.i);
   }
   {
     lac_variant v = lac_variant_parse (&ffi_type_sint, VIEW ("0x12"));
-    assert (&ffi_type_sint == v.type);
-    assert (16 + 2 == v.value.i);
+    ensure (&ffi_type_sint == v.type);
+    ensure (16 + 2 == v.value.i);
   }
 
   {
     lac_variant v = lac_variant_parse (&ffi_type_uint32, VIEW ("123"));
-    assert (&ffi_type_uint32 == v.type);
-    assert (123 == v.value.u32);
+    ensure (&ffi_type_uint32 == v.type);
+    ensure (123 == v.value.u32);
   }
 
   {
     lac_variant v = lac_variant_parse (&ffi_type_double, VIEW ("1.23"));
-    assert (&ffi_type_double == v.type);
-    assert (1.23 == v.value.d);
-    assert (lac_variant_address (&v) == &v.value.d);
+    ensure (&ffi_type_double == v.type);
+    ensure (1.23 == v.value.d);
+    ensure (lac_variant_address (&v) == &v.value.d);
   }
 
   return 0;
 }
 
+static int incr(int i)
+{
+	return i+1;
+}
+
 int
 test_lac_cif ()
 {
+  {
+    ffi_cif cif;
+    ffi_type *args[1];
+    void *values[1];
+    int i = 'a';
+	int I;
+
+    /* Initialize the argument info vectors */
+    args[0] = &ffi_type_sint;
+    values[0] = &i;
+
+    /* Initialize the cif */
+    ffi_status ret = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, 1, &ffi_type_sint, args);
+	if (FFI_OK == ret) {
+		clock_t b = clock();
+		for (i = 0; i < 10000000; ++i) {
+			ffi_call (&cif, (void *) incr, &I, values);
+		}
+		clock_t e = clock();
+		printf("ffi: %ld ms\n", (e - b)*1000/CLOCKS_PER_SEC);
+		//ensure ('A' == I);
+		b = clock();
+		for (i = 0; i < 10000000; ++i) {
+			I = incr(i);
+		}
+		e = clock();
+		printf("C: %ld ms\n", (e - b)*1000/CLOCKS_PER_SEC);
+    }
+  }
   {
     ffi_cif cif;
     ffi_type *args[1];
@@ -93,7 +129,7 @@ test_lac_cif ()
 
     /* Initialize the cif */
     ffi_status ret = lac_cif_prep (pcif, &ffi_type_sint, args);
-    assert (FFI_OK == ret);
+    ensure (FFI_OK == ret);
 
     s = "Hello World!";
     lac_cif_call (pcif, values);
@@ -116,7 +152,7 @@ test_lac_cif ()
 
     /* Initialize the cif */
     ffi_status ret = lac_cif_prep (pcif, &ffi_type_sint, args);
-    assert (FFI_OK == ret);
+    ensure (FFI_OK == ret);
 
 	args[1] = &ffi_type_pointer;
 	values[1] = &s;
@@ -125,7 +161,7 @@ test_lac_cif ()
     s = "Hello varargs";
 
     lac_cif_call (pcif, values);
-	assert (pcif->result.value.i == strlen(s) + 1);
+	ensure (pcif->result.value.i == strlen(s) + 1);
 
 	lac_cif_free(pcif);
   }
