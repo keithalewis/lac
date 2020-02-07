@@ -15,21 +15,21 @@ This adds `cos` to the _dictionary_ and whenever `cos` is a token in the
 input stream after being loaded `lac` will call the cosine function and
 push the result on the _stack_.
 
+The value associated with `cos` in the dictionary is a _thunk_: the C
+function together with its signature. The signature is the return type
+plus zero or more argument types.
+
 Variadic functions are loaded by specifying their fixed arguments followed
 by an ellipsis (`...`). E.g.,
 ```
 load libc.so int printf pointer ...
 ```
 
-The value associated with `cos` in the dictionary is a _thunk_: the C
-function together with its signature. The signature is the return type
-plus zero or more argument types.
-
 ## Call
 
 Whenever a token is encountered in the input stream it is
 looked up in the dictionary and the corresponding thunk is called to
-consume the arguments that follow on the input stream or the stack if a semicolon is encountered.
+consume the arguments that follow on the input stream, or the stack if a semicolon is encountered.
 
 ```
 cos 0                 # call cos(0.) and push the result on the stack
@@ -78,7 +78,7 @@ Use colon (`':'`) to add thunks into the dictionary.
 
 ## Example
 
-This is how a toy version of how the unix `wc(1)` could be written in `lac`
+This is toy version of `wc(1)`.
 
 ```
 : l int 0 # lines
