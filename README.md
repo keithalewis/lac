@@ -74,7 +74,23 @@ Use colon (`':'`) to add thunks into the dictionary.
 ```
 : name thunk
 ```
-...
+
+## Predefined Thunks
+
+`#` &mdash; this thunk discards characters up to but not including the next
+newline character. It can be used to include comments in the program text.
+
+`-- type1 ...` &mdash; this thunk is used to verify the stack.  Execution
+stops if the type arguments are not the same as the stack item types.
+
+`@` &mdash; fetches the top item from the stack.
+
+`!` &mdash; removes the top item from the stack.
+
+'?' &mdash; consume the top item from the stack and execute what follows until next newline if non zero
+
+'!?' &mdash; consume the top item from the stack and execute what follows until next newline if zero
+
 
 ## Example
 
@@ -157,17 +173,6 @@ thunk
 dictionary
 : a map from strings to thunks
 
-## Predefined Thunks
-
-`#` &mdash; this thunk discards characters up to but not including the next
-newline character. It can be used to include comments in the program text.
-
-`-- type1 ...` &mdash; this thunk is used to verify the stack.  Execution
-stops if the type arguments are not the same as the stack item types.
-
-`: name thunk` &mdash;  this is used to add thunks to the dictionary.
-
-```
 type double type double ; # return type and arg
 dlopen libm.so.6 RTDL_LAZY -- void*
 dlsym cos # read handle from stack
