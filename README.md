@@ -99,18 +99,20 @@ loop { # use break or continue for control flow
 printf "%s %s %s\n" l w c # print lines, words, and characters
 ```
 Words can be separated by multiple contiguous space characters so the above version overcounts words.
-Once a space character is seen the unix `wc` program skips the any following white space. Define
+Once a space character is seen by the unix `wc` program any following white space is skipped. Define
 ```
 :skip_space { -- FILE*
 	loop {
 		isspace fgets @ !? break # exit loop if character is not a space
 	}
 } -- FILE*
+```
 The line involving `isspace` could be replaced with
 ```
 	isspace @ ? incr &w skip_space
 ```
 except `skip_space` also skips newline characters. Use
+```
 :skip_space { -- FILE*
 	loop {
 		== '\n' fgets @ ? continue
@@ -119,7 +121,6 @@ except `skip_space` also skips newline characters. Use
 } -- FILE*
 ```
 to avoid that.
-
 
 The functions `--` and `#` are immediately executed when they are encounterd in the input stream.
 
