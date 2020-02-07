@@ -87,9 +87,9 @@ stops if the type arguments are not the same as the stack item types.
 
 `!` &mdash; removes the top item from the stack.
 
-'?' &mdash; consume the top item from the stack and execute what follows until next newline if non zero
+`?` &mdash; consume the top item from the stack and execute what follows until next newline if non zero
 
-'!?' &mdash; consume the top item from the stack and execute what follows until next newline if zero
+`!?` &mdash; consume the top item from the stack and execute what follows until next newline if zero
 
 
 ## Example
