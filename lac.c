@@ -23,140 +23,81 @@ lac_dbm dictionary;
 lac_dbm library;
 lac_stack* stack; // == macro
 
-// return first character after white or not space
-static int skip(FILE* fp, int(*is)(int), int space)
-{
-	int c = fgetc(fp);
-
-	while (EOF != c && space ? is(c) : !is(c)) {
-		c = fgetc(fp);
-	}
-
-	return c;
-}
-// return EOF or e
-/*
-static int skip_to(FILE* fp, int e)
-{
-	int c = fgetc(fp);
-
-	while (EOF != c && e != c) {
-		c = fgetc(fp);
-	}
-	
-	return c;
-}
-static token_view next_token(FILE* fp)
-{
-	static char buf[MAX_BUF];
-
-	const char* b = buf;
-	const char* e = buf + MAX_BUF;
-
-	//int c = skip(fp, isspace, true);
-	// switch c...
-
-	return (token_view){b,e};
-}
-*/
-
 lac_datum make_datum(token_view t)
 {
 	return (lac_datum){(char*)t.b, t.e - t.b};
 }
 
-int int_(const char* s)
+void lac_thunk_call(FILE* fp, lac_cif* thunk)
 {
-	return lac_parse_i(s, s + strlen(s));
-}
-double double_(const char* s)
-{
-	return lac_parse_d(s, s + strlen(s));
-}
-void* pointer_(const char* s)
-{
-	return (void*)s;
-}
+	// if not varargs
+	ffi_cif* cif = &thunk->cif;
+	size_t n = cif->nargs;
+	lac_variant args[n];
+	void* addr[n];
 
-void evaluate_line(FILE* fp)
-{
-	//token t = token_view_next(fp);
-	// look up token in dictionary
-	// get arguments based on cif
-	// call
-}
-
-void add_dictionary(FILE* fp)
-{
-	// get name
-	// compile
-	// add to dictionary
-}
-
-/* should not special case this
-void load_library(FILE* fp)
-{
-	int c;
-	token_view t;
-
-	c = fgetc(fp);
-	ensure (c == 'l');
-	
-	void* lib; // = load_lib(fp);
-
-	// next token is return type
-	t = next_token(fp);
-	ffi_type* rtype = ffi_type_lookup(t.b);
-	ensure (0 != rtype);
-
-	// symbol
-	t = next_token(fp);
-	const char* symbol = t.b;
-	*t.e = 0;
-	void* sym = dlsym(lib, symbol);
-	ensure (0 != sym);
-	
-	// arg types
-	ffi_type* args[32];
-	size_t n = 0;
-	t = next_token(fp);
-	while (t.b != t.e) {
-		if (t.e - t.b == 3 && 0 == strcmp(t.b, "...")) { // varargs
-			//!!! make sure no more args
-			break;
+	for (size_t i = 0; i < n; ++n) {
+		token_view arg = token_view_next(fp);
+		ensure (!token_view_error(arg));
+		if (*arg.b == ';' && arg.e - arg.b == 1) {
+			for (; i < n; ++i) {
+				ensure (lac_stack_count(stack) > 0);
+				args[i] = *(lac_variant*)lac_stack_top(stack);
+				addr[i] = lac_variant_address(&args[i]);
+				lac_stack_pop(stack);
+			}
 		}
-		args[n] = ffi_type_lookup(t.b);
-		++n;
-		if ('\n' == *t.e) {
-			break;
+		else {
+			lac_datum d = lac_dbm_fetch(dictionary, make_datum(arg));
+			if (0 != d.data) {
+				lac_thunk_call(fp, (lac_cif*)d.data);
+			}
+			else {
+				args[i] = lac_variant_parse(cif->arg_types[i], arg.b, arg.e);
+				addr[i] = lac_variant_address(&args[i]);
+			}
 		}
-		t = next_token(fp);
 	}
 
-	lac_cif* pcif = lac_cif_alloc(n);
-	ensure (0 != pcif);
-	ensure (FFI_OK == lac_cif_prep(pcif, rtype, args));
-
-	lac_datum key = { (char*)symbol, strlen(symbol) };
-	lac_datum val = { (char*)pcif, lac_cif_size(pcif) };
-
-	int ret = lac_dbm_insert(dictionary, key, val);
-	lac_cif_free(pcif);
-	//!!! check if duplicate entry
+	lac_cif_call(thunk, addr);
+	if (cif->rtype != &ffi_type_void) {
+		lac_stack_push(stack, &thunk->result);
+	}
 }
-*/
 
 void lac_execute(FILE* fp)
 {
-	int c = skip(fp, isspace, true);
+	token_view v = token_view_next(fp);
 
-	if (EOF == c) return;
+	if (token_view_error(v)) {
+		perror(v.b);
 
-	// next_token
-	// lookup
-	// call
+		return;
+	}
+
+	lac_datum datum = lac_dbm_fetch(dictionary, make_datum(v));
+	if (0 == datum.data) {
+		perror("lac_execute: thunk not found");
+
+		return;
+	}
+
+	lac_cif* thunk = (lac_cif*)datum.data;
+	lac_thunk_call(fp, thunk);
+
+	if (token_view_last(v)) {
+		return;
+	}
 
 	lac_execute(fp);
+}
+
+// add some thunks to the dictionary
+void lac_init()
+{
+	{ // puts
+		//lac_cif* = lac_cif_alloc(1, 
+	}
 }
 
 int main(int ac, const char* av[])
@@ -171,9 +112,23 @@ int main(int ac, const char* av[])
 	library = lac_dbm_open("library");
 	stack = LAC_STACK_ALLOC(1024, lac_variant);
 
+	lac_init();
+
 	// setjmp/longjmp for error handling
 	//evaluate(fp);
-	lac_execute(fp);
+	token_view v;
+	do {
+		v = token_view_next(fp);
+		if (token_view_error(v)) {
+			fputs("token_view_error: ", stdout);	
+			v.e = 0;
+			puts(v.b);
+		}
+		fputs(">", stdout);
+		fwrite(v.b, 1, v.e - v.b, stdout); 
+		fputs("<\n", stdout);
+	} while (!token_view_last(v));
+	//lac_execute(fp);
 
 	LAC_STACK_FREE(stack);
 	lac_dbm_close(library);

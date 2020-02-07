@@ -1,4 +1,5 @@
 // lac_ffi.c
+#include "ensure.h"
 #include "lac_ffi.h"
 
 ffi_type* ffi_type_lookup(const char* name)
@@ -188,18 +189,31 @@ size_t lac_cif_size(lac_cif* pcif)
 }
 
 // Allocate and set nargs
-lac_cif* lac_cif_alloc(unsigned n)
+lac_cif* lac_cif_alloc(ffi_type* rtype, void* sym,
+	unsigned nargs, ffi_type **arg_types)
 {
-	lac_cif* p = (lac_cif*)malloc(sizeof(lac_cif) + n*sizeof(void*));
-	p->cif.nargs = n;
+	lac_cif* p = malloc(sizeof(lac_cif) + nargs*sizeof(void*));
+	ensure (0 != p);
+
+	p->result.type = rtype;
+	p->cif.rtype = rtype;
+	p->sym = sym;
+	p->cif.nargs = nargs;
 	p->cif.arg_types = &p->arg_types[0];
+	memcpy(p->arg_types, arg_types, nargs*sizeof(ffi_type*));
+
+	ffi_status ret;
+	ret = ffi_prep_cif(&p->cif, FFI_DEFAULT_ABI, nargs, rtype, arg_types);
+	ensure (FFI_OK == ret);
 
 	return p;
 }
 // preserve existing arg_types
 lac_cif* lac_cif_realloc(lac_cif* p, unsigned n)
 {
-	p = (lac_cif*)realloc(p, sizeof(lac_cif) + n*sizeof(void*));
+	p = realloc(p, sizeof(lac_cif) + n*sizeof(void*));
+	ensure (0 != p);
+
 	p->cif.nargs = n;
 	p->cif.arg_types = &p->arg_types[0];
 
@@ -223,15 +237,25 @@ lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type**arg_types)
 }
 
 // prepare additional args for vararg functions
-ffi_status
-lac_cif_prep_var(lac_cif** ppcif, unsigned nargs, ffi_type** arg_types)
+lac_cif* lac_cif_prep_var(lac_cif* p, unsigned nargs, ffi_type** arg_types)
 {
-	unsigned nfix = (*ppcif)->cif.nargs; // number of fixed args
-	*ppcif = (lac_cif*)lac_cif_realloc(*ppcif, nfix + nargs);
-	memcpy((*ppcif)->arg_types + nfix, arg_types, nargs*sizeof(void*));
+	unsigned nfix = p->cif.nargs; // number of fixed args
+	lac_cif* p_ = malloc(sizeof(lac_cif) + (nfix + nargs)*sizeof(void*));
+	ensure (0 != p_);
 
-	return ffi_prep_cif_var(&(*ppcif)->cif, FFI_DEFAULT_ABI, nfix,
-                   	nfix + nargs, (*ppcif)->cif.rtype, (*ppcif)->arg_types);
+	p_->result.type = p->cif.rtype;
+	p_->cif.rtype = p->cif.rtype;
+	p_->sym = p->sym;
+	p_->cif.nargs = p->cif.nargs + nargs;
+	p_->cif.arg_types = &p->arg_types[0];
+	memcpy(p_->cif.arg_types, p->cif.arg_types, nfix*sizeof(ffi_type*));
+	memcpy(p_->cif.arg_types + nfix, arg_types, nargs*sizeof(void*));
+
+	ffi_status ret = ffi_prep_cif_var(&p_->cif, FFI_DEFAULT_ABI, nfix,
+                   	 nfix + nargs, p_->cif.rtype, p_->cif.arg_types);
+	ensure (FFI_OK == ret);
+
+	return p_;
 }
 
 void lac_cif_call(lac_cif* pcif, void** args)

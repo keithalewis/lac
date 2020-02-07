@@ -1,5 +1,5 @@
 // lac_parse.c - parsing functions
-#include <assert.h>
+#include "ensure.h"
 #include "lac_parse.h"
 
 bool token_view_empty(const token_view t)
@@ -13,86 +13,99 @@ const char* token_view_error(const token_view t)
 	return t.e == 0 ? t.b : 0;
 }
 
-// skip space or nonspace
-const char* skip_space(const char* b, const char* e, bool space)
+bool token_view_last(const token_view t)
 {
-	if (b >= e) {
-		//throw std::runtime_error("skip_space: invalid character range");
-		return 0;
+	return EOF == *t.e;
+}
+
+// return first character after white or not space
+static int skip(FILE* fp, int(*is)(int), int space)
+{
+	int c = fgetc(fp);
+
+	while (EOF != c && (space ? is(c) : !is(c))) {
+		c = fgetc(fp);
 	}
 
-	while (b < e && (space ? isspace(*b) : !isspace(*b))) {
-		++b;
-	}
+	return c;
+}
 
-	assert (b <= e);
+static char* next_space(FILE* fp, char* b)
+{
+	int c = fgetc(fp);
+	while (EOF != c && !isspace(c)) {
+		*b++ = c;
+		c = fgetc(fp);
+	}
+	*b = c; // final character
 
 	return b;
 }
+
 // match delimiter at same nesting level
 // return pointer past matching right delimiter
-const char* next_match(const char* b, const char* e, 
+// Use b to write buffer.
+static char* next_match(FILE* fp, char* b, 
 	char l /*= '{'*/, char r /*= '}'*/)
 {
-	if (b >= e) {
-		//throw std::runtime_error("nest_match: invalid character range");
-		return 0;
-	}
-
-	if (*b != l) {
-		//throw std::runtime_error("next_match: token does not start with left delimiter");
-		return 0;
-	}
-
 	size_t level = 1;
-	while (++b < e && level != 0) {
-		if (*b == '\\') {
-			++b;
-			if (b == e) {
-				//throw std::runtime_error("next_match: unmatched right delimiter");
-				return 0;
-			}
-		}
-		else {
-			if (*b == r)
-				--level;
-			else if (*b == l)
-				++level;
-		}
-	}
 
-	if (level != 0) {
-		//throw std::runtime_error("next_match: delimiter level mismatch");
-		return 0;
+	int c = fgetc(fp);
+	while (EOF != c && level != 0) {
+		if (c == '\\') {
+			*b++ = c;
+			c = fgetc(fp);
+			ensure (EOF != c);
+		}
+		else if (c == r) {
+			--level;
+		}
+		else if (c == l) {
+			++level;
+		}
+		*b++ = c;
+		c = fgetc(fp);
 	}
+	*b = c; // final character
+
+	ensure (EOF == c || 0 == level);
 
 	return b;
 }
-const char* next_quote(const char* b, const char* e,
-	const char q /*= '"'*/)
+static char* next_quote(FILE* fp, char* b, const char q /*= '"'*/)
 {
-	return next_match(b, e, q, q);
+	return next_match(fp, b, q, q);
 }
+
+#define MAX_BUF 1024
 // copy stream into static buffer and return view
-token_view token_view_next(const char* b, const char* e)
+token_view token_view_next(FILE* fp)
 {
-	const char* e_;
+	static char buf[MAX_BUF];
+	int c;
+	char* b = buf;
+	char* e;
 
-	b = skip_space(b, e, true);
-	if (!b || b == e) {
-		return (token_view){e,e}; // empty
+	c = skip(fp, isspace, true);
+
+	if (EOF == c) {
+		return (token_view){0,0}; // empty
 	}
 
-	if (*b == '"') {
-		e_ = next_quote(b, e, '"');
+	e = buf;
+	*e++ = c;
+	
+	if (c == '"') {
+		e = next_quote(fp, e, '"');
 	}
-	else if (*b == '{') {
-		e_ = next_match(b, e, *b, '}');
+	else if (c == '{') {
+		e = next_match(fp, e, '{', '}');
 	}
 	else {
-		e_ = skip_space(b, e, false);
+		e = next_space(fp, e);
 	}
 
+	/*
 	if (e_ == 0) {
 		return (token_view){b,0}; // error
 	}
@@ -101,6 +114,7 @@ token_view token_view_next(const char* b, const char* e)
 	if (e_ != e && !isspace(*e_)) {
 		return (token_view){b,0};
 	}
+	*/
 
-	return (token_view){b, e_};
+	return (token_view){b, e};
 }

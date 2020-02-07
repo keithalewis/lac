@@ -9,16 +9,15 @@
 int test_lac(void)
 {
 	{
-		lac_cif* pcif = lac_cif_alloc(1);
-		pcif->sym = puts;
 		ffi_type *args[1];
+		args[0] = &ffi_type_pointer;
+		lac_cif* pcif = lac_cif_alloc(&ffi_type_sint, puts, 1, args);
 		void *values[1];
 		char *s;
 
 		/* Initialize the argument info vectors */
-		args[0] = &ffi_type_pointer;
-		ffi_status ret = lac_cif_prep (pcif, &ffi_type_sint, args);
-		assert (FFI_OK == ret);
+		//ffi_status ret = lac_cif_prep (pcif, &ffi_type_sint, args);
+		//assert (FFI_OK == ret);
 
 		values[0] = &s;
 		s = "Hello world";
@@ -28,7 +27,7 @@ int test_lac(void)
 		lac_datum k = {"puts", 4};
 		lac_datum v = {(char*)pcif, lac_cif_size(pcif)};
 		lac_dbm baz = lac_dbm_open("baz");
-		ret = lac_dbm_insert(baz, k, v);
+		int ret = lac_dbm_insert(baz, k, v);
 		assert (0 == ret);
 		lac_datum v_ = lac_dbm_fetch(baz, k);
 		lac_cif* pcif_ = (lac_cif*)v_.data;

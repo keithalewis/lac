@@ -117,9 +117,10 @@ test_lac_cif ()
     }
   }
   {
-    lac_cif *pcif = lac_cif_alloc (1);
-    pcif->sym = puts;
     ffi_type *args[1];
+    args[0] = &ffi_type_pointer;
+    lac_cif *pcif = lac_cif_alloc (&ffi_type_sint, puts, 1, args);
+
     void *values[1];
     char *s;
 
@@ -128,8 +129,10 @@ test_lac_cif ()
     values[0] = &s;
 
     /* Initialize the cif */
+	/*
     ffi_status ret = lac_cif_prep (pcif, &ffi_type_sint, args);
     ensure (FFI_OK == ret);
+	*/
 
     s = "Hello World!";
     lac_cif_call (pcif, values);
@@ -139,30 +142,28 @@ test_lac_cif ()
 	lac_cif_free(pcif);
   }
   {
-    lac_cif *pcif = lac_cif_alloc (1);
-    pcif->sym = printf;
     ffi_type *args[2];
+    args[0] = &ffi_type_pointer;
+
+    lac_cif *pcif = lac_cif_alloc(&ffi_type_sint, printf, 1, args);
+
+	// newly allocated cif
+    args[1] = &ffi_type_pointer;
+	lac_cif* p = lac_cif_prep_var(pcif, 1, args + 1);
+
     void *values[2];
     char *s, *fmt;
 
-    /* Initialize the argument info vectors */
-    args[0] = &ffi_type_pointer;
     values[0] = &fmt;
 	fmt = "%s\n";
 
-    /* Initialize the cif */
-    ffi_status ret = lac_cif_prep (pcif, &ffi_type_sint, args);
-    ensure (FFI_OK == ret);
-
-	args[1] = &ffi_type_pointer;
 	values[1] = &s;
-	s = "Hi";
-	ret = lac_cif_prep_var(&pcif, 1, &args[1]);
     s = "Hello varargs";
 
-    lac_cif_call (pcif, values);
-	ensure (pcif->result.value.i == strlen(s) + 1);
+    lac_cif_call (p, values);
+	ensure (p->result.value.i == strlen(s) + 1);
 
+	lac_cif_free(p);
 	lac_cif_free(pcif);
   }
 
