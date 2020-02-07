@@ -33,6 +33,8 @@ lac.t.o: lac.t.c lac_dbm.h lac_ffi.h lac_parse.h
 lac_dbm.o: lac_dbm.c lac_dbm.h
 lac_ffi.o: lac_ffi.c lac_ffi.h
 lac_parse.o: lac_parse.c lac_parse.h
+lac_stack.o: lac_stack.c ensure.h lac_stack.h
 lac_dbm.t.o: lac_dbm.t.c lac_dbm.h
 lac_ffi.t.o: lac_ffi.t.c lac_ffi.h
 lac_parse.t.o: lac_parse.t.c lac_parse.h
+lac_stack.t.o: lac_stack.t.c ensure.h lac_stack.h

@@ -11,8 +11,9 @@ typedef struct {
 
 // allocate size items of size size_of
 lac_stack* lac_stack_alloc(size_t size, size_t size_of);
+// resize preserving the stack
 lac_stack* lac_stack_realloc(lac_stack* stack, size_t size);
-void lac_stack_free(lac_stack*);
+void       lac_stack_free(lac_stack*);
 lac_stack* lac_stack_copy(lac_stack* stack);
 
 size_t lac_stack_size(lac_stack*);
@@ -27,12 +28,11 @@ void lac_stack_pop(lac_stack*);
 // pointer to top of stack
 void* lac_stack_top(lac_stack*);
 
-// s[1],..,s[n] -- s[2], ..., s[n], s[1] 
-void lac_stack_roll(lac_stack*);
 // get n-th element from stack
 void* lac_stack_pick(lac_stack*,size_t n);
 
 #define LAC_STACK_ALLOC(N,T) lac_stack_alloc(N, sizeof(T))
 #define LAC_STACK_FREE(S) lac_stack_free(S)
 #define LAC_STACK_PUSH(S,T) lac_stack_push(S, &T)
+// cast top of stack to the right type
 #define LAC_STACK_TOP(S,T) *(T*)lac_stack_top(S)
