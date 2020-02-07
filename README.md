@@ -101,7 +101,7 @@ printf "%s %s %s\n" l w c # print lines, words, and characters
 Words can be separated by multiple contiguous space characters so the above version overcounts words.
 Once a space character is seen by the unix `wc` program any following white space is skipped. Define
 ```
-:skip_space { -- FILE*
+:skip_space -- FILE* {
 	loop {
 		isspace fgets @ !? break # exit loop if character is not a space
 	}
@@ -113,7 +113,7 @@ The line involving `isspace` could be replaced with
 ```
 except `skip_space` also skips newline characters. Use
 ```
-:skip_space { -- FILE*
+:skip_space -- FILE* {
 	loop {
 		== '\n' fgets @ ? continue
 		isspace fgets @ !? break # exit loop if character is not a space
