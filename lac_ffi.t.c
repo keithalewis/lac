@@ -134,10 +134,11 @@ test_lac_cif ()
     ensure (FFI_OK == ret);
 	*/
 
+	lac_variant result;
     s = "Hello World!";
-    lac_cif_call (pcif, values);
+    lac_cif_call (pcif, &result, values);
     s = "This is cool!";
-    lac_cif_call (pcif, values);
+    lac_cif_call (pcif, &result, values);
 
 	lac_cif_free(pcif);
   }
@@ -160,8 +161,9 @@ test_lac_cif ()
 	values[1] = &s;
     s = "Hello varargs";
 
-    lac_cif_call (p, values);
-	ensure (p->result.value.i == strlen(s) + 1);
+	lac_variant result;
+    lac_cif_call (p, &result, values);
+	ensure (result.value.i == strlen(s) + 1);
 
 	lac_cif_free(p);
 	lac_cif_free(pcif);

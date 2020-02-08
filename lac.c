@@ -1,36 +1,41 @@
 // lac.c - load and call C functions
-#include <ctype.h>
-#include <dlfcn.h>
-#include <setjmp.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <gdbm.h>
+//#include <sys/queue.h>
 #include "ensure.h"
 #include "lac.h"
 
 #define MAX_BUF 1024
-
-typedef struct {
-	char* b;
-	char* e;
-} token;
 
 int line = 0;
 const char* file = "";
 
 lac_dbm dictionary;
 lac_dbm library;
-lac_stack* stack; // == macro
+lac_stack* stack;
 
 lac_datum make_datum(token_view t)
 {
 	return (lac_datum){(char*)t.b, t.e - t.b};
 }
 
-void lac_thunk_call(FILE* fp, lac_cif* thunk)
+void lac_call_thunk(FILE* fp, lac_variant* result, lac_cif* thunk);
+
+lac_variant lac_parse_token(FILE* fp, token_view t, ffi_type* type)
 {
-	// if not varargs
+	lac_variant v;
+
+	lac_datum datum = lac_dbm_fetch(dictionary, make_datum(t));
+	if (0 != datum.data) {
+		lac_call_thunk(fp, &v, (lac_cif*)datum.data);
+	}
+	else {
+		v = lac_variant_parse(type, t.b, t.e);
+	}
+
+	return v;
+}
+
+void lac_call_thunk(FILE* fp, lac_variant* result, lac_cif* thunk)
+{
 	ffi_cif* cif = &thunk->cif;
 	size_t n = cif->nargs;
 	lac_variant args[n];
@@ -39,57 +44,46 @@ void lac_thunk_call(FILE* fp, lac_cif* thunk)
 	for (size_t i = 0; i < n; ++n) {
 		token_view arg = token_view_next(fp);
 		ensure (!token_view_error(arg));
-		if (*arg.b == ';' && arg.e - arg.b == 1) {
-			for (; i < n; ++i) {
-				ensure (lac_stack_count(stack) > 0);
-				args[i] = *(lac_variant*)lac_stack_top(stack);
-				addr[i] = lac_variant_address(&args[i]);
-				lac_stack_pop(stack);
-			}
-		}
-		else {
-			lac_datum d = lac_dbm_fetch(dictionary, make_datum(arg));
-			if (0 != d.data) {
-				lac_thunk_call(fp, (lac_cif*)d.data);
-			}
-			else {
-				args[i] = lac_variant_parse(cif->arg_types[i], arg.b, arg.e);
-				addr[i] = lac_variant_address(&args[i]);
-			}
-		}
+		args[i] = lac_parse_token(fp, arg, cif->arg_types[i]);
+		// allocate all pointer types
+		addr[i] = lac_variant_address(&args[i]);
 	}
 
-	lac_cif_call(thunk, addr);
-	if (cif->rtype != &ffi_type_void) {
-		lac_stack_push(stack, &thunk->result);
-	}
+	lac_cif_call(thunk, result, addr);
+	// free pointer args???
+}
+
+// lookup and call thunk of token
+int lac_execute_token(FILE* fp, lac_variant* result, token_view v)
+{
+	// if not varargs
+	ensure (!token_view_error(v)); 
+
+	lac_datum datum = lac_dbm_fetch(dictionary, make_datum(v));
+	ensure (0 != datum.data);
+
+	lac_cif* thunk = (lac_cif*)datum.data;
+	lac_call_thunk(fp, result, thunk);
+
+	return !token_view_last(v);
 }
 
 void lac_execute(FILE* fp)
 {
-	token_view v = token_view_next(fp);
+	token_view t = token_view_next(fp);
 
-	if (token_view_error(v)) {
-		perror(v.b);
+	ensure (!token_view_error(t));
 
-		return;
+	lac_variant result;
+	while (lac_execute_token(fp, &result, t)) {
+		if (result.type != &ffi_type_void) {
+			lac_stack_push(stack, &result);
+		}
 	}
 
-	lac_datum datum = lac_dbm_fetch(dictionary, make_datum(v));
-	if (0 == datum.data) {
-		perror("lac_execute: thunk not found");
-
-		return;
+	if (!token_view_last(t)) {
+		lac_execute(fp);
 	}
-
-	lac_cif* thunk = (lac_cif*)datum.data;
-	lac_thunk_call(fp, thunk);
-
-	if (token_view_last(v)) {
-		return;
-	}
-
-	lac_execute(fp);
 }
 
 // add some thunks to the dictionary

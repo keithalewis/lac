@@ -21,8 +21,9 @@ int test_lac(void)
 
 		values[0] = &s;
 		s = "Hello world";
-		lac_cif_call(pcif, values);
-		assert (pcif->result.value.i == strlen(s) + 1); // puts writes final \0
+		lac_variant result;
+		lac_cif_call(pcif, &result, values);
+		assert (result.value.i == strlen(s) + 1); // puts writes final \0
 
 		lac_datum k = {"puts", 4};
 		lac_datum v = {(char*)pcif, lac_cif_size(pcif)};
@@ -32,7 +33,7 @@ int test_lac(void)
 		lac_datum v_ = lac_dbm_fetch(baz, k);
 		lac_cif* pcif_ = (lac_cif*)v_.data;
 		s = "Hello dbm";
-		lac_cif_call(pcif_, values);
+		lac_cif_call(pcif_, &result, values);
 		free (pcif_);
 
 		lac_dbm_close(baz);

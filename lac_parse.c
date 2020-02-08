@@ -18,6 +18,16 @@ bool token_view_last(const token_view t)
 	return EOF == *t.e;
 }
 
+int token_view_is_string(const token_view t)
+{
+	return '"' == *t.b ;
+}
+
+int token_view_is_block(const token_view t)
+{
+	return '{' == *t.b ;
+}
+
 // return first character after white or not space
 static int skip(FILE* fp, int(*is)(int), int space)
 {

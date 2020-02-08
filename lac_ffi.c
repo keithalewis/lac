@@ -195,7 +195,6 @@ lac_cif* lac_cif_alloc(ffi_type* rtype, void* sym,
 	lac_cif* p = malloc(sizeof(lac_cif) + nargs*sizeof(void*));
 	ensure (0 != p);
 
-	p->result.type = rtype;
 	p->cif.rtype = rtype;
 	p->sym = sym;
 	p->cif.nargs = nargs;
@@ -228,7 +227,6 @@ void lac_cif_free(lac_cif* p)
 ffi_status
 lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type**arg_types)
 {
-	pcif->result.type = rtype;
 	pcif->cif.arg_types = &pcif->arg_types[0];
 	memcpy(pcif->arg_types, arg_types, pcif->cif.nargs*sizeof(void*));
 
@@ -243,7 +241,6 @@ lac_cif* lac_cif_prep_var(lac_cif* p, unsigned nargs, ffi_type** arg_types)
 	lac_cif* p_ = malloc(sizeof(lac_cif) + (nfix + nargs)*sizeof(void*));
 	ensure (0 != p_);
 
-	p_->result.type = p->cif.rtype;
 	p_->cif.rtype = p->cif.rtype;
 	p_->sym = p->sym;
 	p_->cif.nargs = p->cif.nargs + nargs;
@@ -258,7 +255,9 @@ lac_cif* lac_cif_prep_var(lac_cif* p, unsigned nargs, ffi_type** arg_types)
 	return p_;
 }
 
-void lac_cif_call(lac_cif* pcif, void** args)
+void lac_cif_call(lac_cif* pcif, lac_variant* result, void** args)
 {
-	ffi_call(&pcif->cif, pcif->sym, lac_variant_address(&pcif->result), args);
+	result->type = pcif->cif.rtype;
+
+	ffi_call(&pcif->cif, pcif->sym, lac_variant_address(result), args);
 }

@@ -70,7 +70,6 @@ lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e);
 
 // value corresponding to string name of symbol
 typedef struct {
-	lac_variant result;
 	void* sym;
 	ffi_cif cif;
 	ffi_type* arg_types[]; // flexible length array
@@ -95,4 +94,4 @@ ffi_status lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type** arg_types);
 lac_cif* lac_cif_prep_var(lac_cif* pcif, unsigned nargs, ffi_type** arg_types);
 
 // call ffi_call and store result
-void lac_cif_call(lac_cif* pcif, void** args);
+void lac_cif_call(lac_cif* pcif, lac_variant* result, void** args);

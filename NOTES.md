@@ -1,7 +1,9 @@
-Get rid of dbm. Use chunk of memory and use string -> pointer table for lac_cif.
+Get rid of dbm. Use <sys/queue.h>
 
 thunk - lac_cif = ffi_cif + sym + arg_types
 closure - thunk + partial args
+
+Don't special case things!
 
 ## Parsing
 
