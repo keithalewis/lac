@@ -12,44 +12,51 @@ uses [libffi](https://github.com/libffi/libffi).
 load libm.so double cos double # load double cos(double) from libm.so
 ```
 This adds `cos` to the _dictionary_ and whenever `cos` is a token in the
-input stream after being loaded `lac` will call the cosine function and
-push the result on the _stack_.
+input stream after being loaded `lac` will call the cosine function.
 
 The value associated with `cos` in the dictionary is a _thunk_: the C
 function together with its signature. The signature is the return type
 plus zero or more argument types.
 
+The possible types are `int`, `float`, `double`, `uint8_t`, `int8_t`, `uint16_t`, `int16_t`,
+`uint32_t`, `int32_t`, `uint64_t`, `int64_t`, and `void*`. Functions can have
+return type `void` and push nothing on the stack after being called.
+
 Variadic functions are loaded by specifying their fixed arguments followed
 by an ellipsis (`...`). E.g.,
 ```
-load libc.so int printf pointer ...
+load libc.so int printf char* ...
 ```
 
 ## Call
 
 Whenever a token is encountered in the input stream it is
 looked up in the dictionary and the corresponding thunk is called to
-consume the arguments that follow on the input stream, or the stack if a semicolon is encountered.
+consume the arguments that follow.
 
 ```
 cos 0                 # call cos(0.) and push the result on the stack
 ```
 Since `cos` knows it needs a `double` argument it parses the next token
-using `strtod`, calls the C function `cos` with that argument, and pushes
-the result on the stack as a double.
+using `strtod`, pushes it on the local call stack, calls the C function
+`cos` with that argument, and pushes the result on the global stack as
+a double.
+
+The same result can be obtained by
+```
+cos double 0
+```
+When `cos` processes arguments it will look up `double` in the dictionary,
+call the corresponding thunk, and push the result on the local call stack for `cos`.
 
 Another way to call `cos(0.)` is
 ```
 double 0
 cos ;
 ```
-The first line pushes 0 on the stack as a double. When `cos` is encountered in the input
-stream it will consume 0 as a double from the stack since the semicolon (`;`)
-indicates there are no following arguments on the input stream. 
+The first line pushes 0 on the global stack as a double. When `;` is
+encountered in the input stream it pops required arguments from the global stack onto the local call stack.
 
-The possible stack types are `int`, `float`, `double`, `uint8_t`, `int8_t`, `uint16_t`, `int16_t`,
-`uint32_t`, `int32_t`, `uint64_t`, `int64_t`, and `void*`. Functions can also have
-return type `void` and push nothing on the stack after being called.
 
 ## Tokens
 
@@ -70,12 +77,19 @@ A right bracket can be escaped by preceding it with a backslash.
 
 ### Thunks
 
-Use colon (`':'`) to add thunks into the dictionary.
+Use colon (`':'`) to add thunks to the dictionary.
 ```
 : name thunk
 ```
 
+Calling a thunk reads the input stream ...
+
+If an argument is a token in the dictionary, it is evaluated and the result
+is used as the argument.
+
 ## Predefined Thunks
+
+Colon is a predefined thunk.
 
 `#` &mdash; this thunk discards characters up to but not including the next
 newline character. It can be used to include comments in the program text.
