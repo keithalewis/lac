@@ -1,5 +1,4 @@
-// lac_map.h - string to val map
-// Both key and val are allocated using malloc.
+// lac_map.h - null terminated char* string to void* val map
 #pragma once
 
 // add possibly redundant entry
@@ -11,6 +10,6 @@ void lac_map_del(const char* key);
 // call free on key
 void lac_map_del_k(const char* key);
 // call free on value
-void lac_map_del_kv(const char* key);
+void lac_map_del_v(const char* key);
 // call free on key and value
 void lac_map_del_kv(const char* key);
