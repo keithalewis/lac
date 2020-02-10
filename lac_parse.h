@@ -3,6 +3,12 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include "lac_stream.h"
+
+// size of largest token
+#ifndef MAX_TOKEN_BUF
+#define MAX_TOKEN_BUF 1024
+#endif
 
 // view into token buffer
 typedef struct token_view_ {
@@ -32,3 +38,4 @@ int token_view_is_block(const token_view t);
 // tokens starting with left curly bracket ('{') end at matching
 //   right curly brackets ('}') at the same nesting level.
 token_view token_view_next(FILE*);
+token_view token_view_stream_next(lac_stream*);

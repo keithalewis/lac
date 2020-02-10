@@ -56,6 +56,8 @@ typedef struct {
 
 // pointer address of variant value
 void* lac_variant_address(lac_variant* pv);
+// use compiler for type conversion
+#define VARIANT_TO_TYPE(T, V) *(T*)lac_variant_address(&V)
 
 lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e);
 

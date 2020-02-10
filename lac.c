@@ -111,8 +111,9 @@ int main(int ac, const char* av[])
 	// setjmp/longjmp for error handling
 	//evaluate(fp);
 	token_view v;
+	lac_stream s = lac_stream_file(fp);
 	do {
-		v = token_view_next(fp);
+		v = token_view_stream_next(&s);
 		if (token_view_error(v)) {
 			fputs("token_view_error: ", stdout);	
 			v.e = 0;

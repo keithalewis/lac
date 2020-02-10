@@ -1,9 +1,6 @@
-Get rid of dbm. Use <sys/queue.h>
-
-thunk - lac_cif = ffi_cif + sym + arg_types
-closure - thunk + partial args
-
 Don't special case things!
+
+read a token, look it up, execute
 
 ## Parsing
 
@@ -48,22 +45,49 @@ Octothorpes in a string preceded by a backslash (`\`) are escaped.
 
 # Unfiled
 
-:skip_space { -- FILE* - FILE*
-	loop {
-		fgetc @ -- c FILE*
-		== EOF ? break
+     parse    compile
+chars -> tokens -> thunks
+
+              local   global
+environment = stack x dictionary
+
+character stream -> token stream
+
+stack as a token stream
+
+concatenate token streams
+
+## Examples
+
+```
+double to_double(const variant a)
+{
+	return *(double*)lac_variant_address(&a);
+}
+```
+
+```
+#define VARIANT_TO_TYPE(T, V) *(T*)lac_variant_address(&V)
+```
+
+variant add(const variant a, const variant b)
+{
+	variant c;
+
+	if (&ffi_type_float == a.type) {
 	}
+
+	return c;
 }
 
-:l int 0 -- nothing
-:w int 0
-:c int 0
-fopen file.txt r -- FILE*
-fgetc @ -- c FILE*
-loop {
-	== EOF @ ? break
-	incr &c
-	== '\n' @ ? incr &l -- c FILE*
-	isspace ? incr &w skip_space @ -- FILE*
-	fgetc @ -- c FILE*
+```
+: int fib -- int {
+	<= 2 @ ? ! int 1 break
+	+ - @ 1 - @ 2
 }
+```
+
+```
+: int gcd -- int int {
+}
+```

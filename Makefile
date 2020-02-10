@@ -31,10 +31,14 @@ deps: $(SRCS_T)
 # r!make deps
 lac.t.o: lac.t.c lac_dbm.h lac_ffi.h lac_parse.h
 lac_dbm.o: lac_dbm.c lac_dbm.h
-lac_ffi.o: lac_ffi.c lac_ffi.h
-lac_parse.o: lac_parse.c lac_parse.h
+lac_ffi.o: lac_ffi.c ensure.h lac_ffi.h
+lac_parse.o: lac_parse.c ensure.h lac_parse.h
 lac_stack.o: lac_stack.c ensure.h lac_stack.h
+lac_map.o: lac_map.c
+lac_stream.o: lac_stream.c lac_stream.h
 lac_dbm.t.o: lac_dbm.t.c lac_dbm.h
-lac_ffi.t.o: lac_ffi.t.c lac_ffi.h
+lac_ffi.t.o: lac_ffi.t.c ensure.h lac_ffi.h
 lac_parse.t.o: lac_parse.t.c lac_parse.h
 lac_stack.t.o: lac_stack.t.c ensure.h lac_stack.h
+lac_map.t.o: lac_map.t.c ensure.h lac_map.h
+lac_stream.t.o: lac_stream.t.c ensure.h lac_stream.h

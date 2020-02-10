@@ -5,36 +5,30 @@
 int test_lac_stream()
 {
 	{
-		lac_stream s = LAC_STREAM("abc", 0);
-		lac_stream* ps = &s;
-		int c;
+		FILE* ps = tmpfile();
+		ensure (0 != ps);
+		fputs("ab", ps);
+		rewind(ps);
 
-		c = sgetc(ps);
+		lac_stream s = lac_stream_file(ps);
+		int c;
+		c = lac_stream_getc(&s);
 		ensure ('a' == c);
-		c = sgetc(ps);
+		c = lac_stream_getc(&s);
 		ensure ('b' == c);
-		c = sgetc(ps);
-		ensure ('c' == c);
-		c = sgetc(ps);
+		c = lac_stream_getc(&s);
 		ensure (EOF == c);
 	}
 	{
-		FILE* ps = tmpfile();
-		ensure (0 != ps);
+		lac_stream_string_view sv = LAC_STREAM_STRING_VIEW("ab", 2);
 
-		int n;
-		n = fputs("abc", ps);
-		//ensure (3 == fputs("abc", ps));
+		lac_stream s = lac_stream_string(&sv);
 		int c;
-
-		rewind(ps);
-		c = sgetc(ps);
+		c = lac_stream_getc(&s);
 		ensure ('a' == c);
-		c = sgetc(ps);
+		c = lac_stream_getc(&s);
 		ensure ('b' == c);
-		c = sgetc(ps);
-		ensure ('c' == c);
-		c = sgetc(ps);
+		c = lac_stream_getc(&s);
 		ensure (EOF == c);
 	}
 
