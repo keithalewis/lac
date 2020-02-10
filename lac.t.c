@@ -51,12 +51,16 @@ int main()
 	int test_lac_ffi(void);
 	int test_lac_parse(void);
 	int test_lac_stack(void);
+	int test_lac_map(void);
+	int test_lac_stream();
 	int test_lac(void);
 
 	test_lac_dbm();
 	test_lac_ffi();
 	test_lac_parse();
 	test_lac_stack();
+	test_lac_map();
+	test_lac_stream();
 	test_lac();
 
 	return 0;

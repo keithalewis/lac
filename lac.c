@@ -117,6 +117,8 @@ int main(int ac, const char* av[])
 			fputs("token_view_error: ", stdout);	
 			v.e = 0;
 			puts(v.b);
+
+			continue;
 		}
 		fputs(">", stdout);
 		fwrite(v.b, 1, v.e - v.b, stdout); 

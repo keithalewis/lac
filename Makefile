@@ -1,7 +1,7 @@
-LAC_ = lac_dbm.c lac_ffi.c lac_parse.c lac_stack.c
+LAC_ = lac_dbm.c lac_ffi.c lac_parse.c lac_stack.c lac_map.c lac_stream.c
 SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
-LAC_T = lac_dbm.t.c lac_ffi.t.c lac_parse.t.c lac_stack.t.c
+LAC_T = lac_dbm.t.c lac_ffi.t.c lac_parse.t.c lac_stack.t.c lac_map.t.c lac_stream.t.c
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 
