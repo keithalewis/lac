@@ -51,6 +51,7 @@ void lac_call_thunk(lac_stream* fp, lac_variant* result, const lac_cif* thunk)
 			}
 		}
 		else {
+			*arg.e = 0;
 			args[i] = lac_parse_token(fp, arg, cif->arg_types[i]);
 			addr[i] = lac_variant_address(&args[i]);
 		}
@@ -61,15 +62,17 @@ void lac_call_thunk(lac_stream* fp, lac_variant* result, const lac_cif* thunk)
 }
 
 // lookup and call thunk of token
-int lac_execute_token(lac_stream* fp, lac_variant* result, lac_token v)
+int lac_execute_token(lac_stream* fp, lac_variant* result, lac_token t)
 {
 	// if not varargs
-	ensure (!lac_token_error(v)); 
+	ensure (!lac_token_error(t)); 
 
-	const lac_cif* thunk = lac_map_get(v);
+	const lac_cif* thunk = lac_map_get(t);
+	ensure (thunk);
+
 	lac_call_thunk(fp, result, thunk);
 
-	return !lac_token_last(v);
+	return !lac_token_last(t);
 }
 
 void lac_execute(lac_stream* fp)
@@ -106,7 +109,10 @@ void load(const char* lib, ffi_type* ret, const char* sym, int n, ...)
 	ensure (s);
 
 	lac_cif* cif = lac_cif_alloc(ret, s, n, arg);
-	lac_map_put(LAC_TOKEN(sym, 0), cif);
+	size_t size = strlen(sym);
+	char* t = malloc(size + 1);
+	strcpy(t, sym);
+	lac_map_put(LAC_TOKEN(t, t + size), cif);
 }
 
 // add some thunks to the dictionary

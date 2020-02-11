@@ -199,11 +199,9 @@ lac_cif* lac_cif_alloc(ffi_type* rtype, void* sym,
 	p->sym = sym;
 	p->cif.nargs = nargs;
 	p->cif.arg_types = &p->arg_types[0];
-	memcpy(p->arg_types, arg_types, nargs*sizeof(ffi_type*));
+	memcpy(p->cif.arg_types, arg_types, nargs*sizeof(ffi_type*));
 
-	ffi_status ret;
-	ret = ffi_prep_cif(&p->cif, FFI_DEFAULT_ABI, nargs, rtype, arg_types);
-	ensure (FFI_OK == ret);
+	lac_cif_prep(p);
 
 	return p;
 }
@@ -225,13 +223,10 @@ void lac_cif_free(lac_cif* p)
 }
 
 ffi_status
-lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type**arg_types)
+lac_cif_prep(lac_cif* pcif)
 {
-	pcif->cif.arg_types = &pcif->arg_types[0];
-	memcpy(pcif->arg_types, arg_types, pcif->cif.nargs*sizeof(void*));
-
 	return ffi_prep_cif(&pcif->cif, FFI_DEFAULT_ABI,
-	                    pcif->cif.nargs, rtype, pcif->arg_types);
+	                    pcif->cif.nargs, pcif->cif.rtype, pcif->cif.arg_types);
 }
 
 // prepare additional args for vararg functions

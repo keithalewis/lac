@@ -79,7 +79,7 @@ void lac_cif_free(lac_cif* pcif);
 size_t lac_cif_size(lac_cif* pcif);
 
 // call ffi_prep_cif using cif->cif.nargs
-ffi_status lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type** arg_types);
+ffi_status lac_cif_prep(lac_cif* pcif);
 
 // call ffi_prep_cif_var for variadic functions
 // where nargs is the number of variable args
