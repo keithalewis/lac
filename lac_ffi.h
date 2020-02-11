@@ -13,14 +13,6 @@ extern "C" {
 }
 #endif
 
-/*
-#define cbrt(X) _Generic((X), \
-	long double: cbrtl, \
-	default: cbrt,  \
-    float: cbrtf  \
-)(X)
-*/
-
 //    FFI_TYPE             type          ffi_type             union
 #define FFI_TYPE_TABLE(X) \
 	X(FFI_TYPE_INT,        int,         &ffi_type_sint,       i   ) \
@@ -70,7 +62,7 @@ lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e);
 	FFI_TYPE_TABLE(X)
 #undef X
 
-// value corresponding to string name of symbol
+// thunk corresponding to string name of symbol
 typedef struct {
 	void* sym;
 	ffi_cif cif;
@@ -84,7 +76,6 @@ lac_cif* lac_cif_alloc(ffi_type* rtype, void* sym,
 // preserve existing arg types
 lac_cif* lac_cif_realloc(lac_cif* pcif, unsigned nargs);
 void lac_cif_free(lac_cif* pcif);
-
 size_t lac_cif_size(lac_cif* pcif);
 
 // call ffi_prep_cif using cif->cif.nargs

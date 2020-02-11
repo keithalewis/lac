@@ -3,7 +3,7 @@
 
 int lac_stream_getc(lac_stream* ps)
 {
-	return ps->getc(ps->p);
+	return (ps->getc)(ps->p);
 }
 
 int lac_stream_file_getc(void* p)

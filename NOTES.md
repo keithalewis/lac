@@ -45,8 +45,8 @@ Octothorpes in a string preceded by a backslash (`\`) are escaped.
 
 # Unfiled
 
-     parse    compile
-chars -> tokens -> thunks
+          parse    compile
+char stream -> tokens -> thunks
 
               local   global
 environment = stack x dictionary
@@ -60,16 +60,6 @@ concatenate token streams
 ## Examples
 
 ```
-double to_double(const variant a)
-{
-	return *(double*)lac_variant_address(&a);
-}
-```
-
-```
-#define VARIANT_TO_TYPE(T, V) *(T*)lac_variant_address(&V)
-```
-
 variant add(const variant a, const variant b)
 {
 	variant c;
@@ -81,9 +71,14 @@ variant add(const variant a, const variant b)
 }
 
 ```
-: int fib -- int {
-	<= 2 @ ? ! int 1 break
-	+ - @ 1 - @ 2
+# fib n = fib n-1 + fib n-2
+: int fib int { # -- n
+	: n ! # redefine ":" to use local stack dictionary
+	? <= @ 2 int 1 break
+	decr ! 1 # -- n-1
+	decr @ 1 ## -- n-2 n-1
+	add fib ! 1 fib @ 1
+	# remove stack dictionary
 }
 ```
 

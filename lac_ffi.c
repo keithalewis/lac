@@ -10,9 +10,6 @@ ffi_type* ffi_type_lookup(const char* name)
 	if ('f' == *name) {
 		return &ffi_type_float;
 	}
-	if ('v' == *name) {
-		return 0 == strchr(name + 1, '*') ? &ffi_type_void : &ffi_type_pointer;
-	}
 	if ('i' == *name) {
 		const char* d = strpbrk(name + 1, "8136");	
 		switch (*d) {
@@ -32,6 +29,12 @@ ffi_type* ffi_type_lookup(const char* name)
 			case '6': return &ffi_type_uint64;
 		}
 		return &ffi_type_sint;
+	}
+	if (0 != strchr(name, '*')) {
+		return &ffi_type_pointer;
+	}
+	if (0 == strcmp("void", name)) {
+		return &ffi_type_void;
 	}
 
 	return 0;
@@ -152,8 +155,9 @@ void* lac_parse_p(const char* b, const char* e)
 	return (void*)b;
 }
 
-#define X(A,B,C,D) lac_variant lac_variant_parse_##D(const char* b, const char* e) \
-	{ lac_variant v; v.type = C; v.value.D = lac_parse_##D(b,e); return v; }
+#define X(A,B,C,D) lac_variant \
+	lac_variant_parse_##D (const char* b, const char* e) \
+	{ return (lac_variant){.type = C, .value.D = lac_parse_##D(b,e)}; }
 	FFI_TYPE_TABLE(X)
 #undef X
 
@@ -165,10 +169,6 @@ inline void* lac_variant_address(lac_variant* pv)
 	return 0;
 }
 
-// int lac_parse_i(const char* b, const char* e)
-// double lac_parse_d(const char* b, const char* e)
-// ...
-// 
 // Array indexed by FFI_TYPE_XXX
 // static void* lac_parse_table[] = { &lac_parse_i, ... }
 
