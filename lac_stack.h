@@ -1,4 +1,5 @@
 // lac_stack.h - generic stack
+#pragma once
 #include <stdlib.h>
 
 // generic stack growing upward in memory

@@ -57,6 +57,10 @@ stack as a token stream
 
 concatenate token streams
 
+constant thunk? 
+
+Use library as namespace? m:cos calls cos from libm.so
+
 ## Examples
 
 ```
@@ -65,6 +69,8 @@ variant add(const variant a, const variant b)
 	variant c;
 
 	if (&ffi_type_float == a.type) {
+		if (&ffi_type_xxx == b.type) {
+		}
 	}
 
 	return c;

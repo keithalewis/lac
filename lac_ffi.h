@@ -1,5 +1,5 @@
 /* lac_ffi.h - load and call C functions using libffi */
-//#pragma once
+#pragma once
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
@@ -87,4 +87,4 @@ ffi_status lac_cif_prep(lac_cif* pcif, ffi_type* rtype, ffi_type** arg_types);
 lac_cif* lac_cif_prep_var(lac_cif* pcif, unsigned nargs, ffi_type** arg_types);
 
 // call ffi_call and store result
-void lac_cif_call(lac_cif* pcif, lac_variant* result, void** args);
+void lac_cif_call(const lac_cif* pcif, lac_variant* result, void** args);

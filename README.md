@@ -32,7 +32,7 @@ load libc.so int printf char* ...
 
 Whenever a token is encountered in the input stream it is
 looked up in the dictionary and the corresponding thunk is called to
-consume the arguments that follow.
+consume the arguments it requires.
 
 ```
 cos 0                 # call cos(0.) and push the result on the stack

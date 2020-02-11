@@ -2,7 +2,6 @@
 #pragma once
 #include <ctype.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include "lac_stream.h"
 
 // size of largest token
@@ -11,31 +10,35 @@
 #endif
 
 // view into token buffer
-typedef struct token_view_ {
-	const char* b;
-	const char* e;
-} token_view;
+typedef struct {
+	char* b;
+	char* e;
+} lac_token;
+
+#define LAC_TOKEN(b, e) (lac_token){b, e == 0 ? b + strlen(b) : e}
+
+int lac_token_size(const lac_token);
+int lac_token_equal(const lac_token, const lac_token);
 
 // b == e
-bool token_view_empty(const token_view t);
+bool lac_token_empty(const lac_token t);
 
 // e == EOF
-bool token_view_last(const token_view t);
+bool lac_token_last(const lac_token t);
 
 // return b if e is null
-const char* token_view_error(const token_view t);
+const char* lac_token_error(const lac_token t);
 
-int token_view_equal(const token_view t, const token_view v);
+int lac_token_equal(const lac_token t, const lac_token v);
 
 // b == '"'
-int token_view_is_string(const token_view t);
+int lac_token_is_string(const lac_token t);
 
 // b == '{'
-int token_view_is_block(const token_view t);
+int lac_token_is_block(const lac_token t);
 
 // tokens are separated by white space (isspace)
 // tokens starting with double quote ('"') end at matching quote
 // tokens starting with left curly bracket ('{') end at matching
 //   right curly brackets ('}') at the same nesting level.
-token_view token_view_next(FILE*);
-token_view token_view_stream_next(lac_stream*);
+lac_token lac_token_next(lac_stream* s);

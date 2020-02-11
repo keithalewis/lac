@@ -1,140 +1,44 @@
 // lac_parse.c - parsing functions
 #include "ensure.h"
-#include "lac_parse.h"
 #include "lac_stream.h"
+#include "lac_parse.h"
 
-bool token_view_empty(const token_view t)
+bool lac_token_empty(const lac_token t)
 {
 	return t.b == t.e;
 }
 
 // return information if error
-const char* token_view_error(const token_view t)
+const char* lac_token_error(const lac_token t)
 {
 	return t.e == 0 ? t.b : 0;
 }
 
-bool token_view_last(const token_view t)
+int lac_token_size(const lac_token t)
+{
+	return t.e - t.b;
+}
+int lac_token_equal(const lac_token t, const lac_token u)
+{
+	int n = lac_token_size(t);
+	
+	return n == lac_token_size(u) && 0 == strncmp(t.b, u.b, n);
+}
+
+bool lac_token_last(const lac_token t)
 {
 	return EOF == *t.e;
 }
 
-int token_view_is_string(const token_view t)
+int lac_token_is_string(const lac_token t)
 {
 	return '"' == *t.b ;
 }
 
-int token_view_is_block(const token_view t)
+int lac_token_is_block(const lac_token t)
 {
 	return '{' == *t.b ;
 }
-
-#define STREAM(S) _Generic((S), FILE*: (FILE*), lac_stream*: (lac_stream*))
-
-// return first character after white or not space
-static int skip(FILE* fp, int(*is)(int), int space)
-{
-	int c = fgetc(fp);
-
-	while (EOF != c && (space ? is(c) : !is(c))) {
-		c = fgetc(fp);
-	}
-
-	return c;
-}
-
-static char* next_space(FILE* fp, char* b)
-{
-	int c = fgetc(fp);
-	while (EOF != c && !isspace(c)) {
-		*b++ = c;
-		c = fgetc(fp);
-	}
-	*b = c; // final character
-
-	return b;
-}
-
-// match delimiter at same nesting level
-// return pointer past matching right delimiter
-// Use b to write buffer.
-static char* next_match(FILE* fp, char* b, 
-	char l /*= '{'*/, char r /*= '}'*/)
-{
-	size_t level = 1;
-
-	int c = fgetc(fp);
-	while (EOF != c && level != 0) {
-		if (c == '\\') {
-			*b++ = c;
-			c = fgetc(fp);
-			ensure (EOF != c);
-		}
-		else if (c == r) {
-			--level;
-		}
-		else if (c == l) {
-			++level;
-		}
-		*b++ = c;
-		c = fgetc(fp);
-	}
-	*b = c; // final character
-
-	ensure (EOF == c || 0 == level);
-
-	return b;
-}
-static char* next_quote(FILE* fp, char* b, const char q /*= '"'*/)
-{
-	return next_match(fp, b, q, q);
-}
-
-#define MAX_BUF 1024
-// copy stream into static buffer and return view
-token_view token_view_next(FILE* fp)
-{
-	static char buf[MAX_BUF];
-	int c;
-	char* b = buf;
-	char* e;
-
-	c = skip(fp, isspace, true);
-
-	if (EOF == c) {
-		return (token_view){0,0}; // empty
-	}
-
-	e = buf;
-	*e++ = c;
-	
-	if (c == '"') {
-		e = next_quote(fp, e, '"');
-	}
-	else if (c == '{') {
-		e = next_match(fp, e, '{', '}');
-	}
-	else {
-		e = next_space(fp, e);
-	}
-
-	/*
-	if (e_ == 0) {
-		return (token_view){b,0}; // error
-	}
-
-	// tokens must be space separated
-	if (e_ != e && !isspace(*e_)) {
-		return (token_view){b,0};
-	}
-	*/
-
-	return (token_view){b, e};
-}
-
-//
-// stream versions
-//
 
 // return first character after white or not space
 static int stream_skip(lac_stream* fp, int(*is)(int), int space)
@@ -196,7 +100,7 @@ static char* stream_next_quote(lac_stream* fp, char* b, const char q /*= '"'*/)
 }
 
 // copy stream into static buffer and return view
-token_view token_view_stream_next(lac_stream* fp)
+lac_token lac_token_next(lac_stream* fp)
 {
 	static char buf[MAX_TOKEN_BUF];
 	int c;
@@ -206,7 +110,7 @@ token_view token_view_stream_next(lac_stream* fp)
 	c = stream_skip(fp, isspace, true);
 
 	if (EOF == c) {
-		return (token_view){0,0}; // empty
+		return (lac_token){0,0}; // empty
 	}
 
 	e = buf;
@@ -224,14 +128,14 @@ token_view token_view_stream_next(lac_stream* fp)
 
 	/*
 	if (e_ == 0) {
-		return (token_view){b,0}; // error
+		return (lac_token){b,0}; // error
 	}
 
 	// tokens must be space separated
 	if (e_ != e && !isspace(*e_)) {
-		return (token_view){b,0};
+		return (lac_token){b,0};
 	}
 	*/
 
-	return (token_view){b, e};
+	return (lac_token){b, e};
 }

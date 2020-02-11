@@ -2,9 +2,10 @@
 #include <math.h>
 #include <dlfcn.h>
 #include <stdio.h>
-#include "lac_dbm.h"
+#include "ensure.h"
 #include "lac_ffi.h"
 #include "lac_parse.h"
+#include "lac_map.h"
 
 int test_lac(void)
 {
@@ -25,21 +26,14 @@ int test_lac(void)
 		lac_cif_call(pcif, &result, values);
 		assert (result.value.i == strlen(s) + 1); // puts writes final \0
 
-		lac_datum k = {"puts", 4};
-		lac_datum v = {(char*)pcif, lac_cif_size(pcif)};
-		lac_dbm baz = lac_dbm_open("baz");
-		int ret = lac_dbm_insert(baz, k, v);
-		assert (0 == ret);
-		lac_datum v_ = lac_dbm_fetch(baz, k);
-		lac_cif* pcif_ = (lac_cif*)v_.data;
+		lac_token k = LAC_TOKEN("puts", 0);
+		lac_map_put(k, pcif);
+		const lac_cif* pcif_ = lac_map_get(k);
+		ensure (pcif_);
 		s = "Hello dbm";
 		lac_cif_call(pcif_, &result, values);
-		free (pcif_);
 
-		lac_dbm_close(baz);
 		lac_cif_free(pcif);
-	}
-	{
 	}
 
 	return 0;
@@ -47,7 +41,6 @@ int test_lac(void)
 
 int main()
 {
-	int test_lac_dbm(void);
 	int test_lac_ffi(void);
 	int test_lac_parse(void);
 	int test_lac_stack(void);
@@ -55,7 +48,6 @@ int main()
 	int test_lac_stream();
 	int test_lac(void);
 
-	test_lac_dbm();
 	test_lac_ffi();
 	test_lac_parse();
 	test_lac_stack();

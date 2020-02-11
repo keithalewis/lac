@@ -255,9 +255,9 @@ lac_cif* lac_cif_prep_var(lac_cif* p, unsigned nargs, ffi_type** arg_types)
 	return p_;
 }
 
-void lac_cif_call(lac_cif* pcif, lac_variant* result, void** args)
+void lac_cif_call(const lac_cif* pcif, lac_variant* result, void** args)
 {
 	result->type = pcif->cif.rtype;
 
-	ffi_call(&pcif->cif, pcif->sym, lac_variant_address(result), args);
+	ffi_call((ffi_cif*)&pcif->cif, pcif->sym, lac_variant_address(result), args);
 }

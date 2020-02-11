@@ -20,7 +20,8 @@ typedef struct {
 	char *i; // current pointer
 	char *e; // one past last character
 } lac_stream_string_view;
-#define LAC_STREAM_STRING_VIEW(S, N) (lac_stream_string_view){S, S, S + (N == 0 ? strlen(S) : N)}
+// create from lac_token
+#define LAC_STREAM_STRING_TOKEN(T) (lac_stream_string_view){T.b, T.b, T.e}
 
 lac_stream lac_stream_file(FILE*);
 lac_stream lac_stream_string(lac_stream_string_view *);

@@ -1,5 +1,6 @@
 // lac_stream.t.c - test lac_stream
 #include "ensure.h"
+#include "lac_parse.h"
 #include "lac_stream.h"
 
 int test_lac_stream()
@@ -20,7 +21,8 @@ int test_lac_stream()
 		ensure (EOF == c);
 	}
 	{
-		lac_stream_string_view sv = LAC_STREAM_STRING_VIEW("ab", 2);
+		lac_token t = LAC_TOKEN("ab", 0);
+		lac_stream_string_view sv = LAC_STREAM_STRING_TOKEN(t);
 
 		lac_stream s = lac_stream_string(&sv);
 		int c;
