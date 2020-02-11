@@ -53,7 +53,7 @@ int main()
 	test_lac_stack();
 	test_lac_map();
 	test_lac_stream();
-	test_lac();
+//	test_lac();
 
 	return 0;
 }

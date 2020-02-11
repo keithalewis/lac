@@ -1,3 +1,4 @@
+#include <string.h>
 #include "ensure.h"
 #include "lac_stack.h"
 
@@ -19,46 +20,72 @@ int test_lac_stack()
 		lac_stack_push(stack, &c);
 		ensure (1 == lac_stack_count(stack));
 
-		stack = lac_stack_realloc(stack, 3);
 		{
 			lac_stack* s = lac_stack_copy(stack);
 
-			ensure (3 == lac_stack_size(s));
+			ensure (2 == lac_stack_size(s));
 			ensure (1 == lac_stack_size_of(s));
 			ensure (1 == lac_stack_count(s));
 			ensure (c == *(char*)lac_stack_top(s));
 
 			lac_stack_free(s);
 		}
-		lac_stack_push(stack, &c);
-		ensure (2 == lac_stack_count(stack));
-
-		stack = lac_stack_realloc(stack, 1);
-		ensure (1 == lac_stack_count(stack));
-		ensure (1 == lac_stack_size(stack));
-		ensure (c == *(char*)lac_stack_top(stack));
-
+	
 		lac_stack_free(stack);
 	}
 	{
 		lac_stack* stack = LAC_STACK_ALLOC(2, double);
 		ensure (0 == lac_stack_count(stack));
+		ensure (2 == lac_stack_size(stack));
+		ensure (sizeof(double) == lac_stack_size_of(stack));
 
-		double x = 1.23;
-		LAC_STACK_PUSH(stack, x);
+		double d = 1.23;
+		lac_stack_push(stack, &d);
 		ensure (1 == lac_stack_count(stack));
-		double y = LAC_STACK_TOP(stack, double);
-		ensure (x == y);
-		ensure (x == LAC_STACK_TOP(stack, double));
-		x *= 2;
-		LAC_STACK_PUSH(stack, x);
-		ensure (x == LAC_STACK_TOP(stack, double));
-		ensure (2 == lac_stack_count(stack));
-		lac_stack_pop(stack);
+		ensure (1.23 ==  *(double*)lac_stack_top(stack));
+		ensure (1.23 ==  LAC_STACK_TOP(stack, double));
+		{
+			lac_stack* s = lac_stack_copy(stack);
+
+			ensure (lac_stack_size(stack) == lac_stack_size(s));
+			ensure (lac_stack_size_of(stack) == lac_stack_size_of(s));
+			ensure (1 == lac_stack_count(s));
+			ensure (1.23 == *(double*)lac_stack_top(s));
+			ensure (1.23 ==  LAC_STACK_TOP(s, double));
+
+			lac_stack_free(s);
+		}
+	
+		lac_stack_free(stack);
+	}
+	{
+		lac_stack* stack = LAC_STACK_ALLOC(2, char*);
+		ensure (0 == lac_stack_count(stack));
+		ensure (2 == lac_stack_size(stack));
+		ensure (sizeof(char*) == lac_stack_size_of(stack));
+
+		const char* s = "abc";
+		lac_stack_push(stack, &s);
 		ensure (1 == lac_stack_count(stack));
-		ensure (1.23 == LAC_STACK_TOP(stack, double));
+		char* ps = LAC_STACK_TOP(stack, char*);
+		ensure (0 == strcmp(ps, s));
 		lac_stack_pop(stack);
 		ensure (0 == lac_stack_count(stack));
+		lac_stack_push(stack, &s);
+		ensure (1 == lac_stack_count(stack));
+
+		char* s_ = malloc(4);
+		strcpy(s_, s);
+		s_[0] = 'd';
+		lac_stack_push(stack, &s_);
+		ensure (2 == lac_stack_count(stack));
+		char* _s = LAC_STACK_TOP(stack, char*);
+		ensure (0 == strcmp(_s, "dbc"));
+		s_[1] = 'e';
+		ensure (0 == strcmp(_s, "dec"));
+		free (_s);
+		lac_stack_pop(stack);
+		ensure (1 == lac_stack_count(stack));
 
 		LAC_STACK_FREE(stack);
 	}

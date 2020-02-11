@@ -72,9 +72,6 @@ typedef struct {
 // allocate n args and set cif.arg_types to arg_types
 lac_cif* lac_cif_alloc(ffi_type* rtype, void* sym,
 	unsigned nargs, ffi_type **arg_types);
-// reallocate n args and set cif.arg_types to arg_types
-// preserve existing arg types
-lac_cif* lac_cif_realloc(lac_cif* pcif, unsigned nargs);
 void lac_cif_free(lac_cif* pcif);
 size_t lac_cif_size(lac_cif* pcif);
 

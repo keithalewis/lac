@@ -12,8 +12,6 @@ typedef struct {
 
 // allocate size items of size size_of
 lac_stack* lac_stack_alloc(size_t size, size_t size_of);
-// resize preserving the stack
-lac_stack* lac_stack_realloc(lac_stack* stack, size_t size);
 void       lac_stack_free(lac_stack*);
 lac_stack* lac_stack_copy(lac_stack* stack);
 

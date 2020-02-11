@@ -53,14 +53,17 @@ test_lac_variant_parse ()
   return 0;
 }
 
+/*
 static int incr(int i)
 {
 	return i+1;
 }
+*/
 
 int
 test_lac_cif ()
 {
+  /*
   {
     ffi_cif cif;
     ffi_type *args[1];
@@ -68,11 +71,11 @@ test_lac_cif ()
     int i = 'a';
 	int I;
 
-    /* Initialize the argument info vectors */
+    // Initialize the argument info vectors 
     args[0] = &ffi_type_sint;
     values[0] = &i;
 
-    /* Initialize the cif */
+    // Initialize the cif 
     ffi_status ret = ffi_prep_cif (&cif, FFI_DEFAULT_ABI, 1, &ffi_type_sint, args);
 	if (FFI_OK == ret) {
 		clock_t b = clock();
@@ -90,6 +93,7 @@ test_lac_cif ()
 		printf("C: %ld ms\n", (e - b)*1000/CLOCKS_PER_SEC);
     }
   }
+  */
   {
     ffi_cif cif;
     ffi_type *args[1];
@@ -151,6 +155,7 @@ test_lac_cif ()
 	// newly allocated cif
     args[1] = &ffi_type_pointer;
 	lac_cif* p = lac_cif_prep_var(pcif, 1, args + 1);
+	lac_cif_free(pcif);
 
     void *values[2];
     char *s, *fmt;
@@ -166,7 +171,6 @@ test_lac_cif ()
 	ensure (result.value.i == strlen(s) + 1);
 
 	lac_cif_free(p);
-	lac_cif_free(pcif);
   }
 
   return 0;

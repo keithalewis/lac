@@ -174,7 +174,7 @@ inline void* lac_variant_address(lac_variant* pv)
 
 lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e)
 {
-	lac_variant v;
+	lac_variant v = {.value.p = 0, .type = &ffi_type_pointer};
 
 #define X(A,B,C,D) if (C == type) { v = lac_variant_parse_##D(b,e); }
 	FFI_TYPE_TABLE(X)
@@ -205,17 +205,6 @@ lac_cif* lac_cif_alloc(ffi_type* rtype, void* sym,
 
 	return p;
 }
-// preserve existing arg_types
-lac_cif* lac_cif_realloc(lac_cif* p, unsigned n)
-{
-	p = realloc(p, sizeof(lac_cif) + n*sizeof(void*));
-	ensure (0 != p);
-
-	p->cif.nargs = n;
-	p->cif.arg_types = &p->arg_types[0];
-
-	return p;
-}
 
 void lac_cif_free(lac_cif* p)
 {
@@ -233,15 +222,15 @@ lac_cif_prep(lac_cif* pcif)
 lac_cif* lac_cif_prep_var(lac_cif* p, unsigned nargs, ffi_type** arg_types)
 {
 	unsigned nfix = p->cif.nargs; // number of fixed args
-	lac_cif* p_ = malloc(sizeof(lac_cif) + (nfix + nargs)*sizeof(void*));
+	lac_cif* p_ = malloc(sizeof(lac_cif) + (nfix + nargs)*sizeof(ffi_type*));
 	ensure (0 != p_);
 
 	p_->cif.rtype = p->cif.rtype;
 	p_->sym = p->sym;
 	p_->cif.nargs = p->cif.nargs + nargs;
-	p_->cif.arg_types = &p->arg_types[0];
+	p_->cif.arg_types = &p_->arg_types[0];
 	memcpy(p_->cif.arg_types, p->cif.arg_types, nfix*sizeof(ffi_type*));
-	memcpy(p_->cif.arg_types + nfix, arg_types, nargs*sizeof(void*));
+	memcpy(p_->cif.arg_types + nfix, arg_types, nargs*sizeof(ffi_type*));
 
 	ffi_status ret = ffi_prep_cif_var(&p_->cif, FFI_DEFAULT_ABI, nfix,
                    	 nfix + nargs, p_->cif.rtype, p_->cif.arg_types);

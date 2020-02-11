@@ -94,15 +94,23 @@ void lac_execute(lac_stream* fp)
 	lac_execute(fp);
 }
 
-void load(const char* lib, ffi_type* ret, const char* sym, int n, ...)
+// terminate with null pointer
+static void load(const char* lib, ffi_type* ret, const char* sym, ...)
 {
 	va_list ap;
-	ffi_type* arg[n];
+	ffi_type* arg[32]; // maximum number of arguments
 
-	va_start(ap, n);
-	for (int i = 0; i < n; ++i) {
-		arg[i] = va_arg(ap, ffi_type*);
+	va_start(ap, sym);
+	unsigned n = 0;
+	while (n < 32) {
+		ffi_type* type = va_arg(ap, ffi_type*);
+		if (!type) {
+			break;
+		}
+		arg[n] = type;
+		++n;
 	}
+	ensure (n < 32);
 	va_end(ap);
 
 	void* l = dlopen(lib, RTLD_LAZY);
@@ -120,7 +128,19 @@ void load(const char* lib, ffi_type* ret, const char* sym, int n, ...)
 void lac_init()
 {
 	{ // puts
-		load("libc.so.6", &ffi_type_sint, "puts", 1, &ffi_type_pointer);
+		load("libc.so.6", &ffi_type_sint, "puts", &ffi_type_pointer, 0);
+	}
+	{
+		static char* key = "type";
+		ffi_type* args[1] = {&ffi_type_pointer};
+		lac_cif* cif = lac_cif_alloc(&ffi_type_pointer, ffi_type_lookup, 1, args);
+		lac_map_put(LAC_TOKEN(key, key + 4), cif);
+	}
+	{
+		static char* key = "type";
+		ffi_type* args[1] = {&ffi_type_pointer};
+		lac_cif* cif = lac_cif_alloc(&ffi_type_pointer, ffi_type_lookup, 1, args);
+		lac_map_put(LAC_TOKEN(key, key + 4), cif);
 	}
 }
 
