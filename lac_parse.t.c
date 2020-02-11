@@ -10,13 +10,13 @@ int test_lac_parse()
 		lac_token t = LAC_TOKEN("a b c", 0);
 		lac_stream_string_view v = LAC_STREAM_STRING_TOKEN(t);
 		lac_stream s = lac_stream_string(&v);
-		t = lac_token_next(&s);
+		t = lac_stream_token_next(&s);
 		assert (0 == strncmp(t.b, "a", 1));
-		t = lac_token_next(&s);
+		t = lac_stream_token_next(&s);
 		assert (0 == strncmp(t.b, "b", 1));
-		t = lac_token_next(&s);
+		t = lac_stream_token_next(&s);
 		assert (0 == strncmp(t.b, "c", 1));
-		t = lac_token_next(&s);
+		t = lac_stream_token_next(&s);
 		assert (lac_token_empty(t));
 	}
 	/*

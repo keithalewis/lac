@@ -41,4 +41,4 @@ int lac_token_is_block(const lac_token t);
 // tokens starting with double quote ('"') end at matching quote
 // tokens starting with left curly bracket ('{') end at matching
 //   right curly brackets ('}') at the same nesting level.
-lac_token lac_token_next(lac_stream* s);
+lac_token lac_stream_token_next(lac_stream* s);

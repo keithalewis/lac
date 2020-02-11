@@ -37,7 +37,7 @@ void lac_call_thunk(lac_stream* fp, lac_variant* result, const lac_cif* thunk)
 	void* addr[n];
 
 	for (size_t i = 0; i < n; ++i) {
-		lac_token arg = lac_token_next(fp);
+		lac_token arg = lac_stream_token_next(fp);
 		ensure (!lac_token_error(arg));
 		if (';' == *arg.b && 1 == arg.e - arg.b) {
 			// pop from stack
@@ -77,20 +77,21 @@ int lac_execute_token(lac_stream* fp, lac_variant* result, lac_token t)
 
 void lac_execute(lac_stream* fp)
 {
-	lac_token t = lac_token_next(fp);
+	lac_token t = lac_stream_token_next(fp);
 
 	ensure (!lac_token_error(t));
 
-	lac_variant result;
-	while (lac_execute_token(fp, &result, t)) {
-		if (result.type != &ffi_type_void) {
-			lac_stack_push(stack, &result);
-		}
+	if (lac_token_last(t)) {
+		return;
 	}
 
-	if (!lac_token_last(t)) {
-		lac_execute(fp);
+	lac_variant result;
+	lac_execute_token(fp, &result, t);
+	if (result.type != &ffi_type_void) {
+		lac_stack_push(stack, &result);
 	}
+
+	lac_execute(fp);
 }
 
 void load(const char* lib, ffi_type* ret, const char* sym, int n, ...)
@@ -141,7 +142,7 @@ int main(int ac, const char* av[])
 	/*
 	do {
 		lac_token v;
-		v = lac_token_next(&s);
+		v = lac_stream_token_next(&s);
 		if (lac_token_error(v)) {
 			fputs("lac_token_error: ", stdout);	
 			v.e = 0;

@@ -18,6 +18,7 @@ int lac_token_size(const lac_token t)
 {
 	return t.e - t.b;
 }
+
 int lac_token_equal(const lac_token t, const lac_token u)
 {
 	int n = lac_token_size(t);
@@ -100,17 +101,19 @@ static char* stream_next_quote(lac_stream* fp, char* b, const char q /*= '"'*/)
 }
 
 // copy stream into static buffer and return view
-lac_token lac_token_next(lac_stream* fp)
+lac_token lac_stream_token_next(lac_stream* fp)
 {
 	static char buf[MAX_TOKEN_BUF];
 	int c;
 	char* b = buf;
-	char* e;
+	char* e = buf;
 
 	c = stream_skip(fp, isspace, true);
 
 	if (EOF == c) {
-		return (lac_token){0,0}; // empty
+		*e = EOF;
+
+		return (lac_token){b,e};
 	}
 
 	e = buf;
