@@ -47,6 +47,7 @@ int main()
 	int test_lac_map(void);
 	int test_lac_stream();
 	int test_lac(void);
+	int test_lac_variant();
 
 	test_lac_ffi();
 	test_lac_parse();
@@ -54,6 +55,7 @@ int main()
 	test_lac_map();
 	test_lac_stream();
 //	test_lac();
+	test_lac_variant();
 
 	return 0;
 }
