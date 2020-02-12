@@ -1,6 +1,24 @@
 // lac_variant.c - variant type
 #include "lac_variant.h"
 
+static const ffi_type ffi_type_variant_union;
+
+static const ffi_type* ffi_elements_variant[2] = {
+	&ffi_type_variant_union,
+	&ffi_type_pointer
+};
+
+struct struct_align_variant {
+	char c;
+	lac_variant x;
+};
+const ffi_type ffi_type_variant = {
+	sizeof(lac_variant),
+	offsetof(struct struct_align_variant, x),
+	FFI_TYPE_VARIANT,
+	(ffi_type**)ffi_elements_variant
+};
+
 // type for printf format string
 char ffi_type_format(ffi_type* type)
 {
@@ -10,7 +28,7 @@ char ffi_type_format(ffi_type* type)
 	return 0;
 }
 
-ffi_type* ffi_type_lookup(const char* name)
+const ffi_type* ffi_type_lookup(const char* name)
 {
 	if ('d' == *name) {
 		return &ffi_type_double;
@@ -43,6 +61,9 @@ ffi_type* ffi_type_lookup(const char* name)
 	}
 	if (0 == strcmp("void", name)) {
 		return &ffi_type_void;
+	}
+	if (0 == strcmp("variant", name)) {
+		return &ffi_type_variant;
 	}
 
 	return 0;

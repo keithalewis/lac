@@ -124,6 +124,11 @@ static void load(const char* lib, ffi_type* ret, const char* sym, ...)
 	lac_map_put(LAC_TOKEN(t, t + size), cif);
 }
 
+static lac_variant pick(size_t n)
+{
+	return LAC_STACK_PICK(stack, n, lac_variant);
+}
+
 // add some thunks to the dictionary
 void lac_init()
 {
@@ -131,17 +136,20 @@ void lac_init()
 		load("libc.so.6", &ffi_type_sint, "puts", &ffi_type_pointer, 0);
 	}
 	{
-		static char* key = "type";
+		lac_token key = LAC_TOKEN("type", 0);
 		ffi_type* args[1] = {&ffi_type_pointer};
 		lac_cif* cif = lac_cif_alloc(&ffi_type_pointer, ffi_type_lookup, 1, args);
-		lac_map_put(LAC_TOKEN(key, key + 4), cif);
+		lac_map_put(key, cif);
 	}
 	{
-		static char* key = "type";
+		//static char* key = "pick";
+		/*
 		ffi_type* args[1] = {&ffi_type_pointer};
 		lac_cif* cif = lac_cif_alloc(&ffi_type_pointer, ffi_type_lookup, 1, args);
 		lac_map_put(LAC_TOKEN(key, key + 4), cif);
+		*/
 	}
+	// del - delete dictionary entry
 }
 
 int main(int ac, const char* av[])

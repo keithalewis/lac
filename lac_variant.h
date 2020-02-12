@@ -34,7 +34,7 @@ extern "C" {
 	// X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer, 
 
 // convert string name to ffi type
-ffi_type* ffi_type_lookup(const char* name);
+const ffi_type* ffi_type_lookup(const char* name);
 
 // type for printf format string
 char ffi_type_format(ffi_type* type);
@@ -48,6 +48,10 @@ typedef struct {
 	} value;
 	ffi_type* type;
 } lac_variant;
+
+#define FFI_TYPE_VARIANT (FFI_TYPE_LAST+1)
+// add variant type for libffi
+FFI_EXTERN const ffi_type ffi_type_variant;
 
 // pointer address of variant value
 void* lac_variant_address(lac_variant* pv);
