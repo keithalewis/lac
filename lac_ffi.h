@@ -33,9 +33,6 @@ extern "C" {
 	// X(FFI_TYPE_COMPLEX
 	// X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer, 
 
-// convert string name to ffi type
-ffi_type* ffi_type_lookup(const char* name);
-
 // variant data type 
 typedef struct {
 	union {

@@ -15,7 +15,7 @@ static int incr(int i)
 int
 test_lac_cif ()
 {
-  /*
+/*
   {
     ffi_cif cif;
     ffi_type *args[1];
@@ -45,7 +45,7 @@ test_lac_cif ()
 		printf("C: %ld ms\n", (e - b)*1000/CLOCKS_PER_SEC);
     }
   }
-  */
+*/
   {
     ffi_cif cif;
     ffi_type *args[1];

@@ -89,6 +89,22 @@ int test_lac_stack()
 
 		LAC_STACK_FREE(stack);
 	}
+	{
+		lac_stack* stack = LAC_STACK_ALLOC(3, long);
+		long i1 = 1, i2 = 2;
+		lac_stack_push(stack, &i1); // -- i1
+		lac_stack_push(stack, &i2); // -- i2 i1
+		ensure (2 == lac_stack_count(stack));
+		ensure (i2 == LAC_STACK_PICK(stack, 1, long));
+		ensure (i1 == LAC_STACK_PICK(stack, 2, long));
+/*
+		lac_stack_roll(stack, 2); // -- i1 i2
+		ensure (2 == lac_stack_count(stack));
+		ensure (i1 == LAC_STACK_PICK(stack, 1, long));
+		ensure (i2 == LAC_STACK_PICK(stack, 2, long));
+*/
+		LAC_STACK_FREE(stack);
+	}
 	
 	return 0;
 }

@@ -64,22 +64,26 @@ void *lac_stack_top(lac_stack* stack)
 	return stack->sp;
 }
 
-/*
-// s[0],...,s[n] -- s[1],...,s[n],s[0] 
-void lac_stack_roll(lac_stack* stack)
-{
-	char* top[stack->size_of];
-	memcpy(top, stack->sp, stack->sizeof);
-	for (size_t i = 1; i < lac_stack_count(stack); ++i) {
-		memcpy(stack->sp + i - 1, stack->sp
-	}
-}
-*/
-
 // get n-th element from stack
 void* lac_stack_pick(lac_stack* stack, size_t n)
 {
-	ensure (n < lac_stack_count(stack));
+	ensure (0 < n && n <= lac_stack_count(stack));
 
-	return stack->sp + n*stack->size_of;
+	return stack->sp + (n-1)*stack->size_of;
+}
+
+// a1 a2 ... an -- an a1 ... an-1
+void lac_stack_roll(lac_stack* stack, size_t n)
+{
+	if (n < 2) {
+		return;
+	}
+
+	size_t so = stack->size_of;
+	char* sn = lac_stack_pick(stack, n);
+
+	char in[so];
+	memcpy(in, sn, so);
+	memmove(stack->sp + so, stack->sp, (n - 1)*so);
+	memcpy(sn, in, so);
 }

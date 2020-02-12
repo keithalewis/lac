@@ -36,6 +36,9 @@ extern "C" {
 // convert string name to ffi type
 ffi_type* ffi_type_lookup(const char* name);
 
+// type for printf format string
+char ffi_type_format(ffi_type* type);
+
 // variant data type 
 typedef struct {
 	union {

@@ -50,9 +50,21 @@ test_lac_variant_parse ()
   return 0;
 }
 
+int test_ffi_type_format()
+{
+	ensure ('i' == ffi_type_format(&ffi_type_sint));
+	ensure ('u' == ffi_type_format(&ffi_type_uint));
+	ensure ('d' == ffi_type_format(&ffi_type_double));
+	ensure ('f' == ffi_type_format(&ffi_type_float));
+	ensure ('p' == ffi_type_format(&ffi_type_pointer));
+
+	return 0;
+}
+
 int test_lac_variant()
 {
 	test_lac_variant_parse();
+	test_ffi_type_format();
 
 	return 0;
 }

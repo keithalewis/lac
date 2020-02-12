@@ -27,11 +27,14 @@ void lac_stack_pop(lac_stack*);
 // pointer to top of stack
 void* lac_stack_top(lac_stack*);
 
-// get n-th element from stack
+// get n-th element from stack where n = 1 is top of stack
 void* lac_stack_pick(lac_stack*,size_t n);
+// a1 a2 ... an -- an a1 ... an-1
+void lac_stack_roll(lac_stack*,size_t n);
 
 #define LAC_STACK_ALLOC(N,T) lac_stack_alloc(N, sizeof(T))
 #define LAC_STACK_FREE(S) lac_stack_free(S)
 #define LAC_STACK_PUSH(S,T) lac_stack_push(S, &T)
 // cast top of stack to the right type
 #define LAC_STACK_TOP(S,T) *(T*)lac_stack_top(S)
+#define LAC_STACK_PICK(S,N,T) *(T*)lac_stack_pick(S,N)

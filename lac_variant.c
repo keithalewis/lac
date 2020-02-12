@@ -1,6 +1,15 @@
 // lac_variant.c - variant type
 #include "lac_variant.h"
 
+// type for printf format string
+char ffi_type_format(ffi_type* type)
+{
+#define X(A,B,C,D) if (C == type) return *#D;
+	FFI_TYPE_TABLE(X)
+#undef X
+	return 0;
+}
+
 ffi_type* ffi_type_lookup(const char* name)
 {
 	if ('d' == *name) {
