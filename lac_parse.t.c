@@ -28,8 +28,24 @@ int test_lac_parse_tokens(char* t, ...)
 	return 0;
 }
 
+int test_lac_parse_alloc()
+{
+	char tok[] = "tok";
+	lac_token t = (lac_token){tok, tok + 3};
+	lac_token u = lac_token_alloc(tok, 0);
+	ensure (lac_token_equal(t, u));
+	lac_token v = lac_token_copy(&u);
+	ensure (lac_token_equal(u, v));
+
+	lac_token_free(&v);
+	lac_token_free(&u);
+
+	return 0;
+}
+
 int test_lac_parse()
 {
+	test_lac_parse_alloc();
 	test_lac_parse_tokens("a b c", "a", "b", "c", 0);
 	test_lac_parse_tokens("a\tb c", "a", "b", "c", 0);
 	test_lac_parse_tokens("a\tb\r c", "a", "b", "c", 0);

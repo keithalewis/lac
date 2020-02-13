@@ -68,11 +68,29 @@ int test_lac_variant_union_prep()
 	return 0;
 }
 
+int test_lac_variant_x()
+{
+	lac_variant v;
+
+	int i = 2;
+	v = lac_variant_i(i);
+	ensure (v.type == &ffi_type_sint);
+	ensure (v.value.i == i);
+
+	double d = 1.23;
+	v = lac_variant_d(d);
+	ensure (v.type == &ffi_type_double);
+	ensure (v.value.d == d);
+
+	return 0;
+}
+
 int test_lac_variant()
 {
 	test_lac_variant_parse();
 	test_ffi_type_format();
 	test_lac_variant_union_prep();
+	test_lac_variant_x();
 
 	return 0;
 }

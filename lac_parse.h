@@ -15,7 +15,10 @@ typedef struct {
 	char* e;
 } lac_token;
 
-#define LAC_TOKEN(b, e) (lac_token){b, e == 0 ? b + strlen(b) : e}
+#define LAC_TOKEN(b, n) (lac_token){b, b + (n ? n : strlen(b))}
+lac_token lac_token_alloc(const char*, size_t);
+lac_token lac_token_copy(const lac_token*);
+void lac_token_free(lac_token*);
 
 int lac_token_size(const lac_token);
 int lac_token_equal(const lac_token, const lac_token);

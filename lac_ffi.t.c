@@ -103,6 +103,7 @@ test_lac_cif ()
     args[0] = &ffi_type_pointer;
 
     lac_cif *pcif = lac_cif_alloc(&ffi_type_sint, printf, 1, args);
+	pcif->cif.nargs = -pcif->cif.nargs; // varargs
 
 	// newly allocated cif
     args[1] = &ffi_type_pointer;
@@ -143,7 +144,8 @@ int test_lac_cif_variant()
     ffi_cif cif;
     ffi_type* args[1];
     void *values[1];
-	lac_variant r, v = (lac_variant){.type = &ffi_type_double, .value.d = 1.23};
+	lac_variant r = (lac_variant){.type = &ffi_type_sint};
+	lac_variant v = (lac_variant){.type = &ffi_type_double, .value.d = 1.23};
 
     /* Initialize the argument info vectors */
     args[0] = &ffi_type_variant;

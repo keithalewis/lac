@@ -69,4 +69,9 @@ lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e);
 	FFI_TYPE_TABLE(X)
 #undef X
 
+#define X(A,B,C,D) lac_variant lac_variant_##D(B);
+	FFI_TYPE_TABLE(X)
+#undef X
+
+// call to initialize ffi_type_variant
 void prep_variant_union_type(void);

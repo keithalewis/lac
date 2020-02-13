@@ -19,6 +19,8 @@ int test_lac_stream()
 		ensure ('b' == c);
 		c = lac_stream_getc(&s);
 		ensure (EOF == c);
+
+		fclose(ps);
 	}
 	{
 		lac_token t = LAC_TOKEN("ab", 0);

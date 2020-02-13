@@ -1,7 +1,30 @@
 // lac_parse.c - parsing functions
+#include <stdlib.h>
 #include "ensure.h"
 #include "lac_stream.h"
 #include "lac_parse.h"
+
+lac_token lac_token_alloc(const char* s, size_t n)
+{
+	lac_token t;
+
+	if (0 == n) {
+		n = strlen(s);
+	}
+	t.b = malloc(n + 1);
+	strcpy(t.b, s);
+	t.e = t.b + n;
+
+	return t;
+}
+lac_token lac_token_copy(const lac_token* t)
+{
+	return lac_token_alloc(t->b, t->e - t->b);
+}
+void lac_token_free(lac_token* t)
+{
+	free (t->b);
+}
 
 bool lac_token_empty(const lac_token t)
 {

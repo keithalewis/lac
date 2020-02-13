@@ -33,7 +33,14 @@ ffi_status lac_cif_prep(lac_cif* pcif);
 // call ffi_prep_cif_var for variadic functions
 // where nargs is the number of variable args
 // unlike ffi_prep_cif_var, arg_types only has nargs items
-lac_cif* lac_cif_prep_var(lac_cif* pcif, unsigned nargs, ffi_type** arg_types);
+lac_cif* lac_cif_prep_var(const lac_cif* pcif, unsigned nargs, ffi_type** arg_types);
 
 // call ffi_call and store result
 void lac_cif_call(const lac_cif* pcif, lac_variant* result, void** args);
+
+// load symbol from library
+// terminate arg types with null pointer
+lac_cif* lac_cif_load(const char* lib, ffi_type* ret, const char* sym, ...);
+// load varargs function (nargs = -nargs)
+lac_cif* lac_cif_loadv(const char* lib, ffi_type* ret, const char* sym, ...);
+

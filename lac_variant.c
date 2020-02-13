@@ -247,3 +247,6 @@ lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e)
 	return v;
 }
 
+#define X(A,B,C,D) lac_variant lac_variant_##D(B b) { return (lac_variant){.type = C, .value.D = b}; }
+	FFI_TYPE_TABLE(X)
+#undef X
