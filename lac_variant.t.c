@@ -61,10 +61,18 @@ int test_ffi_type_format()
 	return 0;
 }
 
+int test_lac_variant_union_prep()
+{
+	prep_variant_union_type();
+
+	return 0;
+}
+
 int test_lac_variant()
 {
 	test_lac_variant_parse();
 	test_ffi_type_format();
+	test_lac_variant_union_prep();
 
 	return 0;
 }

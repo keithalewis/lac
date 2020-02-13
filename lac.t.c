@@ -45,9 +45,9 @@ int main()
 	int test_lac_parse(void);
 	int test_lac_stack(void);
 	int test_lac_map(void);
-	int test_lac_stream();
+	int test_lac_stream(void);
 	int test_lac(void);
-	int test_lac_variant();
+	int test_lac_variant(void);
 
 	test_lac_ffi();
 	test_lac_parse();

@@ -128,10 +128,41 @@ test_lac_cif ()
   return 0;
 }
 
-int
-test_lac_ffi ()
+lac_variant f(const lac_variant v)
 {
-  test_lac_cif ();
+	lac_variant r;
+	r.type = &ffi_type_sint;
+	r.value.i = 2;
+
+	return r;
+}
+
+int test_lac_cif_variant()
+{
+	prep_variant_union_type();
+    ffi_cif cif;
+    ffi_type* args[1];
+    void *values[1];
+	lac_variant r, v = (lac_variant){.type = &ffi_type_double, .value.d = 1.23};
+
+    /* Initialize the argument info vectors */
+    args[0] = &ffi_type_variant;
+    values[0] = &v;
+
+    if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, 1, &ffi_type_variant, args) == FFI_OK)
+    {
+		ffi_call (&cif, (void *) f, lac_variant_address(&r), values);
+		ensure (r.type == &ffi_type_sint);
+		ensure (r.value.i == 2);
+    }
+
+	return 0;
+}
+
+int test_lac_ffi ()
+{
+  test_lac_cif();
+  test_lac_cif_variant();
 
   return 0;
 }

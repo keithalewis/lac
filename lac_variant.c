@@ -1,28 +1,63 @@
 // lac_variant.c - variant type
 #include "lac_variant.h"
 
-static const ffi_type ffi_type_variant_union;
-
-static const ffi_type* ffi_elements_variant[2] = {
-	&ffi_type_variant_union,
-	&ffi_type_pointer
+static const ffi_type* ffi_variant_union_elements[] = {&ffi_type_pointer, NULL};
+static ffi_type ffi_type_variant_union = {
+	.size = 0,
+	.alignment = 0,
+	.type = FFI_TYPE_STRUCT,
+	.elements = (ffi_type**)ffi_variant_union_elements
 };
+
+#define X(A,B,C,D) C ,
+ffi_type* ffi_type_variant_union_elements[] = {
+	FFI_TYPE_TABLE(X)
+	NULL
+};
+#undef X
+
+// assume union_type->elements initialized by ffi_type[2] = { ?, NULL}
+static void prep_union_type(ffi_type* union_type, ffi_type** union_elements)
+{
+	while (*union_elements) {
+		ffi_cif cif;
+		if (FFI_OK == ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 0, *union_elements, NULL)) {
+			if ((*union_elements)->size > union_type->size) {
+				union_type->size = (*union_elements)->size;
+			}
+			if ((*union_elements)->alignment > union_type->alignment) {
+				union_type->alignment = (*union_elements)->alignment;
+			}
+		}
+		++union_elements;
+	}
+}
+
+void prep_variant_union_type(void)
+{
+	prep_union_type(&ffi_type_variant_union, ffi_type_variant_union_elements);
+}
 
 struct struct_align_variant {
 	char c;
 	lac_variant x;
 };
-const ffi_type ffi_type_variant = {
-	sizeof(lac_variant),
-	offsetof(struct struct_align_variant, x),
-	FFI_TYPE_STRUCT,
-	(ffi_type**)ffi_elements_variant
+static const ffi_type* ffi_variant_elements[] = {
+	&ffi_type_variant_union,
+	&ffi_type_pointer,
+	NULL
+};
+ffi_type ffi_type_variant = {
+	.size = sizeof(lac_variant),
+	.alignment = offsetof(struct struct_align_variant, x),
+	.type = FFI_TYPE_STRUCT,
+	.elements = (ffi_type**)ffi_variant_elements
 };
 
 // type for printf format string
 char ffi_type_format(ffi_type* type)
 {
-#define X(A,B,C,D) if (C == type) return *#D;
+#define X(A,B,C,D) if (C == type) return (#D)[0];
 	FFI_TYPE_TABLE(X)
 #undef X
 	return 0;
