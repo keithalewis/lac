@@ -15,7 +15,7 @@ struct struct_align_variant {
 const ffi_type ffi_type_variant = {
 	sizeof(lac_variant),
 	offsetof(struct struct_align_variant, x),
-	FFI_TYPE_VARIANT,
+	FFI_TYPE_STRUCT,
 	(ffi_type**)ffi_elements_variant
 };
 

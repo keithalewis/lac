@@ -25,7 +25,10 @@ libffi: libffi/configure
 
 libffi/configure: libffi/autogen.sh
 	(cd libffi; ./autogen.sh)
-	(cd libffi; ./configure --enable-debug --disable-docs)
+	(cd libffi; CFLAGS="-g -O0"  ./configure --enable-debug --disable-docs)
+
+libffi/autogen.sh: 
+	git submodule update
 
 .PHONY : clean
 clean:

@@ -49,7 +49,6 @@ typedef struct {
 	ffi_type* type;
 } lac_variant;
 
-#define FFI_TYPE_VARIANT (FFI_TYPE_LAST+1)
 // add variant type for libffi
 FFI_EXTERN const ffi_type ffi_type_variant;
 
