@@ -14,7 +14,7 @@ lac_stack* stack;
 
 void lac_call_thunk(lac_stream* fp, lac_variant* result, const lac_cif* thunk);
 
-lac_variant lac_parse_token(lac_stream* fp, lac_token t, ffi_type* type)
+lac_variant lac_parse_token(lac_stream* fp, lac_token t, ffi_type* type, char** pb, const char* e)
 {
 	lac_variant v;
 
@@ -27,9 +27,11 @@ lac_variant lac_parse_token(lac_stream* fp, lac_token t, ffi_type* type)
 		if (v.type == &ffi_type_pointer) {
 			// string
 			unsigned n = lac_token_size(t);
-			char* ps = malloc(n + 1);
-			strncpy(ps, v.value.p, n);
-			v.value.p = ps;
+			ensure (*pb + n + 1 < e);
+			strncpy(*pb, v.value.p, n);
+			(*pb)[n] = 0;
+			v.value.p = *pb;
+			*pb += n + 1;
 		}
 	}
 
@@ -38,13 +40,13 @@ lac_variant lac_parse_token(lac_stream* fp, lac_token t, ffi_type* type)
 
 // fill args and addr with arguments given the type
 void lac_parse_args(lac_stream* fp, unsigned n, ffi_type** types,
-	lac_variant* args, void** addr)
+	lac_variant* args, void** addr, char** pb, const char* e)
 {
 	for (unsigned i = 0; i < n; ++i) {
 		lac_token arg = lac_stream_token_next(fp);
 		ensure (!lac_token_error(arg));
 		ensure (!lac_token_last(arg));
-		args[i] = lac_parse_token(fp, arg, types[i]);
+		args[i] = lac_parse_token(fp, arg, types[i], pb, e);
 		addr[i] = lac_variant_address(&args[i]);
 	}
 }
@@ -53,6 +55,9 @@ void lac_call_thunk(lac_stream* fp, lac_variant* result, const lac_cif* thunk)
 {
 	const ffi_cif* cif = &thunk->cif;
 	int n = cif->nargs;
+	// buffer for strings on argument stack
+	char buf[1024] ;
+	char* pbuf = buf;
 
 	if (n == 0) {
 		lac_cif_call(thunk, result, NULL);
@@ -61,44 +66,62 @@ void lac_call_thunk(lac_stream* fp, lac_variant* result, const lac_cif* thunk)
 		//??? local stack for string args???
 		lac_variant args[n];
 		void* addr[n];
-		lac_parse_args(fp, n, cif->arg_types, args, addr);
+		lac_parse_args(fp, n, cif->arg_types, args, addr, &pbuf, pbuf + 1024);
 		lac_cif_call(thunk, result, addr);
 	}
-	/*
 	else { // varargs
 		lac_variant args[32];
 		void* addr[32];
 		n = -n; // fixed args
-		// get fixed arguments
-		lac_parse_args(fp, n, cif->arg_types, args, addr);
-		//??? what are the types???
-		//lac_token arg = lac_stream_token_next(fp);
+		// parse fixed arguments
+		lac_parse_args(fp, n, cif->arg_types, args, addr, &pbuf, pbuf + 1024);
+
+		// the rest of the args must be results of thunks returning lac_variants
+		// use the known function "null" to terminate
+		// it returns a variant of type &ffi_type_void
+
+		//!!! factor out lac_parse_argsv
 		ffi_type* types[32];
 		lac_token arg;
+		lac_variant ret;
+
+		arg = lac_stream_token_next(fp);
+		ensure (!lac_token_error(arg));
+		ensure (!lac_token_last(arg));
+		const lac_cif* cif = lac_map_get(arg);
+		ensure (cif);
+		lac_call_thunk(fp, &ret, cif);
+
 		unsigned i = 0;
-		do {
-			ensure (i < 32);
+		while (&ffi_type_void != ret.type) {
+			ensure (i + n < 32);
+			args[i + n] = ret;
+			addr[i + n] = lac_variant_address(&args[i + n]);
+			types[i] = args[i + n].type;
+
 			arg = lac_stream_token_next(fp);
 			ensure (!lac_token_error(arg));
 			ensure (!lac_token_last(arg));
-			args[i] = lac_parse_token(fp, arg, cif->arg_types[i]);
-			addr[i] = lac_variant_address(&args[i]);
-			types[i - n] = args[i].type;
-			++i;
-		} while (*arg.e != '\n');
+			const lac_cif* cif = lac_map_get(arg);
+			ensure (cif);
+			lac_call_thunk(fp, &ret, cif);
 
-		lac_cif* cif_ = lac_cif_prep_var(thunk, i - n, types);
+			++i;
+		}
+
+		lac_cif* cif_ = lac_cif_prep_var(thunk, i, types);
 
 		ffi_call(&cif_->cif, thunk->sym, lac_variant_address(result), addr);
+		result->type = cif_->cif.rtype;
+
+		lac_cif_free(cif_);
 	}
-	*/
 	// free pointer args???
 }
 
 void lac_execute(lac_stream* fp)
 {
 	lac_token t;
-	lac_variant v;
 
 	for (t = lac_stream_token_next(fp);
 	     !lac_token_last(t);
@@ -108,6 +131,7 @@ void lac_execute(lac_stream* fp)
 		const lac_cif* cif = lac_map_get(t);
 		ensure (cif);
 
+		lac_variant v;
 		lac_call_thunk(fp, &v, cif);
 		if (v.type != &ffi_type_void) {
 			lac_stack_push(stack, &v);
@@ -127,6 +151,15 @@ static unsigned count(void)
 {
 	return lac_stack_count(stack);
 }
+
+static lac_variant null(void)
+{
+	return (lac_variant){.type = &ffi_type_void, .value.p = NULL};
+}
+
+static void comment(void)
+{
+}
 /*
 static void print(const lac_variant v)
 {
@@ -141,9 +174,20 @@ void lac_init()
 	// types
 	{
 		ffi_type* args[1] = {&ffi_type_sint};
-		lac_cif* cif = lac_cif_alloc(&ffi_type_variant, lac_variant_i, 1, args);
+		lac_cif* cif = lac_cif_alloc(&ffi_type_sint, lac_variant_i, 1, args);
 		ensure (cif);
 		lac_map_put(lac_token_alloc("int", 0), cif);
+	}
+	{
+		ffi_type* args[1] = {&ffi_type_double};
+		lac_cif* cif = lac_cif_alloc(&ffi_type_double, lac_variant_d, 1, args);
+		ensure (cif);
+		lac_map_put(lac_token_alloc("double", 0), cif);
+	}
+	{
+		lac_cif* cif = lac_cif_alloc(&ffi_type_void, null, 0, NULL);
+		ensure (cif);
+		lac_map_put(lac_token_alloc("null", 0), cif);
 	}
 	{
 		lac_cif* cif = lac_cif_load("libc.so.6", &ffi_type_sint, "puts", &ffi_type_pointer, 0);
@@ -217,6 +261,7 @@ int main(int ac, const char* av[])
 	lac_execute(&s/*, dict, stack*/);
 
 	LAC_STACK_FREE(stack);
+	//!!! Free dictionary
 
 	return 0;
 }

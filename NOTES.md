@@ -9,7 +9,7 @@ read a token, look it up, execute
 When a regular token is encountered its symbol is looked up in the dictionary.  
 The number and type of arguments required by the symbol are used to parse the required arguments from the stream. 
 If a newline is encountered before the required number of arguments are seen the remaining arguments
-are popped from the stack.
+are popped from the stack. (This is a special case!)
 The function corresponding to the symbol is then called on the arguments and the result is pushed on the stack.  
 
 ## Special Tokens
