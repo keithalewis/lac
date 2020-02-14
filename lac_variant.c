@@ -33,7 +33,7 @@ static void prep_union_type(ffi_type* union_type, ffi_type** union_elements)
 	}
 }
 
-void prep_variant_union_type(void)
+void ffi_type_variant_prep(void)
 {
 	prep_union_type(&ffi_type_variant_union, ffi_type_variant_union_elements);
 }

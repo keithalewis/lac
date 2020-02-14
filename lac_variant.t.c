@@ -63,7 +63,7 @@ int test_ffi_type_format()
 
 int test_lac_variant_union_prep()
 {
-	prep_variant_union_type();
+	ffi_type_variant_prep();
 
 	return 0;
 }

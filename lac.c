@@ -51,9 +51,23 @@ void lac_parse_args(lac_stream* fp, unsigned n, ffi_type** types,
 		addr[i] = lac_variant_address(&args[i]);
 	}
 }
-/* parse variant args
+// parse variant args
+/*
 void lac_parse_argsv(lac_stream* fp, unsigned n, ffi_type** types,
 	lac_variant* args, void** addr, char** pb, const char* e)
+{
+	lac_token arg = lac_stream_token_next(fp);
+	ensure (!lac_token_error(arg));
+	ensure (!lac_token_last(arg));
+	args[0] = lac_parse_token(fp, arg, types[i], pb, e);
+	for (unsigned i = 0; i < n; ++i) {
+		lac_token arg = lac_stream_token_next(fp);
+		ensure (!lac_token_error(arg));
+		ensure (!lac_token_last(arg));
+		args[i] = lac_parse_token(fp, arg, types[i], pb, e);
+		addr[i] = lac_variant_address(&args[i]);
+	}
+}
 */
 
 void lac_call_thunk(lac_stream* fp, lac_variant* result, const lac_cif* thunk)
@@ -82,7 +96,7 @@ void lac_call_thunk(lac_stream* fp, lac_variant* result, const lac_cif* thunk)
 		lac_parse_args(fp, n, cif->arg_types, args, addr, &pbuf, pbuf + 1024);
 
 		// the rest of the args must be results of thunks returning lac_variants
-		// use the known function "null" to terminate
+		// use the known function "void" to terminate
 		// it returns a variant of type &ffi_type_void
 
 		//!!! factor out lac_parse_argsv
@@ -143,117 +157,6 @@ void lac_execute(lac_stream* fp)
 		}
 	}
 }
-
-static lac_variant pick(size_t n)
-{
-	return LAC_STACK_PICK(stack, n, lac_variant);
-}
-static void push(lac_variant v)
-{
-	lac_stack_push(stack, &v);
-}
-static unsigned count(void)
-{
-	return lac_stack_count(stack);
-}
-
-static lac_variant null(void)
-{
-	return (lac_variant){.type = &ffi_type_void, .value.p = NULL};
-}
-
-/*
-static void comment(void)
-{
-}
-*/
-static void roll(unsigned n)
-{
-	lac_stack_roll(stack, n);
-}
-
-static lac_variant top(void)
-{
-	return LAC_STACK_TOP(stack, lac_variant);
-}
-/*
-static void print(const lac_variant v)
-{
-	char fmt[3] = "% ";
-	fmt[1] = ffi_type_format(v.type);
-}
-*/
-
-// add some thunks to the dictionary
-void lac_init()
-{
-	// types
-	{
-		ffi_type* args[1] = {&ffi_type_sint};
-		lac_cif* cif = lac_cif_alloc(&ffi_type_sint, lac_variant_i, 1, args);
-		ensure (cif);
-		lac_map_put(lac_token_alloc("int", 0), cif);
-	}
-	{
-		ffi_type* args[1] = {&ffi_type_double};
-		lac_cif* cif = lac_cif_alloc(&ffi_type_double, lac_variant_d, 1, args);
-		ensure (cif);
-		lac_map_put(lac_token_alloc("double", 0), cif);
-	}
-	{
-		lac_cif* cif = lac_cif_alloc(&ffi_type_void, null, 0, NULL);
-		ensure (cif);
-		lac_map_put(lac_token_alloc("null", 0), cif);
-	}
-	{
-		lac_cif* cif = lac_cif_load("libc.so.6", &ffi_type_sint, "puts", &ffi_type_pointer, 0);
-		ensure (cif);
-		lac_map_put(lac_token_alloc("puts", 0), cif);
-	}
-	{
-		lac_cif* cif = lac_cif_load("libc.so.6", &ffi_type_sint, "printf", &ffi_type_pointer, 0);
-		ensure (cif);
-		// varargs
-		cif->cif.nargs = -cif->cif.nargs;
-		lac_map_put(lac_token_alloc("printf", 0), cif);
-	}
-	{
-		lac_token key = LAC_TOKEN("type", 0);
-		ffi_type* args[1] = {&ffi_type_pointer};
-		lac_cif* cif = lac_cif_alloc(&ffi_type_pointer, ffi_type_lookup, 1, args);
-		lac_map_put(key, cif);
-	}
-	{
-		lac_token key = LAC_TOKEN("pick",0);
-		ffi_type* args[1] = {&ffi_type_uint};
-		lac_cif* cif = lac_cif_alloc(&ffi_type_variant, pick, 1, args);
-		lac_map_put(key, cif);
-	}
-	{
-		lac_token key = LAC_TOKEN("push",0);
-		ffi_type* args[1] = {&ffi_type_variant};
-		lac_cif* cif = lac_cif_alloc(&ffi_type_void, push, 1, args);
-		lac_map_put(key, cif);
-	}
-	{
-		lac_token key = LAC_TOKEN("roll",0);
-		ffi_type* args[1] = {&ffi_type_uint};
-		lac_cif* cif = lac_cif_alloc(&ffi_type_void, roll, 1, args);
-		lac_map_put(key, cif);
-	}
-	{
-		lac_token key = LAC_TOKEN("depth",0);
-		lac_cif* cif = lac_cif_alloc(&ffi_type_uint, count, 0, NULL);
-		lac_map_put(key, cif);
-	}
-	{
-		lac_token key = LAC_TOKEN("top",0);
-		lac_cif* cif = lac_cif_alloc(&ffi_type_variant, top, 0, NULL);
-		lac_map_put(key, cif);
-	}
-	// del - delete dictionary entry
-}
-
 int main(int ac, const char* av[])
 {
 	FILE* fp;
@@ -261,8 +164,6 @@ int main(int ac, const char* av[])
 	fp = ac > 1 ? fopen(av[1], "r") : stdin;
 	ensure (fp);
 	file = ac > 1 ? av[1] : "stdin";
-
-	stack = LAC_STACK_ALLOC(1024, lac_variant);
 
 	lac_init();
 

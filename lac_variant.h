@@ -52,6 +52,9 @@ typedef struct {
 // variant type for libffi
 FFI_EXTERN ffi_type ffi_type_variant;
 
+// call to initialize ffi_type_variant
+void ffi_type_variant_prep(void);
+
 // pointer address of variant value
 void* lac_variant_address(lac_variant* pv);
 
@@ -65,7 +68,7 @@ lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e);
 	FFI_TYPE_TABLE(X)
 #undef X
 
-// (lac_variant){.type = C, .value.D = lac_parse_##D(b, e)}
+// parse and put into variant
 #define X(A,B,C,D) lac_variant lac_variant_parse_##D(const char* b, const char* e);
 	FFI_TYPE_TABLE(X)
 #undef X
@@ -78,5 +81,3 @@ lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e);
 // convert variant to string of at most size chars
 int lac_variant_snprint(char* buf, size_t size, const lac_variant v);
 
-// call to initialize ffi_type_variant
-void prep_variant_union_type(void);

@@ -140,7 +140,7 @@ lac_variant f(const lac_variant v)
 
 int test_lac_cif_variant()
 {
-	prep_variant_union_type();
+	ffi_type_variant_prep();
     ffi_cif cif;
     ffi_type* args[1];
     void *values[1];
