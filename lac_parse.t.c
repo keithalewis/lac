@@ -53,6 +53,7 @@ int test_lac_parse()
 	test_lac_parse_tokens("\"b \" \"", "\"b \"", 0);
 	test_lac_parse_tokens("{a {b} c}", "{a {b} c}", 0);
 	test_lac_parse_tokens(" {a {b} c}  d", "{a {b} c}", "d", 0);
+	test_lac_parse_tokens("%g\n", "%g", 0); // ???
 	/*
 	{
 		lac_token v = LAC_TOKEN("\"b c");

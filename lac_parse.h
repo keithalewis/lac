@@ -15,6 +15,7 @@ typedef struct {
 	char* e;
 } lac_token;
 
+// note LAC_TOKEN("foo", 3) has static storage duration
 #define LAC_TOKEN(b, n) (lac_token){b, b + (n ? n : strlen(b))}
 lac_token lac_token_alloc(const char*, size_t);
 lac_token lac_token_copy(const lac_token*);

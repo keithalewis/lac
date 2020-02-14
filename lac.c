@@ -26,6 +26,7 @@ lac_variant lac_parse_token(lac_stream* fp, lac_token t, ffi_type* type, char** 
 		v = lac_variant_parse(type, t.b, t.e);
 		if (v.type == &ffi_type_pointer) {
 			// string
+			// !!! remove string ""
 			unsigned n = lac_token_size(t);
 			ensure (*pb + n + 1 < e);
 			strncpy(*pb, v.value.p, n);
@@ -50,6 +51,10 @@ void lac_parse_args(lac_stream* fp, unsigned n, ffi_type** types,
 		addr[i] = lac_variant_address(&args[i]);
 	}
 }
+/* parse variant args
+void lac_parse_argsv(lac_stream* fp, unsigned n, ffi_type** types,
+	lac_variant* args, void** addr, char** pb, const char* e)
+*/
 
 void lac_call_thunk(lac_stream* fp, lac_variant* result, const lac_cif* thunk)
 {
@@ -157,8 +162,19 @@ static lac_variant null(void)
 	return (lac_variant){.type = &ffi_type_void, .value.p = NULL};
 }
 
+/*
 static void comment(void)
 {
+}
+*/
+static void roll(unsigned n)
+{
+	lac_stack_roll(stack, n);
+}
+
+static lac_variant top(void)
+{
+	return LAC_STACK_TOP(stack, lac_variant);
 }
 /*
 static void print(const lac_variant v)
@@ -220,8 +236,19 @@ void lac_init()
 		lac_map_put(key, cif);
 	}
 	{
+		lac_token key = LAC_TOKEN("roll",0);
+		ffi_type* args[1] = {&ffi_type_uint};
+		lac_cif* cif = lac_cif_alloc(&ffi_type_void, roll, 1, args);
+		lac_map_put(key, cif);
+	}
+	{
 		lac_token key = LAC_TOKEN("depth",0);
 		lac_cif* cif = lac_cif_alloc(&ffi_type_uint, count, 0, NULL);
+		lac_map_put(key, cif);
+	}
+	{
+		lac_token key = LAC_TOKEN("top",0);
+		lac_cif* cif = lac_cif_alloc(&ffi_type_variant, top, 0, NULL);
 		lac_map_put(key, cif);
 	}
 	// del - delete dictionary entry
