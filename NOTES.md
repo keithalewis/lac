@@ -1,6 +1,6 @@
 Don't special case things!
 
-read a token, look it up, execute
+read a token from input stream, look it up, execute
 
 ## Parsing
 

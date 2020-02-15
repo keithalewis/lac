@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 
+// use fmemopen and open_memstream???
+// setbuf, ...
+
 typedef struct {
 	void* p;
 	int (*getc)(void*);

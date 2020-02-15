@@ -162,10 +162,11 @@ int main(int ac, const char* av[])
 	FILE* fp;
 	// process args
 	fp = ac > 1 ? fopen(av[1], "r") : stdin;
+	// allow multiple input files...
 	ensure (fp);
 	file = ac > 1 ? av[1] : "stdin";
 
-	lac_init();
+	//lac_init();
 
 	// setjmp/longjmp for error handling
 	//evaluate(fp);
