@@ -93,6 +93,8 @@ variant add(const variant a, const variant b)
 }
 ```
 
+Primary functions: `dlopen`, `dlsym`, `dlclose`, `load`, `loadv`, `unload`, `call`, `callv`
+
 ```
 : key val
 ```
@@ -102,3 +104,4 @@ Use &type to get ffi_type address
 ```
 : cos ffi &double ( dlsym dlopen libm.so.6 cos ) &double
 ```
+

@@ -14,7 +14,7 @@ extern "C" {
 }
 #endif
 
-//    type            ffi_type_x  format
+//    type            ffi_type_x  print   scan
 #define FFI_TYPE_TABLE(X) \
 	X(char,           schar,      "c"   , "c") \
 	X(unsigned char,  uchar,      "c"   , "c") \
@@ -22,6 +22,8 @@ extern "C" {
 	X(unsigned int,   uint,       "u"   , "u") \
 	X(short,          sshort,     "hi"  , "hi") \
 	X(unsigned short, ushort,     "hu"  , "hu") \
+	X(long,           slong,      "li"  , "li") \
+	X(unsigned long,  ulong,      "lu"  , "lu") \
 	X(float,          float,      "f"   , "f") \
 	X(double,         double,     "g"   , "lf") \
 	X(uint8_t,        uint8,      PRIu8 , SCNu8) \
