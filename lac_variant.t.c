@@ -22,31 +22,23 @@ test_lac_variant_print(const char* out, const lac_variant v)
 
 	int ret = lac_variant_print(os, v);
 	ensure (ret >= 0);
+	fclose(os); // fflush out
+
 	ensure (0 == strcmp(out, buf));
 
-	fclose(os);
 	free(buf);
 }
+
+#define TEST_PARSE(TYPE, STRING, VALUE) \
+	{ lac_variant v; v.type = &ffi_type_ ## TYPE; test_lac_variant_scan(STRING, &v); \
+	  ensure(VALUE == v.value._ ## TYPE); test_lac_variant_print(STRING, v); }
 
 int
 test_lac_variant_parse()
 {
-	{
-		lac_variant v;
-		v.type = &ffi_type_sint;
-		test_lac_variant_scan("123", &v);
-
-		ensure (v.value._sint == 123);
-		test_lac_variant_print("123", v);
-	}
-	{
-		lac_variant v;
-		v.type = &ffi_type_double;
-		test_lac_variant_scan("1.23", &v);
-
-		ensure (v.value._double == 1.23);
-		test_lac_variant_print("1.23", v);
-	}
+  TEST_PARSE(schar, "x", 'x');
+  TEST_PARSE(sint, "123", 123);
+  TEST_PARSE(double, "1.23", 1.23);
 
   return 0;
 }
@@ -54,7 +46,6 @@ test_lac_variant_parse()
 int test_lac_variant()
 {
 	test_lac_variant_parse();
-//	test_lac_variant_union_prep();
 
 	return 0;
 }

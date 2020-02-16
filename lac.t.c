@@ -19,7 +19,7 @@ int main()
 	//test_lac_map();
 	//test_lac_stream();
 //	test_lac();
-	//test_lac_variant();
+	test_lac_variant();
 	//test_lac_buffer();
 
 	return 0;

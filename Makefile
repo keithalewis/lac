@@ -21,6 +21,8 @@ lac.t: $(OBJS_T)
 test: lac.t
 	./lac.t
 
+indent: 
+
 .PHONY : libffi
 libffi: libffi/configure
 	(cd libffi; make)
