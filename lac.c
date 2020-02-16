@@ -159,6 +159,7 @@ void lac_execute(lac_stream* fp)
 }
 int main(int ac, const char* av[])
 {
+	// atexit??? on_exit???
 	FILE* fp;
 	// process args
 	fp = ac > 1 ? fopen(av[1], "r") : stdin;
