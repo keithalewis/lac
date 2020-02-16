@@ -92,3 +92,13 @@ variant add(const variant a, const variant b)
 : int gcd -- int int {
 }
 ```
+
+```
+: key val
+```
+
+Use &type to get ffi_type address
+
+```
+: cos ffi &double ( dlsym dlopen libm.so.6 cos ) &double
+```

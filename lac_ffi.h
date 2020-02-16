@@ -14,6 +14,12 @@ extern "C" {
 #endif
 #include "lac_variant.h"
 
+// variant type for libffi
+FFI_EXTERN ffi_type ffi_type_variant;
+
+// call to initialize ffi_type_variant
+void ffi_type_variant_prep(void);
+
 // thunk corresponding to string name of symbol
 typedef struct {
 	void* sym;

@@ -36,7 +36,7 @@ test_lac_variant_parse()
 		v.type = &ffi_type_sint;
 		test_lac_variant_scan("123", &v);
 
-		ensure (v.value.i == 123);
+		ensure (v.value._sint == 123);
 		test_lac_variant_print("123", v);
 	}
 	{
@@ -44,36 +44,16 @@ test_lac_variant_parse()
 		v.type = &ffi_type_double;
 		test_lac_variant_scan("1.23", &v);
 
-		ensure (v.value.g == 1.23);
+		ensure (v.value._double == 1.23);
 		test_lac_variant_print("1.23", v);
 	}
 
   return 0;
 }
 
-int test_ffi_type_format()
-{
-	ensure ('i' == ffi_type_format(&ffi_type_sint));
-	ensure ('u' == ffi_type_format(&ffi_type_uint));
-	ensure ('g' == ffi_type_format(&ffi_type_double));
-	ensure ('f' == ffi_type_format(&ffi_type_float));
-	ensure ('p' == ffi_type_format(&ffi_type_pointer));
-
-	return 0;
-}
-/*
-int test_lac_variant_union_prep()
-{
-	ffi_type_variant_prep();
-
-	return 0;
-}
-*/
-
 int test_lac_variant()
 {
 	test_lac_variant_parse();
-	test_ffi_type_format();
 //	test_lac_variant_union_prep();
 
 	return 0;
