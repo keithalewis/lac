@@ -18,19 +18,22 @@ static int stream_skip(FILE* is, int(*isa)(int), int space)
 	return c;
 }
 
-static void stream_next_space(FILE* is, FILE* os)
+static int stream_next_space(FILE* is, FILE* os)
 {
 	int c = fgetc(is);
+
 	while (EOF != c && !isspace(c)) {
 		fputc(c, os);
 		c = fgetc(is);
 	}
+
+	return c;
 }
 
 // match delimiter at same nesting level
 // return pointer past matching right delimiter
 // Use b to write buffer.
-static void stream_next_match(FILE* is, FILE* os, 
+static int stream_next_match(FILE* is, FILE* os, 
 	char l /*= '{'*/, char r /*= '}'*/)
 {
 	size_t level = 1;
@@ -52,10 +55,12 @@ static void stream_next_match(FILE* is, FILE* os,
 		c = fgetc(is);
 	}
 
-	ensure (EOF == c || 0 == level);
+	ensure (0 == level);
+
+	return c;
 }
 
-static void stream_next_quote(FILE* is, FILE* os, const char q /*= '"'*/)
+static int stream_next_quote(FILE* is, FILE* os, const char q /*= '"'*/)
 {
 	return stream_next_match(is, os, q, q);
 }
