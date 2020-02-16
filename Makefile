@@ -1,8 +1,10 @@
 #!!! add git submodule for libffi
-LAC_ =  lac_parse.c #lac_ffi.c lac_map.c lac_parse.c lac_stack.c lac_stream.c lac_variant.c
+LAC_ =  lac_parse.c lac_variant.c
+#lac_ffi.c lac_map.c lac_parse.c lac_stack.c lac_stream.c lac_variant.c
 SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
-LAC_T = lac_parse.t.c # lac_ffi.t.c lac_map.t.c lac_parse.t.c lac_stack.t.c lac_stream.t.c lac_variant.t.c
+LAC_T = lac_parse.t.c lac_variant.t.c
+# lac_ffi.t.c lac_map.t.c lac_parse.t.c lac_stack.t.c lac_stream.t.c lac_variant.t.c
 
 FFI_LIB_DIR = ./libffi/x86_64-pc-linux-gnu/.libs/
 
@@ -44,6 +46,8 @@ deps: $(SRCS_T)
 	$(foreach c, $(SRCS_T), cc -MM $(c);)
 
 # r!make deps
-lac.t.o: lac.t.c ensure.h lac_ffi.h lac_variant.h lac_parse.h lac_map.h
+lac.t.o: lac.t.c lac.h ensure.h lac_parse.h
 lac_parse.o: lac_parse.c ensure.h lac_parse.h
-lac_parse.t.o: lac_parse.t.c ensure.h lac_parse.h lac_stream.h
+lac_variant.o: lac_variant.c lac_variant.h
+lac_parse.t.o: lac_parse.t.c ensure.h lac_parse.h
+lac_variant.t.o: lac_variant.t.c ensure.h lac_variant.h

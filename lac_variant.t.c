@@ -2,50 +2,51 @@
 #include "ensure.h"
 #include "lac_variant.h"
 
-#define VIEW(s) s, s + sizeof(s) - 1
+void
+test_lac_variant_scan(char* in, lac_variant* pv)
+{
+	FILE* is = fmemopen(in, strlen(in), "r");
+
+	int ret = lac_variant_scan(is, pv);
+	ensure (ret !=0 && ret != EOF);
+
+	fclose(is);
+}
+
+void
+test_lac_variant_print(const char* out, const lac_variant v)
+{
+	char* buf;
+	size_t size;
+	FILE* os = open_memstream(&buf, &size);
+
+	int ret = lac_variant_print(os, v);
+	ensure (ret >= 0);
+	ensure (0 == strcmp(out, buf));
+
+	fclose(os);
+	free(buf);
+}
 
 int
-test_lac_variant_parse ()
+test_lac_variant_parse()
 {
-  {
-    lac_variant v = lac_variant_parse (&ffi_type_sint, VIEW ("123"));
-    ensure (&ffi_type_sint == v.type);
-    ensure (123 == v.value.i);
-    ensure (lac_variant_address (&v) == &v.value.i);
-  }
-  {
-    lac_variant v = lac_variant_parse (&ffi_type_sint, VIEW ("123 ") - 1);
-    ensure (&ffi_type_sint == v.type);
-    ensure (123 == v.value.i);
-  }
-  {
-    lac_variant v = lac_variant_parse (&ffi_type_sint, VIEW ("123x") - 1);
-    ensure (&ffi_type_sint == v.type);
-    ensure (123 == v.value.i);
-  }
-  {
-    lac_variant v = lac_variant_parse (&ffi_type_sint, VIEW ("012"));
-    ensure (&ffi_type_sint == v.type);
-    ensure (8 + 2 == v.value.i);
-  }
-  {
-    lac_variant v = lac_variant_parse (&ffi_type_sint, VIEW ("0x12"));
-    ensure (&ffi_type_sint == v.type);
-    ensure (16 + 2 == v.value.i);
-  }
+	{
+		lac_variant v;
+		v.type = &ffi_type_sint;
+		test_lac_variant_scan("123", &v);
 
-  {
-    lac_variant v = lac_variant_parse (&ffi_type_uint32, VIEW ("123"));
-    ensure (&ffi_type_uint32 == v.type);
-    ensure (123 == v.value.u32);
-  }
+		ensure (v.value.i == 123);
+		test_lac_variant_print("123", v);
+	}
+	{
+		lac_variant v;
+		v.type = &ffi_type_double;
+		test_lac_variant_scan("1.23", &v);
 
-  {
-    lac_variant v = lac_variant_parse (&ffi_type_double, VIEW ("1.23"));
-    ensure (&ffi_type_double == v.type);
-    ensure (1.23 == v.value.d);
-    ensure (lac_variant_address (&v) == &v.value.d);
-  }
+		ensure (v.value.g == 1.23);
+		test_lac_variant_print("1.23", v);
+	}
 
   return 0;
 }
@@ -54,43 +55,26 @@ int test_ffi_type_format()
 {
 	ensure ('i' == ffi_type_format(&ffi_type_sint));
 	ensure ('u' == ffi_type_format(&ffi_type_uint));
-	ensure ('d' == ffi_type_format(&ffi_type_double));
+	ensure ('g' == ffi_type_format(&ffi_type_double));
 	ensure ('f' == ffi_type_format(&ffi_type_float));
 	ensure ('p' == ffi_type_format(&ffi_type_pointer));
 
 	return 0;
 }
-
+/*
 int test_lac_variant_union_prep()
 {
 	ffi_type_variant_prep();
 
 	return 0;
 }
-
-int test_lac_variant_x()
-{
-	lac_variant v;
-
-	int i = 2;
-	v = lac_variant_i(i);
-	ensure (v.type == &ffi_type_sint);
-	ensure (v.value.i == i);
-
-	double d = 1.23;
-	v = lac_variant_d(d);
-	ensure (v.type == &ffi_type_double);
-	ensure (v.value.d == d);
-
-	return 0;
-}
+*/
 
 int test_lac_variant()
 {
 	test_lac_variant_parse();
 	test_ffi_type_format();
-	test_lac_variant_union_prep();
-	test_lac_variant_x();
+//	test_lac_variant_union_prep();
 
 	return 0;
 }

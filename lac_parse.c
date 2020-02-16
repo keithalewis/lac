@@ -92,7 +92,6 @@ char* lac_parse_token(FILE* is)
 		stream_next_space(is, os);
 	}
 
-	fflush(os);
 	fclose(os);
 
 	return buf;

@@ -1,8 +1,8 @@
 // lac_variant.h -  variant type for argument stack
 #pragma once
-#include <assert.h>
 #include <errno.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #ifdef __cplusplus
@@ -17,7 +17,7 @@ extern "C" {
 #define FFI_TYPE_TABLE(X) \
 	X(FFI_TYPE_INT,        int,         &ffi_type_sint,       i   ) \
 	X(FFI_TYPE_FLOAT,      float,       &ffi_type_float,      f   ) \
-	X(FFI_TYPE_DOUBLE,     double,      &ffi_type_double,     d   ) \
+	X(FFI_TYPE_DOUBLE,     double,      &ffi_type_double,     g   ) \
 	X(FFI_TYPE_UINT8,      uint8_t,     &ffi_type_uint8,      u8  ) \
 	X(FFI_TYPE_SINT8,      int8_t,      &ffi_type_sint8,      i8  ) \
 	X(FFI_TYPE_UINT16,     uint16_t,    &ffi_type_uint16,     u16 ) \
@@ -34,50 +34,77 @@ extern "C" {
 	// X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer, 
 
 // convert string name to ffi type
-const ffi_type* ffi_type_lookup(const char* name);
+static inline const ffi_type* ffi_type_lookup(const char* name)
+{
+#define X(A,B,C,D) if (0 == strcmp(#B, name)) { return C; }
+	FFI_TYPE_TABLE(X)
+#undef X
+	return 0;
+}
 
 // type for printf format string
-char ffi_type_format(ffi_type* type);
+static inline char ffi_type_format(ffi_type* type)
+{
+#define X(A,B,C,D) if (C == type) return (#D)[0];
+	FFI_TYPE_TABLE(X)
+#undef X
+	return 0;
+}
 
 // variant data type 
 typedef struct {
 	union {
-#define X(a,b,c,d) b d;
+#define X(A,B,C,D) B D;
 	FFI_TYPE_TABLE(X)
 #undef X
 	} value;
 	ffi_type* type;
 } lac_variant;
 
+// pointer address of variant value
+static inline void* lac_variant_address(lac_variant* pv)
+{
+#define X(a,b,c,d) if (c == pv->type) return &pv->value.d;	
+	FFI_TYPE_TABLE(X)
+#undef X
+	return 0;
+}
+
+// compile time type conversion
+#define VARIANT_TO_TYPE(T, V) *(T*)lac_variant_address(&V)
+
+static inline int lac_variant_print(FILE* os, const lac_variant v)
+{
+	char fmt[] = "%?";
+#define X(A,B,C,D) if (v.type == C) { \
+	fmt[1] = ffi_type_format(v.type); \
+	return fprintf(os, fmt, v.value.D); }
+
+	FFI_TYPE_TABLE(X)
+#undef X
+	return -1; // print failed
+}
+
+// set pv->type to determine conversion
+static inline int lac_variant_scan(FILE* is, lac_variant* pv)
+{
+	char fmt[] = "%?";
+#define X(A,B,C,D) if (pv->type == C) { \
+	fmt[1] = ffi_type_format(pv->type); \
+	return fscanf(is, fmt, &pv->value.D); }
+
+	FFI_TYPE_TABLE(X)
+#undef X
+	return EOF; // conversion failed
+}
+
+/*
 // variant type for libffi
 FFI_EXTERN ffi_type ffi_type_variant;
 
 // call to initialize ffi_type_variant
 void ffi_type_variant_prep(void);
+*/
 
-// pointer address of variant value
-void* lac_variant_address(lac_variant* pv);
 
-// use compiler for type conversion
-#define VARIANT_TO_TYPE(T, V) *(T*)lac_variant_address(&V)
-
-lac_variant lac_variant_parse(ffi_type* type, const char* b, const char* e);
-
-// parse to underlying type
-#define X(A,B,C,D) B lac_parse_##D(const char* b, const char* e);
-	FFI_TYPE_TABLE(X)
-#undef X
-
-// parse and put into variant
-#define X(A,B,C,D) lac_variant lac_variant_parse_##D(const char* b, const char* e);
-	FFI_TYPE_TABLE(X)
-#undef X
-
-// convert type to variant
-#define X(A,B,C,D) lac_variant lac_variant_##D(B);
-	FFI_TYPE_TABLE(X)
-#undef X
-
-// convert variant to string of at most size chars
-int lac_variant_snprint(char* buf, size_t size, const lac_variant v);
 
