@@ -3,9 +3,9 @@
 #include "lac_parse.h"
 
 // add possibly redundant entry
-void lac_map_put(const lac_token, const void* val);
+void lac_map_put(const lac_token, const void *val);
 // return 0 if entry not found
-const void* lac_map_get(const lac_token);
+const void *lac_map_get(const lac_token);
 // remove entry from map
 void lac_map_del(const lac_token);
 // call free on key

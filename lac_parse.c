@@ -7,7 +7,7 @@
 #include "lac_parse.h"
 
 // return first character after white or not space
-static int stream_skip(FILE* is, int(*isa)(int), int space)
+static int stream_skip(FILE * is, int (*isa)(int), int space)
 {
 	int c = fgetc(is);
 
@@ -18,7 +18,7 @@ static int stream_skip(FILE* is, int(*isa)(int), int space)
 	return c;
 }
 
-static int stream_next_space(FILE* is, FILE* os)
+static int stream_next_space(FILE * is, FILE * os)
 {
 	int c = fgetc(is);
 
@@ -33,8 +33,8 @@ static int stream_next_space(FILE* is, FILE* os)
 // match delimiter at same nesting level
 // return pointer past matching right delimiter
 // Use b to write buffer.
-static int stream_next_match(FILE* is, FILE* os, 
-	char l /*= '{'*/, char r /*= '}'*/)
+static int stream_next_match(FILE * is, FILE * os,
+			     char l /*= '{'*/ , char r /*= '}'*/ )
 {
 	size_t level = 1;
 
@@ -43,30 +43,28 @@ static int stream_next_match(FILE* is, FILE* os,
 		if (c == '\\') {
 			fputc(c, os);
 			c = fgetc(is);
-			ensure (EOF != c);
-		}
-		else if (c == r) {
+			ensure(EOF != c);
+		} else if (c == r) {
 			--level;
-		}
-		else if (c == l) {
+		} else if (c == l) {
 			++level;
 		}
 		fputc(c, os);
 		c = fgetc(is);
 	}
 
-	ensure (0 == level);
+	ensure(0 == level);
 
 	return c;
 }
 
-static int stream_next_quote(FILE* is, FILE* os, const char q /*= '"'*/)
+static int stream_next_quote(FILE * is, FILE * os, const char q /*= '"'*/ )
 {
 	return stream_next_match(is, os, q, q);
 }
 
 // copy stream into static buffer and return view
-char* lac_parse_token(FILE* is)
+char *lac_parse_token(FILE * is)
 {
 	int c;
 
@@ -76,19 +74,17 @@ char* lac_parse_token(FILE* is)
 		return 0;
 	}
 
-	char* buf;
+	char *buf;
 	size_t size;
-	FILE* os = open_memstream(&buf, &size);
+	FILE *os = open_memstream(&buf, &size);
 
 	fputc(c, os);
 
 	if (c == '"') {
 		stream_next_quote(is, os, '"');
-	}
-	else if (c == '{') {
+	} else if (c == '{') {
 		stream_next_match(is, os, '{', '}');
-	}
-	else {
+	} else {
 		stream_next_space(is, os);
 	}
 

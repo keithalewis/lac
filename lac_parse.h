@@ -9,4 +9,4 @@
 //   right curly bracket ('}') at the same nesting level.
 //   use '\' to escape '}`
 // returned pointer must be freed
-char* lac_parse_token(FILE*);
+char *lac_parse_token(FILE *);
