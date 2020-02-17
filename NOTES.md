@@ -95,13 +95,31 @@ variant add(const variant a, const variant b)
 
 Primary functions: `dlopen`, `dlsym`, `dlclose`, `load`, `loadv`, `unload`, `call`, `callv`
 
+Use &xxx to get ffi_type_xxx address
+
+Use '(' to store stack depth and ')' to assert it is the same as last matching '('
+
+```
+: cos load &double ( dlsym dlopen libm.so.6 cos ) &double
+```
+
 ```
 : key val
 ```
 
-Use &type to get ffi_type address
+## wc
 
-```
-: cos ffi &double ( dlsym dlopen libm.so.6 cos ) &double
-```
-
+: l int 0 # char* "l" -> void* &lac_variant{value._sint = 0, .type = &ffi_type_sint}
+: w int 0
+: c int 0
+: fp fopen file.txt r
+= c fgetc fp
+loop {
+	if == c EOF break
+	incr c
+	if isspace c incr w
+	if == c '\n' incr l
+	= c fgetc fp
+}
+printf "%d %d %d" l w c
+fclose fp
