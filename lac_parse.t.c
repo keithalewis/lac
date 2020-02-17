@@ -29,6 +29,20 @@ int test_lac_parse_tokens(char *t, ...)
 	return 0;
 }
 
+static void test_lac_parse_print(char *t)
+{
+	printf("%s\n", t);
+	FILE *s = fmemopen(t, strlen(t), "r");
+
+	char* u;
+	while ((u = lac_parse_token(s))) {
+		printf(">%s<\n", u);
+	}
+
+	fclose(s);
+}
+
+
 int test_lac_parse()
 {
 	test_lac_parse_tokens("a b c", "a", "b", "c", 0);
@@ -38,6 +52,8 @@ int test_lac_parse()
 	test_lac_parse_tokens("{a {b} c}", "{a {b} c}", 0);
 	test_lac_parse_tokens(" {a {b} c}  d", "{a {b} c}", "d", 0);
 	test_lac_parse_tokens("%g\n", "%g", 0);	// ???
+
+	//test_lac_parse_print("{ { \}\nzz}");
 	// test_lac_parse_tokens("\"b \" \"", "\"b \"", "\"", 0); // error
 	/*
 	   {
