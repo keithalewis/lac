@@ -8,43 +8,20 @@
 int line = 0;
 const char *file = "";
 
-//lac_stack *stack;
-
-/*
-void lac_call_thunk(FILE * fp, lac_variant * result,
-		    const lac_cif * thunk);
-
-lac_variant lac_parse_token(FILE * fp, char* t, ffi_type * type)
-{
-	lac_variant v;
-
-	const lac_cif *cif = lac_map_get(t);
-	if (0 != cif) {
-		lac_call_thunk(fp, &v, cif);
-	} else {
-		v.type = type;
-		lac_variant_scan(fp, &v);
-		if (v.type == &ffi_type_pointer) {
-			// string
-			// !!! remove string ""
-		}
-	}
-
-	return v;
-}
+jmp_buf lac_jmp_buf;
+const char* lac_strerror = "";
 
 // fill args and addr with arguments given the type
-void lac_parse_args(FILE * fp, unsigned n, ffi_type ** types,
-		    lac_variant * args, void **addr, char **pb, const char *e)
+void lac_parse_args(FILE* fp, unsigned n, ffi_type ** types,
+	lac_variant* args, void** addr)
 {
 	for (unsigned i = 0; i < n; ++i) {
-		const char* arg = lac_parse_token(fp);
-		ensure(arg);
-		args[i] = lac_parse_token(fp, arg, types[i], pb, e);
+		args[i].type = types[i];
+		lac_variant_scan(fp, &args[i]); //??? error check
 		addr[i] = lac_variant_address(&args[i]);
 	}
 }
-
+/*
 // parse variant args
 void lac_parse_argsv(lac_stream* fp, unsigned n, ffi_type** types,
 	lac_variant* args, void** addr, char** pb, const char* e)
@@ -61,26 +38,27 @@ void lac_parse_argsv(lac_stream* fp, unsigned n, ffi_type** types,
 		addr[i] = lac_variant_address(&args[i]);
 	}
 }
+*/
 
 void lac_call_thunk(FILE * fp, lac_variant * result,
 		    const lac_cif * thunk)
 {
+	ensure (thunk);
 	const ffi_cif *cif = &thunk->cif;
 	int n = cif->nargs;
-	// buffer for strings on argument stack
-	char buf[1024];
-	char *pbuf = buf;
 
 	if (n == 0) {
 		lac_cif_call(thunk, result, NULL);
-	} else if (n > 0) {
+	}
+	else if (n > 0) {
 		//??? local stack for string args???
 		lac_variant args[n];
 		void *addr[n];
-		lac_parse_args(fp, n, cif->arg_types, args, addr, &pbuf,
-			       pbuf + 1024);
+		lac_parse_args(fp, n, cif->arg_types, args, addr);
 		lac_cif_call(thunk, result, addr);
-	} else {		// varargs
+	}
+	/*
+	else {		// varargs
 		lac_variant args[32];
 		void *addr[32];
 		n = -n;		// fixed args
@@ -127,24 +105,20 @@ void lac_call_thunk(FILE * fp, lac_variant * result,
 
 		lac_cif_free(cif_);
 	}
+	*/
 	// free pointer args???
 }
-void lac_execute(FILE* fp)
+
+lac_variant lac_execute(FILE* fp)
 {
-	char* t;
+	lac_variant v = { .type = &ffi_type_void };
 
-	while ((t = lac_parse_token(fp))) {
-		const lac_cif *cif = lac_map_get(t);
-		ensure(cif);
-
-		lac_variant v;
-		lac_call_thunk(fp, &v, cif);
-		if (v.type != &ffi_type_void) {
-			//lac_stack_push(stack, &v);
-		}
+	for (char* t = lac_parse_token(fp); t; t = lac_parse_token(fp)) {
+		lac_call_thunk(fp, &v, lac_map_get(t));
 	}
+
+	return v;
 }
-*/
 
 int main(int ac, const char *av[])
 {
@@ -158,33 +132,13 @@ int main(int ac, const char *av[])
 
 	//lac_init();
 
-	char* t;
-	while ((t = lac_parse_token(fp))) {
-		puts(t);
+	if (setjmp(lac_jmp_buf)) {
+		fputs(lac_strerror, stderr);
+		lac_strerror = "";
 	}
 
-	// setjmp/longjmp for error handling
-	//evaluate(fp);
-	/*
-	   do {
-	   lac_token v;
-	   v = lac_stream_token_next(&s);
-	   if (lac_token_error(v)) {
-	   fputs("lac_token_error: ", stdout);  
-	   v.e = 0;
-	   puts(v.b);
-
-	   continue;
-	   }
-	   fputs(">", stdout);
-	   fwrite(v.b, 1, v.e - v.b, stdout); 
-	   fputs("<\n", stdout);
-	   } while (!lac_token_last(v));
-	 */
-	//lac_execute(fp /*, dict, stack */ );
-
-	//LAC_STACK_FREE(stack);
-	//!!! Free dictionary
+	// for file ... lac_execute
+	lac_execute(fp);
 
 	return 0;
 }

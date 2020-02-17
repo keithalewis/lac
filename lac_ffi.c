@@ -13,12 +13,11 @@ static ffi_type ffi_type_variant_union = {
 	.elements = (ffi_type **) ffi_variant_union_elements
 };
 
-#define X(A,B,C,D) C ,
+#define X(A,B,C,D) &ffi_type_ ## B ,
 ffi_type *ffi_type_variant_union_elements[] = {
 	FFI_TYPE_TABLE(X)
 	NULL
 };
-
 #undef X
 
 // assume union_type->elements initialized by ffi_type[2] = { ?, NULL}

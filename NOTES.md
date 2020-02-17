@@ -111,15 +111,16 @@ Use '(' to store stack depth and ')' to assert it is the same as last matching '
 
 : l int 0 # char* "l" -> void* &lac_variant{value._sint = 0, .type = &ffi_type_sint}
 : w int 0
-: c int 0
 : fp fopen file.txt r
-= c fgetc fp
+: c fgetc fp
 loop {
 	if == c EOF break
 	incr c
 	if isspace c incr w
 	if == c '\n' incr l
-	= c fgetc fp
+	: c fgetc fp
 }
 printf "%d %d %d" l w c
 fclose fp
+
+## Use va_args? No!

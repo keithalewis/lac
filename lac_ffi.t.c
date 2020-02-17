@@ -119,7 +119,7 @@ int test_lac_cif()
 
 		lac_variant result;
 		lac_cif_call(p, &result, values);
-		ensure(result.value.i == strlen(s) + 1);
+		ensure(result.value._sint == strlen(s) + 1);
 
 		lac_cif_free(p);
 	}
@@ -131,7 +131,7 @@ lac_variant f(const lac_variant v)
 {
 	lac_variant r;
 	r.type = &ffi_type_sint;
-	r.value.i = 2;
+	r.value._sint = 2;
 
 	return r;
 }
@@ -143,7 +143,7 @@ int test_lac_cif_variant()
 	ffi_type *args[1];
 	void *values[1];
 	lac_variant r = (lac_variant) {.type = &ffi_type_sint };
-	lac_variant v = (lac_variant) {.type = &ffi_type_double,.value.d =
+	lac_variant v = (lac_variant) {.type = &ffi_type_double,.value._double =
 		    1.23 };
 
 	/* Initialize the argument info vectors */
@@ -154,7 +154,7 @@ int test_lac_cif_variant()
 	    FFI_OK) {
 		ffi_call(&cif, (void *)f, lac_variant_address(&r), values);
 		ensure(r.type == &ffi_type_sint);
-		ensure(r.value.i == 2);
+		ensure(r.value._sint == 2);
 	}
 
 	return 0;

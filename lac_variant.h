@@ -35,13 +35,18 @@ extern "C" {
 	X(int64_t,        sint64,     PRIi64, SCNi64) \
 	X(void*,          pointer,   "p"    , "p") \
 
-// X(FFI_TYPE_VOID,       void,        &ffi_type_void,// X(FFI_TYPE_LONGDOUBLE, long double, &ffi_type_longdouble,// X(FFI_TYPE_COMPLEX// X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer, // convert string name to ffi type
-    static inline const ffi_type *ffi_type_lookup(const char *name)
+// X(FFI_TYPE_VOID,       void,        &ffi_type_void,
+// X(FFI_TYPE_LONGDOUBLE, long double, &ffi_type_longdouble,
+// X(FFI_TYPE_COMPLEX
+// X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer, 
+
+// convert string name to ffi type
+static inline const ffi_type *ffi_type_lookup(const char *name)
 {
 #define X(A,B,C,D) if (0 == strcmp(#B, name)) { return &ffi_type_ ## B; }
 	FFI_TYPE_TABLE(X)
 #undef X
-	    return 0;
+    return 0;
 }
 
 // type for printf format string
@@ -50,7 +55,7 @@ static inline char ffi_type_format(ffi_type * type)
 #define X(A,B,C,D) if (type == &ffi_type_ ## B) return (#D)[0];	// return #D ???
 	FFI_TYPE_TABLE(X)
 #undef X
-	    return 0;
+    return 0;
 }
 
 // variant data type 
@@ -82,7 +87,7 @@ static inline int lac_variant_print(FILE * os, const lac_variant v)
 
 	FFI_TYPE_TABLE(X)
 #undef X
-	    return -1;		// print failed
+	return -1;		// print failed
 }
 
 // set pv->type to determine conversion
@@ -93,5 +98,5 @@ static inline int lac_variant_scan(FILE * is, lac_variant * pv)
 
 	FFI_TYPE_TABLE(X)
 #undef X
-	    return EOF;		// conversion failed
+	return EOF;		// conversion failed
 }
