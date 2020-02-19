@@ -13,6 +13,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+#include "ensure.h"
+
 //    type            ffi_type_x  print   scan
 #define FFI_TYPE_TABLE(X) \
 	X(char,           schar,      "c"   , "c") \
@@ -124,29 +126,30 @@ static inline void lac_variant_decr(lac_variant* pv)
 }
 
 // convert from string to type and free
-// return <= 0 if error
-static inline int lac_variant_convert(ffi_type* type, lac_variant* pv)
+// s/convert/parse/???
+static inline lac_variant lac_variant_convert(ffi_type* type, lac_variant* pv)
 {
-	int ret = -1;
+	lac_variant v = { .type = &ffi_type_void };
 
-	if (pv->type != &ffi_type_string) {
-		return ret;
-	}
+	ensure (pv->type == &ffi_type_string);
+	
 	// null strings???
 	if (type == &ffi_type_string || type == &ffi_type_block) {
-		return strlen(pv->value._pointer);
-	}
-	char* s = pv->value._pointer;
-#define X(A,B,C,D) if (type == &ffi_type_ ## B) { \
-	ret = sscanf(s, "%" D, &(pv->value._ ## B)); }
-	FFI_TYPE_TABLE(X)
-#undef X
-	if (ret > 0) {
-		pv->type = type;
-		free(s);
+		return *pv;
 	}
 
-	return ret;
+	int ret;
+	char* s = pv->value._pointer;
+#define X(A,B,C,D) if (type == &ffi_type_ ## B) { \
+	ret = sscanf(s, "%" D, &(v.value._ ## B)); }
+	FFI_TYPE_TABLE(X)
+#undef X
+	ensure (ret > 0);
+
+	v.type = type;
+	free(s);
+
+	return v;
 }
 
 static inline int lac_variant_print(FILE * os, const lac_variant v)

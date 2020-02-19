@@ -38,9 +38,9 @@ int test_lac_convert()
 		lac_variant v = lac_parse_token(s);
 		ensure (v.type = &ffi_type_string);
 		ensure (0 == strcmp(v.value._pointer, buf));
-		lac_variant_convert(&ffi_type_sint, &v);
-		ensure (v.type = &ffi_type_sint);
-		ensure (v.value._sint == 123);
+		lac_variant w = lac_variant_convert(&ffi_type_sint, &v);
+		ensure (w.type = &ffi_type_sint);
+		ensure (w.value._sint == 123);
 
 		fclose(s);
 	}
@@ -51,9 +51,9 @@ int test_lac_convert()
 		lac_variant v = lac_parse_token(s);
 		ensure (v.type = &ffi_type_string);
 		ensure (0 == strcmp(v.value._pointer, buf));
-		lac_variant_convert(&ffi_type_double, &v);
-		ensure (v.type = &ffi_type_double);
-		ensure (v.value._double == 1.23);
+		lac_variant w = lac_variant_convert(&ffi_type_double, &v);
+		ensure (w.type = &ffi_type_double);
+		ensure (w.value._double == 1.23);
 
 		fclose(s);
 	}
@@ -64,8 +64,8 @@ int test_lac_convert()
 		lac_variant v = lac_parse_token(s);
 		ensure (v.type = &ffi_type_string);
 		ensure (0 == strcmp(v.value._pointer, buf));
-		lac_variant_convert(&ffi_type_string, &v);
-		ensure (v.type = &ffi_type_string);
+		lac_variant w = lac_variant_convert(&ffi_type_string, &v);
+		ensure (w.type = &ffi_type_string);
 		ensure (0 == strcmp(v.value._pointer, buf));
 
 		lac_variant_free(&v);
