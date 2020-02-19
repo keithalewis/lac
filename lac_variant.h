@@ -137,7 +137,7 @@ static inline int lac_variant_convert(ffi_type* type, lac_variant* pv)
 		return strlen(pv->value._pointer);
 	}
 	char* s = pv->value._pointer;
-#define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) { \
+#define X(A,B,C,D) if (type == &ffi_type_ ## B) { \
 	ret = sscanf(s, "%" D, &(pv->value._ ## B)); }
 	FFI_TYPE_TABLE(X)
 #undef X

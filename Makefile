@@ -9,8 +9,8 @@ FFI_LIB_DIR = ./libffi/x86_64-pc-linux-gnu/.libs/
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 
-CFLAGS = -g -Wall -ftest-coverage -fprofile-arcs
-LDLIBS = -ldl -lgcov -L $(FFI_LIB_DIR) -l:libffi.a
+CFLAGS = -g -Wall # -ftest-coverage -fprofile-arcs
+LDLIBS = -ldl -L $(FFI_LIB_DIR) -l:libffi.a # -lgcov
 
 lac: $(OBJS)
 
