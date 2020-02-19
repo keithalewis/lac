@@ -12,72 +12,82 @@ int test_lac_parse_tokens(char *t, ...)
 
 	va_list ap;
 	va_start(ap, t);
-	char *t_;
+	lac_variant t_;
 	char *u = va_arg(ap, char *);
 	while (u) {
 		t_ = lac_parse_token(s);
-		ensure(0 == strcmp(t_, u));
-		free(t_);
+		ensure(0 == strcmp(t_.value._pointer, u));
+		lac_variant_free(&t_);
 		u = va_arg(ap, char *);
 	}
 
 	t_ = lac_parse_token(s);
-	ensure(t_ == 0);
+	ensure(t_.type == &ffi_type_void);
 
 	fclose(s);
 
 	return 0;
 }
 
-static void test_lac_parse_print(char *t)
+int test_lac_convert()
 {
-	printf("%s\n", t);
-	FILE *s = fmemopen(t, strlen(t), "r");
+	{
+		char buf[] = "123";
+		FILE *s = fmemopen(buf, sizeof(buf), "r");
 
-	char* u;
-	while ((u = lac_parse_token(s))) {
-		printf(">%s<\n", u);
+		lac_variant v = lac_parse_token(s);
+		ensure (v.type = &ffi_type_string);
+		ensure (0 == strcmp(v.value._pointer, buf));
+		lac_variant_convert(&ffi_type_sint, &v);
+		ensure (v.type = &ffi_type_sint);
+		ensure (v.value._sint == 123);
+
+		fclose(s);
+	}
+	{
+		char buf[] = "1.23";
+		FILE *s = fmemopen(buf, sizeof(buf), "r");
+
+		lac_variant v = lac_parse_token(s);
+		ensure (v.type = &ffi_type_string);
+		ensure (0 == strcmp(v.value._pointer, buf));
+		lac_variant_convert(&ffi_type_double, &v);
+		ensure (v.type = &ffi_type_double);
+		ensure (v.value._double == 1.23);
+
+		fclose(s);
+	}
+	{
+		char buf[] = "1.23";
+		FILE *s = fmemopen(buf, sizeof(buf), "r");
+
+		lac_variant v = lac_parse_token(s);
+		ensure (v.type = &ffi_type_string);
+		ensure (0 == strcmp(v.value._pointer, buf));
+		lac_variant_convert(&ffi_type_string, &v);
+		ensure (v.type = &ffi_type_string);
+		ensure (0 == strcmp(v.value._pointer, buf));
+
+		lac_variant_free(&v);
+
+		fclose(s);
 	}
 
-	fclose(s);
+	return 0;
 }
-
 
 int test_lac_parse()
 {
+	test_lac_convert();
+
 	test_lac_parse_tokens("a b c", "a", "b", "c", 0);
 	test_lac_parse_tokens("a\tb c", "a", "b", "c", 0);
 	test_lac_parse_tokens("a\tb\r c", "a", "b", "c", 0);
 	test_lac_parse_tokens("a\tb\r \nc", "a", "b", "c", 0);
-	test_lac_parse_tokens("{a {b} c}", "{a {b} c}", 0);
-	test_lac_parse_tokens(" {a {b} c}  d", "{a {b} c}", "d", 0);
-	test_lac_parse_tokens("%g\n", "%g", 0);	// ???
-
-	//test_lac_parse_print("{ { \}\nzz}");
-	// test_lac_parse_tokens("\"b \" \"", "\"b \"", "\"", 0); // error
-	/*
-	   {
-	   lac_token v = LAC_TOKEN("\"b c");
-
-	   t = lac_token_next(v.b, v.e);
-	   assert (lac_token_error(t));
-	   }
-	   {
-	   lac_token v = LAC_TOKEN("\"b \"c ");
-
-	   t = lac_token_next(v.b, v.e);
-	   // missing whitespace after matching quote
-	   assert (lac_token_error(t));
-	   assert (0 == strncmp(v.b, "\"b \"c", 5));
-	   }
-	   lac_token v = LAC_TOKEN("{a {b} c");
-
-	   t = lac_token_next(v.b, v.e);
-	   assert (lac_token_error(t));
-	   }
-	   {
-	   }
-	 */
+	test_lac_parse_tokens("{a {b} c}", "a {b} c", 0);
+	test_lac_parse_tokens(" {a {b} c}  d", "a {b} c", "d", 0);
+	test_lac_parse_tokens("%g\n", "%g", 0);
+	test_lac_parse_tokens("\"%g\n\" h", "%g\n", "h", 0);
 
 	return 0;
 }

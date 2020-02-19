@@ -39,7 +39,7 @@ static int stream_next_match(FILE * is, FILE * os,
 	size_t level = 1;
 
 	int c = fgetc(is);
-	while (EOF != c && level != 0) {
+	while (EOF != c) {
 		if (c == '\\') {
 			fputc(c, os);
 			c = fgetc(is);
@@ -48,6 +48,9 @@ static int stream_next_match(FILE * is, FILE * os,
 			--level;
 		} else if (c == l) {
 			++level;
+		}
+		if (level == 0) {
+			break;
 		}
 		fputc(c, os);
 		c = fgetc(is);
@@ -63,32 +66,35 @@ static int stream_next_quote(FILE * is, FILE * os, const char q /*= '"'*/ )
 	return stream_next_match(is, os, q, q);
 }
 
-// copy stream into static buffer and return view
-char *lac_parse_token(FILE * is)
+// must call free on return value
+lac_variant lac_parse_token(FILE * is)
 {
 	int c;
+	lac_variant v = { .type = &ffi_type_string };
 
 	c = stream_skip(is, isspace, true);
 
 	if (EOF == c) {
-		return 0;
+		return (lac_variant){ .type = &ffi_type_void, .value._pointer = 0 };
 	}
 
 	char *buf;
 	size_t size;
 	FILE *os = open_memstream(&buf, &size);
 
-	fputc(c, os);
-
 	if (c == '"') {
 		stream_next_quote(is, os, '"');
 	} else if (c == '{') {
 		stream_next_match(is, os, '{', '}');
+		v.type = &ffi_type_block;
 	} else {
+		fputc(c, os);
 		stream_next_space(is, os);
 	}
 
 	fclose(os);
+	
+	v.value._pointer = buf;
 
-	return buf;
+	return v;
 }

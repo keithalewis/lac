@@ -123,4 +123,48 @@ loop {
 printf "%d %d %d" l w c
 fclose fp
 
-## Use va_args? No!
+## Use va_args? No! It would have types x nargs cases
+
+token = lac_parse_token(stream)
+
+lac_variant lac_call_token(stream, token)
+{
+	thunk = get(token)
+	ensure thunk // token must refer to a cif
+	return lac_call_thunk(fp, thunk)
+}
+
+lac_variant lac_call_thunk(fp, thunk)
+{
+	lac_variant v
+
+    n = thunk->nargs
+	lac_variant args[n]
+	void* addr[n]
+	for (i = 0..n) {
+		char* tok = lac_parse_token(fp)
+		args[i] = lac_evaluate_token(fp, tok)
+		addr[i] = address(args[i])
+	}
+	lac_cif_call(thunk, &result, addr)
+
+	return v;
+}
+
+lac_variant lac_evaluate_token(fp, tok)
+{
+	lac_variant v;
+
+	if (*tok == ") {
+	}
+	else if (*tok = {) {
+	}
+	else if (thunk = get(tok)) {
+		v = lac_call_thunk(fp, thunk)
+	}
+	else {
+		scan v
+	}
+
+	return v;
+}
