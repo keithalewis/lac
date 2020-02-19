@@ -73,9 +73,13 @@ typedef struct {
 // pointer address of variant value
 static inline void *lac_variant_address(lac_variant * pv)
 {
+	if (pv->type == &ffi_type_string || pv->type == &ffi_type_block) {
+		return &pv->value._pointer;
+	}
 #define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) return &pv->value._ ## B;
 	FFI_TYPE_TABLE(X)
 #undef X
+
 	return 0;
 }
 

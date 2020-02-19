@@ -14,7 +14,7 @@ const char* lac_strerror = "";
 lac_variant lac_call_thunk(FILE * fp, const lac_cif * thunk);
 
 // figure out what kind of token and ensure correct type
-lac_variant lac_evaluate_token(FILE* fp, ffi_type* type, const lac_variant token)
+lac_variant lac_evaluate_token(FILE* fp, ffi_type* type, lac_variant token)
 {
 	//ensure (token);
 
@@ -25,7 +25,7 @@ lac_variant lac_evaluate_token(FILE* fp, ffi_type* type, const lac_variant token
 		v = lac_call_thunk(fp, thunk);
 	}
 	else {
-		lac_variant_convert(type, &token);
+		v = lac_variant_convert(type, &token);
 	}
 
 	return v;
@@ -34,9 +34,9 @@ lac_variant lac_evaluate_token(FILE* fp, ffi_type* type, const lac_variant token
 // call thunk on arguments from input stream
 lac_variant lac_call_thunk(FILE * fp, const lac_cif * thunk)
 {
-	ensure (thunk);
-
 	lac_variant v = { .type = &ffi_type_void };
+
+	ensure (thunk);
 	const ffi_cif *cif = &thunk->cif;
 	int n = cif->nargs;
 
@@ -86,10 +86,11 @@ lac_variant lac_execute(FILE* fp)
 {
 	lac_variant v = { .type = &ffi_type_void };
 
-	lac_variant token;
-	while ((token = lac_parse_token(fp))) {
+	lac_variant token = lac_parse_token(fp);
+    while (token.type != &ffi_type_void) {
 		v = lac_call_token(fp, token);
-		free(token);
+		lac_variant_free(&token);
+		token = lac_parse_token(fp);
 	}
 
 	return v;
