@@ -12,7 +12,7 @@ available to get a pointer to any C function from a dynamic library.
 Use `load` to specify the signature of the function and `call` to call it
 with the specified signature.
 
-A _dictionary_ is available for associating keys with values
+A _dictionary_ is available for associating keys with values.
 Use `> key value` to put `value` in the dictionary and `< key` to retrieve it.
 
 ## Parse
@@ -22,7 +22,7 @@ Tokens are seperated by white space according to `isspace`.
 
 If a token starts with a quote character (`'"'`) then white space is
 included up to the next quote character. Quote characters 
-preceded by a backslash (`'\'`) get included in the string token.
+preceded by a backslash (`'\'`) get included in the token.
 
 The string token does not include the beginning and ending quote characters.
 
@@ -35,7 +35,7 @@ The block token does not include the beginning and ending brace characters.
 ## Execute
 
 A `lac` program looks up the first token as a key
-in the dictionary of a function that has been loaded. The function knows what
+in the dictionary and executes the corresponding function. The function knows what
 arguments it needs, evaluates required tokens from the stream, then calls
 the function.
 
@@ -44,7 +44,7 @@ the function.
 If a required token is in the dictionary then it is executed and the resulting type
 must match what is required by the function signature.
 
-If not it is converted to the type required by the function.
+If not it is converted to the type required by the function using `sscanf`.
 
 ### Types
 
