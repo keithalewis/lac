@@ -15,27 +15,27 @@ extern "C" {
 #endif
 #include "ensure.h"
 
-//    type            ffi_type_x  print   scan
-#define FFI_TYPE_TABLE(X) \
-	X(char,           schar,      "c"   , "c") \
-	X(unsigned char,  uchar,      "c"   , "c") \
-	X(int,            sint,       "i"   , "i") \
-	X(unsigned int,   uint,       "u"   , "u") \
-	X(short,          sshort,     "hi"  , "hi") \
-	X(unsigned short, ushort,     "hu"  , "hu") \
-	X(long,           slong,      "li"  , "li") \
-	X(unsigned long,  ulong,      "lu"  , "lu") \
-	X(float,          float,      "f"   , "f") \
-	X(double,         double,     "g"   , "lf") \
-	X(uint8_t,        uint8,      PRIu8 , SCNu8) \
-	X(int8_t,         sint8,      PRIi8 , SCNi8) \
+//    type            ffi_type    print   scan
+#define FFI_TYPE_TABLE(X)                         \
+	X(char,           schar,      "c",    "c")    \
+	X(unsigned char,  uchar,      "c",    "c")    \
+	X(int,            sint,       "i",    "i")    \
+	X(unsigned int,   uint,       "u",    "u")    \
+	X(short,          sshort,     "hi",   "hi")   \
+	X(unsigned short, ushort,     "hu",   "hu")   \
+	X(long,           slong,      "li",   "li")   \
+	X(unsigned long,  ulong,      "lu",   "lu")   \
+	X(float,          float,      "f",    "f")    \
+	X(double,         double,     "g",    "lf")   \
+	X(uint8_t,        uint8,      PRIu8,  SCNu8)  \
+	X(int8_t,         sint8,      PRIi8,  SCNi8)  \
 	X(uint16_t,       uint16,     PRIu16, SCNu16) \
 	X(int16_t,        sint16,     PRIi16, SCNi16) \
 	X(uint32_t,       uint32,     PRIu32, SCNu32) \
     X(int32_t,        sint32,     PRIi32, SCNi32) \
 	X(uint64_t,       uint64,     PRIu64, SCNu64) \
 	X(int64_t,        sint64,     PRIi64, SCNi64) \
-	X(void*,          pointer,   "p"    , "p") \
+	X(void*,          pointer,    "p",    "p")    \
 
 // X(FFI_TYPE_VOID,       void,        &ffi_type_void,
 // X(FFI_TYPE_LONGDOUBLE, long double, &ffi_type_longdouble,
@@ -57,6 +57,10 @@ static inline const ffi_type *ffi_type_lookup(const char *name)
 #define X(A,B,C,D) if (0 == strcmp(#B, name)) { return &ffi_type_ ## B; }
 	FFI_TYPE_TABLE(X)
 #undef X
+	if (0 == strcmp("string", name)) { return &ffi_type_string; }
+	if (0 == strcmp("block", name)) { return &ffi_type_block; }
+	if (0 == strcmp("variant", name)) { return &ffi_type_variant; }
+
     return 0;
 }
 
@@ -129,7 +133,16 @@ static inline void lac_variant_decr(lac_variant* pv)
 #undef X
 }
 
-// convert from string to type and free
+// tokens are separated by white space (isspace)
+// tokens starting with double quote ('"') end at the next quote
+//   use '\' to escape '"`
+// tokens starting with left curly bracket ('{') end the next
+//   right curly bracket ('}') at the same nesting level.
+//   use '\' to escape '}`
+// returned pointer must be freed
+lac_variant lac_parse_token(FILE *);
+
+// convert from string to pv->type and free
 // s/convert/parse/???
 static inline lac_variant lac_variant_convert(ffi_type* type, lac_variant* pv)
 {
@@ -156,8 +169,12 @@ static inline lac_variant lac_variant_convert(ffi_type* type, lac_variant* pv)
 	return v;
 }
 
+// print formatted value to output stream
 static inline int lac_variant_print(FILE * os, const lac_variant v)
 {
+	if (v.type == &ffi_type_string || v.type == &ffi_type_block) {
+		return fputs(v.value._pointer, os);
+	}
 #define X(A,B,C,D) if (v.type == &ffi_type_ ## B) { \
 	return fprintf(os, "%" C, v.value._ ## B); }
 	FFI_TYPE_TABLE(X)
@@ -165,13 +182,23 @@ static inline int lac_variant_print(FILE * os, const lac_variant v)
 	return -1;		// print failed
 }
 
+// read formatted value from input stream
 // set pv->type to determine conversion
 static inline int lac_variant_scan(FILE * is, lac_variant * pv)
 {
+	if (pv->type == &ffi_type_string || pv->type == &ffi_type_block) {
+		lac_variant v = lac_parse_token(is);
+		if (v.type != pv->type) {
+			lac_variant_free(&v);
+			return EOF;
+		}
+		pv->value._pointer = v.value._pointer;
+
+		return strlen(v.value._pointer);
+	}
 #define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) { \
 	return fscanf(is, "%" D, &(pv->value._ ## B)); }
 	FFI_TYPE_TABLE(X)
 #undef X
 	return EOF;		// conversion failed
 }
-

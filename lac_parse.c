@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "ensure.h"
-#include "lac_parse.h"
+#include "lac_variant.h"
 
 // return first character after white or not space
 static int stream_skip(FILE * is, int (*isa)(int), int space)

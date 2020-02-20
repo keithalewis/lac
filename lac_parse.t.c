@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ensure.h"
-#include "lac_parse.h"
+#include "lac_variant.h"
 
 // terminate with null pointer
 int test_lac_parse_tokens(char *t, ...)
