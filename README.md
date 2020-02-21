@@ -13,7 +13,6 @@ Use `load` to specify the signature of the function and `call` to call it
 with the required signature.
 
 A _dictionary_ is available for associating keys with values.
-Use `> key value` to put `value` in the dictionary and `< key` to retrieve it.
 
 ## Tokens
 
@@ -50,8 +49,20 @@ A `cif` type is a pointer type that has a C function symbol,
 a `ffi_cif` member from `libffi` describing the C InterFace,
 and an array containing the argument types required by `ffi_cif`.
 
-Functions can have return type `void` but `void` cannot be used as an argument type.
-Functions taking no arguments have an empty array of argument types.
+Functions can have return type `void` but `void` cannot be used as an
+argument type.  Functions taking no arguments have an empty array of
+argument types.
+
+# Dictionary
+
+The _dictionary_ has strings as keys and variants as values.
+Use `: _key_ _value_` to add items to the dictionary.
+
+## Parsing
+
+A `lac` program reads characters from an input stream and parses
+them into tokens. Every token is either a string or block.
+If it is a string then it is looked up in the dictionary.
 
 ## Load
 
