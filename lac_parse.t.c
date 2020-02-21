@@ -32,45 +32,19 @@ int test_lac_parse_tokens(char *t, ...)
 int test_lac_convert()
 {
 	{
-		char buf[] = "123";
-		FILE *s = fmemopen(buf, sizeof(buf), "r");
-
-		lac_variant v = lac_parse_token(s);
-		ensure (v.type = &ffi_type_string);
-		ensure (0 == strcmp(v.value._pointer, buf));
-		lac_variant w = lac_variant_parse(&ffi_type_sint, &v);
+		lac_variant w = lac_variant_parse(&ffi_type_sint, "123");
 		ensure (w.type = &ffi_type_sint);
 		ensure (w.value._sint == 123);
-
-		fclose(s);
 	}
 	{
-		char buf[] = "1.23";
-		FILE *s = fmemopen(buf, sizeof(buf), "r");
-
-		lac_variant v = lac_parse_token(s);
-		ensure (v.type = &ffi_type_string);
-		ensure (0 == strcmp(v.value._pointer, buf));
-		lac_variant w = lac_variant_parse(&ffi_type_double, &v);
+		lac_variant w = lac_variant_parse(&ffi_type_double, "1.23");
 		ensure (w.type = &ffi_type_double);
 		ensure (w.value._double == 1.23);
-
-		fclose(s);
 	}
 	{
-		char buf[] = "1.23";
-		FILE *s = fmemopen(buf, sizeof(buf), "r");
-
-		lac_variant v = lac_parse_token(s);
-		ensure (v.type = &ffi_type_string);
-		ensure (0 == strcmp(v.value._pointer, buf));
-		lac_variant w = lac_variant_parse(&ffi_type_string, &v);
+		lac_variant w = lac_variant_parse(&ffi_type_string, "foo bar");
 		ensure (w.type = &ffi_type_string);
-		ensure (0 == strcmp(v.value._pointer, buf));
-
-		lac_variant_free(&v);
-
-		fclose(s);
+		ensure (0 == strcmp(w.value._pointer, "foo bar"));
 	}
 
 	return 0;

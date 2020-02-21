@@ -34,7 +34,7 @@ The block token does not include the beginning and ending brace characters.
 
 ## Types
 
-The types used by `libffi` are `schar`, `uchar`, `sshort`, `ushort`,
+The scalar types used by `libffi` are `schar`, `uchar`, `sshort`, `ushort`,
 `sint`, `uint`, `slong`, `ulong`, `float`, `double`, `sint8`, `uint8`,
 `sint16`, `uint16`, `sint32`, `uint32`, `sint64`, `uint64`, and
 `pointer`.
@@ -56,13 +56,33 @@ argument types.
 # Dictionary
 
 The _dictionary_ has strings as keys and variants as values.
-Use `: _key_ _value_` to add items to the dictionary.
+Use `: key value` to add items to the dictionary.
+
+The dictionary is populated with certain well known keys.
+
+The colon string `":"` is a dictionary key. It corresponds
+to a cif that looks for a string and a variant on the
+input stream and adds them to the dictionary.
+
+Every type is mapped to its corresponding `libffi` type.
+E.g., the `"double"` key corresponds to a pointer variant with
+value `&ffi_type_double`.
+
+The `"parse"` entry consumes a type and a string and uses
+`sscanf` to produce a variant of that type.
 
 ## Parsing
 
 A `lac` program reads characters from an input stream and parses
 them into tokens. Every token is either a string or block.
-If it is a string then it is looked up in the dictionary.
+String tokens are looked up in the dictionary and are replaced
+by their variant value. If the string token is not in the
+dictionary no action is taken.
+
+If the variant is a `cif` the corresponding
+function is called, parses the required arguments, then calls
+the function. The result is the variant corresponding to the
+return type of the function.
 
 ## Load
 
@@ -70,8 +90,8 @@ The `load` function looks for the return type, a pointer to a function, and
 a list of argument types that terminated by `void` on the input stream.
 It returns a `cif` type.
 
-The `loadv` function loads a variadic function. The end of the fixed arguments
-is indicated by an ellipsis `...` instead of `void`.
+If an ellipsis `...` is encountered then the function is
+variadic.
 
 ## Call
 
@@ -86,7 +106,7 @@ If the cif is variadic the optional arguments are terminated using `void`.
 
 The keywords used for control flow are `if`, `else`, `loop`, `break`, and `continue`.
 
-
+`parse double 1.23`
 
 
 

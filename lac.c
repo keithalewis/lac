@@ -25,7 +25,7 @@ lac_variant lac_evaluate_token(FILE* fp, ffi_type* type, lac_variant token)
 		v = lac_call_thunk(fp, thunk);
 	}
 	else {
-		v = lac_variant_parse(type, &token);
+		v = lac_variant_parse(type, token.value._pointer);
 	}
 
 	return v;
@@ -74,6 +74,8 @@ lac_variant lac_call_token(FILE* fp, const lac_variant token)
 {
 	lac_variant v = { .type = &ffi_type_void };
 
+	ensure (token.type == &ffi_type_string);
+	//lac_variant* val = lac_map_get(token.value._pointer);
 	const lac_cif* thunk = lac_map_get(token.value._pointer);
 	ensure (thunk);
 	v = lac_call_thunk(fp, thunk);
@@ -92,6 +94,9 @@ lac_variant lac_execute(FILE* fp)
 		lac_variant_free(&token);
 		token = lac_parse_token(fp);
 	}
+	
+	ensure (token.type == &ffi_type_void);
+	// no need to free
 
 	return v;
 }

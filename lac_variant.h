@@ -89,6 +89,12 @@ static inline void *lac_variant_address(lac_variant * pv)
 	return 0;
 }
 
+#define X(A,B,C,D) \
+static inline lac_variant lac_variant_ ## B(A a) { \
+	return (lac_variant){.type = &ffi_type_ ## B, .value._ ## B = a}; }
+	FFI_TYPE_TABLE(X)
+#undef X
+
 static inline void lac_variant_free(lac_variant* pv)
 {
 	if (pv->type == &ffi_type_string || pv->type == &ffi_type_block) {
@@ -144,21 +150,20 @@ static inline void lac_variant_decr(lac_variant* pv)
 // returned pointer must be freed
 lac_variant lac_parse_token(FILE *);
 
-// convert from string to pv->type and free
-// s/convert/parse/??? lac_variant_parse vs lac_token_parse
-static inline lac_variant lac_variant_parse(ffi_type* type, lac_variant* pv)
+// convert from string to type
+static inline lac_variant lac_variant_parse(ffi_type* type, char* s)
 {
 	lac_variant v = { .type = &ffi_type_void };
 
-	ensure (pv->type == &ffi_type_string);
-	
 	// null strings???
 	if (type == &ffi_type_string || type == &ffi_type_block) {
-		return *pv;
+		v.type = type;
+		v.value._pointer = s;
+
+		return v;
 	}
 
 	int ret;
-	char* s = pv->value._pointer;
 #define X(A,B,C,D) if (type == &ffi_type_ ## B) { \
 	ret = sscanf(s, "%" D, &(v.value._ ## B)); }
 	FFI_TYPE_TABLE(X)
@@ -166,7 +171,6 @@ static inline lac_variant lac_variant_parse(ffi_type* type, lac_variant* pv)
 	ensure (ret > 0);
 
 	v.type = type;
-	free(s);
 
 	return v;
 }
