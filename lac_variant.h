@@ -42,14 +42,15 @@ extern "C" {
 // X(FFI_TYPE_COMPLEX
 // X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer, 
 
-// malloced string starting with '"'
+// must be initialized by ffi_type_variant_prep()
+extern ffi_type ffi_type_variant;
+
+// pointer types
 extern ffi_type ffi_type_string;
 
-// malloced string starting with '{'
 extern ffi_type ffi_type_block;
 
-// variant type for libffi
-extern ffi_type ffi_type_variant;
+extern ffi_type ffi_type_cif;
 
 // convert string name to ffi type
 static inline const ffi_type *ffi_type_lookup(const char *name)
@@ -57,9 +58,10 @@ static inline const ffi_type *ffi_type_lookup(const char *name)
 #define X(A,B,C,D) if (0 == strcmp(#B, name)) { return &ffi_type_ ## B; }
 	FFI_TYPE_TABLE(X)
 #undef X
+	if (0 == strcmp("variant", name)) { return &ffi_type_variant; }
 	if (0 == strcmp("string", name)) { return &ffi_type_string; }
 	if (0 == strcmp("block", name)) { return &ffi_type_block; }
-	if (0 == strcmp("variant", name)) { return &ffi_type_variant; }
+	if (0 == strcmp("cif", name)) { return &ffi_type_cif; }
 
     return 0;
 }
@@ -143,8 +145,8 @@ static inline void lac_variant_decr(lac_variant* pv)
 lac_variant lac_parse_token(FILE *);
 
 // convert from string to pv->type and free
-// s/convert/parse/???
-static inline lac_variant lac_variant_convert(ffi_type* type, lac_variant* pv)
+// s/convert/parse/??? lac_variant_parse vs lac_token_parse
+static inline lac_variant lac_variant_parse(ffi_type* type, lac_variant* pv)
 {
 	lac_variant v = { .type = &ffi_type_void };
 

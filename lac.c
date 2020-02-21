@@ -25,7 +25,7 @@ lac_variant lac_evaluate_token(FILE* fp, ffi_type* type, lac_variant token)
 		v = lac_call_thunk(fp, thunk);
 	}
 	else {
-		v = lac_variant_convert(type, &token);
+		v = lac_variant_parse(type, &token);
 	}
 
 	return v;

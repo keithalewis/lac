@@ -15,6 +15,11 @@ ffi_type ffi_type_block = {
 	offsetof(struct struct_align_pointer, x),
 	FFI_TYPE_POINTER, NULL
 };
+ffi_type ffi_type_cif = {
+	sizeof(void*),
+	offsetof(struct struct_align_pointer, x),
+	FFI_TYPE_POINTER, NULL
+};
 
 static const ffi_type *ffi_variant_union_elements[] =
     { &ffi_type_pointer, NULL };

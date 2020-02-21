@@ -24,10 +24,14 @@ const void* get_(const char* key)
 	return lac_map_get(key);
 }
 
-lac_variant double_(const char*)
+lac_variant double_(const char* s)
 {
 	lac_variant v;
+
+	s = s;
 	v.type = &ffi_type_double;
+
+	return v;
 }
 // load lac types
 void lac_types(void)
