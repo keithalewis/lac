@@ -102,25 +102,6 @@ of the specified return type.
 
 If the cif is variadic the optional arguments are terminated using `void`.
 
-## Control Flow
-
-The keywords used for control flow are `if`, `else`, `loop`, `break`, and `continue`.
-
-`parse double 1.23`
-
-
-
-This is the same as
-```
-load double ( dlsym dlopen libm.so RTLD_LAZY ) cos double void
-```
-or even
-```
-load double ( dlsym ( dlopen libm.so RTLD_LAZY ) cos ) double void
-```
-Open and close parentheses not only improve readability, they provide
-a check that a function does indeed consume its required arguments.
-
 
 
 ## Execute
@@ -142,6 +123,13 @@ into the corresponding type. If you leave off the prefix the corresponding
 type is assumed to be signed.
 
 The predefined `>` function only knows that the next token is a string.
+
+
+
+
+execute 
+	token = parse_token(stream)
+	variant = lookup_variant(token)
 
 ## Example
 

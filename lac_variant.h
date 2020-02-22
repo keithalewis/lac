@@ -89,19 +89,40 @@ static inline void *lac_variant_address(lac_variant * pv)
 	return 0;
 }
 
+// E.g. lac_variant v = lac_variant_double(1.23)
 #define X(A,B,C,D) \
 static inline lac_variant lac_variant_ ## B(A a) { \
 	return (lac_variant){.type = &ffi_type_ ## B, .value._ ## B = a}; }
 	FFI_TYPE_TABLE(X)
 #undef X
 
+// pointer ot malloc'ed memory
+static inline int lac_variant_ispointer(const lac_variant* pv)
+{
+	return pv->type == &ffi_type_string
+		|| pv->type == &ffi_type_block
+		|| pv->type == &ffi_type_cif;
+}
+
+static inline lac_variant* lac_variant_alloc(ffi_type* type)
+{
+	lac_variant* pv = malloc(sizeof lac_variant);
+
+	if (!pv)
+		return 0;
+
+	pv->type = type;
+
+	return pv;
+}
+
 static inline void lac_variant_free(lac_variant* pv)
 {
-	if (pv->type == &ffi_type_string || pv->type == &ffi_type_block) {
+	if (lac_variant_ispointer(pv)) {
 		free (pv->value._pointer);
 	}
 
-	pv->type = &ffi_type_void;
+	free (pv);
 }
 
 // compile time type conversion
@@ -200,7 +221,7 @@ static inline int lac_variant_scan(FILE * is, lac_variant * pv)
 		}
 		pv->value._pointer = v.value._pointer;
 
-		return strlen(v.value._pointer);
+		return strlen(v.value._pointer); // ???
 	}
 #define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) { \
 	return fscanf(is, "%" D, &(pv->value._ ## B)); }
