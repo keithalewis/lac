@@ -4,22 +4,21 @@ SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
 LAC_T = lac_ffi.t.c lac_map.t.c lac_parse.t.c lac_stack.t.c lac_stream.t.c lac_variant.t.c
 
-FFI_LIB_DIR = ./libffi/x86_64-pc-linux-gnu/.libs/
+FFI_DIR = ./libffi/x86_64-pc-linux-gnu/
 
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 
-CFLAGS = -g -Wall
-LDLIBS = -ldl -L $(FFI_LIB_DIR) -l:libffi.a
+CFLAGS = -g -Wall -I $(FFI_DIR)/include
+LDLIBS = -ldl -L $(FFI_DIR)/.libs -l:libffi.a
 
-lac: $(OBJS)
+lac: libffi $(OBJS)
 
-lac.t: $(OBJS_T)
+lac.t: libffi $(OBJS_T)
 
 test: lac.t
 	./lac.t
 
-.PHONY : libffi
 libffi: libffi/configure
 	(cd libffi; make)
 
@@ -28,7 +27,7 @@ libffi/configure: libffi/autogen.sh
 	(cd libffi; CFLAGS="-g -O0"  ./configure --enable-debug --disable-docs)
 
 libffi/autogen.sh: 
-	git submodule update
+	git submodule update --remote
 
 .PHONY : clean
 clean:
