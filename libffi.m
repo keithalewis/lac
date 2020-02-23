@@ -2,7 +2,7 @@
 
 _Platform_ refers to the chip architecture and operating system.
 
-The signature, or C InterFace, of a function consists of its return type and
+The C InterFace, of a function consists of its return type and
 required argument types. The `ffi_cif` struct contains this information
 and additional platform specific information.
 
@@ -21,7 +21,7 @@ arguments. A pointer to memory with sufficient space to accomodate
 the return value must also be provided.
 
 The function `void ffi_call(ffi_cif *cif, void *fn, void *rvalue, void
-**avalues)` uses the prepared `cif` to arrange `avalues` on the call
+**avalues)` uses the prepared `ffi_cif` to arrange `avalues` on the call
 stack, call `fn`, and deposit the result into the memory pointed to by
 `rvalue`. It knows nothing about memory allocation and requires the user
 to make all necessary arrangements to ensure the memory being
@@ -34,7 +34,13 @@ The cif for variadic functions must be prepared with both the the fixed and vari
 `ffi_status ffi_prep_cif_var(ffi_cif *cif, ffi_abi abi,
 unsigned int nfixedargs, unsigned int ntotalargs, ffi_type *rtype, ffi_type **argtypes)`
 
-It can then be used in `ffi_call` with `ntotalargs` in `avalues`.
+It can then be used in `ffi_call` with `ntotalargs` in `avalues` pointing at all of the
+fixed and variable argument addresses.
+
+A union is a `ffi_type` of type struct with one element that has the
+largest type and alignment of all the types in the union.
+[https://stackoverflow.com/questions/40354500/how-do-i-create-an-ffi-type-that-represents-a-union]
+
 
 
 

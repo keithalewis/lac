@@ -28,52 +28,6 @@ int timer(void(*f)(void), int n)
 	return ((e - b)*1000)/CLOCKS_PER_SEC;
 }
 
-char buf[10000] = "abcd\n"; 
-
-void test_tmpfile()
-{
-	FILE* fp = tmpfile();
-
-	fwrite(buf, 1, 100, fp);
-	fread(buf, 1, 100, fp);
-
-	fclose(fp);
-}
-void test_memfile()
-{
-	int fd = open("/sys/fs/cgroup/foo", O_RDWR/*|O_TMPFILE*/);
-
-	write(fd, buf, 100);
-	read(fd, buf, 100);
-
-	close(fd);
-}
-void test_memfile2()
-{
-	int fd = open("foo", O_RDWR|O_CREAT/*|O_TMPFILE*/, S_IRWXU);
-
-	perror(strerror(errno));
-	ensure(fd >= 0);
-
-	write(fd, buf, 100);
-	fsync(fd);
-	close(fd);
-	//read(fd, buf, 100);
-
-	int fd2 = open("foo", O_RDONLY);
-	perror(strerror(errno));
-	ensure(fd2 >= 0);
-	char buf2[10];
-	read(fd2, buf2, 10);
-	write(1, buf2, 5);
-
-	close(fd2);
-}
-void test_memmove()
-{
-	memmove(buf, buf, 100);
-}
-
 int test_lac()
 {
 	return 0;
@@ -86,11 +40,6 @@ int main()
 		
 		return -1;
 	}
-
-	test_memfile2();
-	//printf("file: %i ms\n", timer(test_tmpfile, 1000));
-	//printf("open: %i ms\n", timer(test_memfile, 1));
-	//printf("open2: %i ms\n", timer(test_memfile2, 1));
 
 	//test_lac_ffi();
 	test_lac_parse();

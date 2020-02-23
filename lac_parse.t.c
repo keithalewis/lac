@@ -17,7 +17,7 @@ int test_lac_parse_tokens(char *t, ...)
 	while (u) {
 		t_ = lac_parse_token(s);
 		ensure(0 == strcmp(t_.value._pointer, u));
-		lac_variant_free(&t_);
+		free(t_.value._pointer);
 		u = va_arg(ap, char *);
 	}
 

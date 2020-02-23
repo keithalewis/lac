@@ -79,14 +79,11 @@ typedef struct {
 // pointer address of variant value
 static inline void *lac_variant_address(lac_variant * pv)
 {
-	if (pv->type == &ffi_type_string || pv->type == &ffi_type_block) {
-		return &pv->value._pointer;
-	}
 #define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) return &pv->value._ ## B;
 	FFI_TYPE_TABLE(X)
 #undef X
-
-	return 0;
+	// all other types are pointers
+	return &pv->value._pointer;
 }
 
 // E.g. lac_variant v = lac_variant_double(1.23)
@@ -96,17 +93,16 @@ static inline lac_variant lac_variant_ ## B(A a) { \
 	FFI_TYPE_TABLE(X)
 #undef X
 
-// pointer ot malloc'ed memory
-static inline int lac_variant_ispointer(const lac_variant* pv)
+// return value from lac_parse_token
+static inline int lac_variant_istoken(const lac_variant* pv)
 {
 	return pv->type == &ffi_type_string
-		|| pv->type == &ffi_type_block
-		|| pv->type == &ffi_type_cif;
+		|| pv->type == &ffi_type_block;
 }
 
 static inline lac_variant* lac_variant_alloc(ffi_type* type)
 {
-	lac_variant* pv = malloc(sizeof lac_variant);
+	lac_variant* pv = malloc(sizeof(lac_variant));
 
 	if (!pv)
 		return 0;
@@ -118,7 +114,7 @@ static inline lac_variant* lac_variant_alloc(ffi_type* type)
 
 static inline void lac_variant_free(lac_variant* pv)
 {
-	if (lac_variant_ispointer(pv)) {
+	if (lac_variant_istoken(pv)) {
 		free (pv->value._pointer);
 	}
 
@@ -136,7 +132,7 @@ static inline int lac_variant_equal(const lac_variant a, const lac_variant b)
 #define X(A,B,C,D) if (a.value._ ## B == a.value._ ## B) { return 1; }
 	FFI_TYPE_TABLE(X)
 #undef X
-	if (a.type == &ffi_type_string || a.type == &ffi_type_block) {
+	if (lac_variant_istoken(&a)) {
 		return 0 == strcmp(a.value._pointer, b.value._pointer);
 	}
 

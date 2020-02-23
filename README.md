@@ -6,11 +6,11 @@ This little language makes it possible to dynamically load C
 functions from shared libraries at runtime and call them using
 [libffi](https://github.com/libffi/libffi).
 
-The functions `dlopen`, `dlsym`, and `dlclose` from `<dlfcn.h>` are
-available to get a pointer to any C function from a dynamic library.
+The functions `dlopen`, `dlsym`, and `dlclose` from `<dlfcn.h>`
+can be used to get a pointer to a C function from a dynamic library.
 
-Use `load` to specify the signature of the function and `call` to call it
-with the required signature.
+Use `load` to specify the signature of the function returned by `dlsym`
+so `call` can parse required argumnets from the input stream.
 
 A _dictionary_ is available for associating keys with values.
 
@@ -23,9 +23,7 @@ If a token starts with a quote character (`'"'`) then white space is
 included up to the next quote character. Quote characters preceded by
 a backslash (`'\'`) get included in the token.
 
-The string token does not include the beginning and ending quote characters.
-
-A _block token_ starts with a left brace character (`'{'`) and all
+The string token does not include the beginning and ending quote characters.  A _block token_ starts with a left brace character (`'{'`) and all
 characters are included up to the next right brace character (`'}'`) at
 the same nesting level.  Right brace characters preceded by a  backslash
 (`'\'`) get included in the token.
