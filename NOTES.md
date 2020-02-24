@@ -168,3 +168,39 @@ lac_variant lac_evaluate_token(fp, tok)
 
 	return v;
 }
+
+use intptr_t to switch on ffi_type pointers
+
+evaluate(is, dict) -- look in dict first, then global dict
+
+void loop_(const lac_variant block)
+{
+	ensure (block.type == &ffi_type_block);
+	const char* s =  lac_variant_address(block);
+	size_t n = strlen(s);
+	// ???local dictionary???
+	// set break = false
+	// set continue = false
+	while (true) {
+		FILE* is = fmemopen(s, n, "r");
+		evaluate(is);
+		fclose(is);
+		if (break)
+			break;
+		if (continue)
+			continue;
+	}
+}
+
+eval(is, dict) -> variant
+	token = next(is)
+	variant = get(token, dict)
+	if not found
+		return token
+	if cif
+		return call(variant, is, dict)
+	if block
+		return eval(fmemopen(block), dict)
+	return variant
+
+

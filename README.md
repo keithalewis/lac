@@ -9,10 +9,31 @@ functions from shared libraries at runtime and call them using
 The functions `dlopen`, `dlsym`, and `dlclose` from `<dlfcn.h>`
 can be used to get a pointer to a C function from a dynamic library.
 
-Use `load` to specify the signature of the function returned by `dlsym`
-so `call` can parse required argumnets from the input stream.
+Use `load` to specify the _signature_ of the function returned by `dlsym`
+to create a _cif_, a C InterFace. The signature specifies the return
+type of the function and the required arguments.
+
+Use `call` to parse required arguments from the input stream and
+call the C function to return the specified return type.
 
 A _dictionary_ is available for associating keys with values.
+Use `: key value` to add items to it.
+
+`Lac` _evaluates_ an input stream by reading white space separated
+tokens.  If the token is in the dictionary and is a _cif_ it is called.
+If the token is a _block_ then the block is converted to an input stream
+and gets evaluated.
+
+Evaluate expects a cif or a block that has a cif and returns the return type.
+
+When a cif is called it knows the number and types of required arguments.
+The cif _parses_ an input stream by reading white space separated
+tokens.  If the token is in the dictionary and is a _cif_ it is called.
+If the token is a _block_ then the block is converted to an input stream
+and gets evaluated. If the token is a _string_ it is parsed to the
+required argument type.
+
+Parse specifies a type and uses that when the next token is a string.
 
 ## Tokens
 
@@ -56,7 +77,8 @@ argument types.
 The _dictionary_ has strings as keys and variants as values.
 Use `: key value` to add items to the dictionary.
 
-The dictionary is populated with certain well known keys.
+The dictionary is populated with keys in addition to
+`dlopen`, `dlsym`, and `dlclose`.
 
 The colon string `":"` is a dictionary key. It corresponds
 to a cif that looks for a string and a variant on the
@@ -64,7 +86,7 @@ input stream and adds them to the dictionary.
 
 Every type is mapped to its corresponding `libffi` type.
 E.g., the `"double"` key corresponds to a pointer variant with
-value `&ffi_type_double`.
+value `&ffi_type_double` from `libffi`.
 
 The `"parse"` entry consumes a type and a string and uses
 `sscanf` to produce a variant of that type.
