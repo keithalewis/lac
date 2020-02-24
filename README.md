@@ -22,7 +22,7 @@ Use `: key value` to add items to it.
 `Lac` _evaluates_ an input stream by reading white space separated
 tokens.  If the token is in the dictionary and is a _cif_ it is called.
 If the token is a _block_ then the block is converted to an input stream
-and gets evaluated.
+and is evaluated.
 
 Evaluate expects a cif or a block that starts with a cif.
 It returns the return type of the cif signature.
@@ -34,8 +34,7 @@ If the token is a _block_ then the block is converted to an input stream
 and gets evaluated. If the token is a _string_ it is parsed to the
 required argument type.
 
-Parse specifies a type and uses that when the next token is a string.
-It returns the type.
+Parse knows the required argument type and ensures that is the result of the parse.
 
 ## Tokens
 
@@ -46,7 +45,9 @@ If a token starts with a quote character (`'"'`) then white space is
 included up to the next quote character. Quote characters preceded by
 a backslash (`'\'`) get included in the token.
 
-The string token does not include the beginning and ending quote characters.  A _block token_ starts with a left brace character (`'{'`) and all
+The string token does not include the beginning and ending quote characters.  
+
+A _block token_ starts with a left brace character (`'{'`) and all
 characters are included up to the next right brace character (`'}'`) at
 the same nesting level.  Right brace characters preceded by a  backslash
 (`'\'`) get included in the token.

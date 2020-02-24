@@ -74,6 +74,7 @@ typedef struct {
 #undef X
 	} value;
 	ffi_type *type;
+	// size_t size; ???
 } lac_variant;
 
 // pointer address of variant value
@@ -118,7 +119,7 @@ static inline void lac_variant_free(lac_variant* pv)
 		free (pv->value._pointer);
 	}
 
-	free (pv);
+	//free (pv);
 }
 
 // compile time type conversion

@@ -74,24 +74,34 @@ lac_variant lac_call_token(FILE* fp, const lac_variant token)
 {
 	lac_variant v = { .type = &ffi_type_void };
 
-	ensure (token.type == &ffi_type_string);
-	//lac_variant* val = lac_map_get(token.value._pointer);
-	const lac_cif* thunk = lac_map_get(token.value._pointer);
-	ensure (thunk);
-	v = lac_call_thunk(fp, thunk);
+	if (token.type == &ffi_type_block) {
+		FILE* is = fmemopen(token.value._pointer, strlen(token.value._pointer), "r");
+		v = lac_evaluate(is);
+		fclose (is);
+	}
+	else if (token.type == &ffi_type_cif) {
+	}
 
 	return v;
 }
 
 // parse tokens and call their thunk
-lac_variant lac_execute(FILE* fp)
+lac_variant lac_evaluate(FILE* fp)
 {
 	lac_variant v = { .type = &ffi_type_void };
 
 	lac_variant token = lac_parse_token(fp);
     while (token.type != &ffi_type_void) {
-		v = lac_call_token(fp, token);
-		lac_variant_free(&token);
+		if (token.type == &ffi_type_block) {
+			FILE* is = fmemopen(token.value._pointer, strlen(token.value._pointer), "r");
+			v = lac_evaluate(is);
+			fclose (is);
+		}
+		else {
+    		ensure (token.type == &ffi_type_cif);
+			lac_cif* cif = token.value._pointer;
+			v = lac_call_cif(cif, fp);
+		}
 		token = lac_parse_token(fp);
 	}
 	
@@ -118,7 +128,7 @@ int main(int ac, const char *av[])
 	}
 
 	// for file ... lac_execute
-	lac_variant v = lac_execute(fp);
+	lac_variant v = lac_evaluate(fp);
 
 	return v.type == &ffi_type_sint ? v.value._sint : 0;
 }
