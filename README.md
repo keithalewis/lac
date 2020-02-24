@@ -13,7 +13,7 @@ Use `load` to specify the _signature_ of the function returned by `dlsym`
 to create a _cif_, a C InterFace. The signature specifies the return
 type of the function and the required arguments.
 
-Use `call` to parse required arguments from the input stream and
+Use `call cif` to parse required arguments from the input stream and
 call the C function to return the specified return type.
 
 A _dictionary_ is available for associating keys with values.
@@ -24,7 +24,8 @@ tokens.  If the token is in the dictionary and is a _cif_ it is called.
 If the token is a _block_ then the block is converted to an input stream
 and gets evaluated.
 
-Evaluate expects a cif or a block that has a cif and returns the return type.
+Evaluate expects a cif or a block that starts with a cif.
+It returns the return type of the cif signature.
 
 When a cif is called it knows the number and types of required arguments.
 The cif _parses_ an input stream by reading white space separated
@@ -34,6 +35,7 @@ and gets evaluated. If the token is a _string_ it is parsed to the
 required argument type.
 
 Parse specifies a type and uses that when the next token is a string.
+It returns the type.
 
 ## Tokens
 
