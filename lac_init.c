@@ -4,11 +4,6 @@
 #include "lac_ffi.h"
 #include "lac_map.h"
 
-int RTLD_LAZY_(void)
-{
-	return RTLD_LAZY;
-}
-
 void put_(char* key, const void* val)
 {
 	lac_map_put(key, val);
@@ -44,11 +39,39 @@ void lac_types(void)
 	FFI_TYPE_TABLE(X)
 #undef X
 
+#define put_ffi_type(name) \
+	static lac_variant name ## _; \
+	name ## _ .type = &ffi_type_pointer; \
+	name ## _ .value._pointer = &ffi_type_ ## name; \
+	lac_map_put(#name, &name ## _);
+
+#define put_pointer(name) \
+	static lac_variant name ## _; \
+	name ## _ .type = &ffi_type_pointer; \
+	name ## _ .value._pointer = name; \
+	lac_map_put(#name, &name ## _);
+
+#define put_int(name) \
+	static lac_variant name ## _; \
+	name ## _ .type = &ffi_type_sint; \
+	name ## _ .value._sint = name; \
+	lac_map_put(#name, &name ## _);
+
+#define put_cif(name, cif_ptr) \
+	static lac_variant name ## _cif; \
+	name ## _cif .type = &ffi_type_cif; \
+	name ## _cif .value._pointer = cif_ptr; \
+	lac_map_put(#name, &name ## _cif);
+
 void lac_init(void)
 {
 	ffi_type_variant_prep();
 
 	ffi_type* type[8];
+
+	put_pointer(stdin);
+	put_pointer(stdout);
+	put_pointer(stderr);
 
 	type[0] = &ffi_type_string;
 	type[1] = &ffi_type_pointer;
@@ -57,30 +80,33 @@ void lac_init(void)
 	type[0] = &ffi_type_string;
 	lac_map_put("<", lac_cif_alloc(&ffi_type_pointer, get_, 1, type));
 
-	lac_map_put("RTLD_LAZY", lac_cif_alloc(&ffi_type_sint, RTLD_LAZY_, 0, NULL));
-	//lac_map_put("RTLD_NOW", 
+	put_int(RTLD_LAZY);
+	put_int(RTLD_NOW);
 
 	type[0] = &ffi_type_string;
 	type[1] = &ffi_type_sint;
-	lac_map_put("dlopen", lac_cif_alloc(&ffi_type_pointer, dlopen, 2, type));
+	put_cif(dlopen, lac_cif_alloc(&ffi_type_pointer, dlopen, 2, type));
 
 	type[0] = &ffi_type_pointer;
-	lac_map_put("dlclose", lac_cif_alloc(&ffi_type_sint, dlclose, 1, type));
+	put_cif(dlclose, lac_cif_alloc(&ffi_type_sint, dlclose, 1, type));
 
 	type[0] = &ffi_type_pointer;
 	type[1] = &ffi_type_string;
-	lac_map_put("dlsym", lac_cif_alloc(&ffi_type_pointer, dlsym, 2, type));
+	put_cif(dlsym, lac_cif_alloc(&ffi_type_pointer, dlsym, 2, type));
 
-#define X(A,B,C,D) lac_map_put(#B, &lac_type_ ## B);
+#define X(A,B,C,D) put_ffi_type(B);
 	FFI_TYPE_TABLE(X)
 #undef X
 
 	type[0] = &ffi_type_pointer;
 	type[1] = &ffi_type_string;
-	lac_map_put("parse", lac_cif_alloc(&ffi_type_variant, parse_, 2, type));
+	put_cif(parse, lac_cif_alloc(&ffi_type_variant, parse_, 2, type));
 
 	type[0] = &ffi_type_variant;
-	lac_map_put("print", lac_cif_alloc(&ffi_type_sint, print_, 1, type));
+	put_cif(print, lac_cif_alloc(&ffi_type_sint, print_, 1, type));
+
+	type[0] = &ffi_type_string;
+	put_cif(puts, lac_cif_alloc(&ffi_type_sint, puts, 1, type));
 }
 
 void lac_fini(void)

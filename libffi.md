@@ -58,9 +58,5 @@ largest type and alignment of all the types in the union.
 
 
 
-
-
-
-
-
-A union is a struct with one element having maximum size and alignment.
+A union is a struct with one element having maximum size and alignment
+of its members.
