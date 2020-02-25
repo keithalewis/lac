@@ -173,11 +173,16 @@ static inline lac_variant lac_variant_parse(ffi_type* type, char* s)
 {
 	lac_variant v = { .type = &ffi_type_void };
 
-	int ret;
+	int ret = -1;
 #define X(A,B,C,D) if (type == &ffi_type_ ## B) { \
 	ret = sscanf(s, "%" D, &(v.value._ ## B)); }
 	FFI_TYPE_TABLE(X)
 #undef X
+	if (ret == -1) {
+		v.type = type;
+		v.value._pointer = s;
+		ret = strlen(s);
+	}
 	ensure (ret > 0);
 
 	v.type = type;

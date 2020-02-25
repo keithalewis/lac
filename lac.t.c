@@ -15,6 +15,7 @@ int test_lac_parse(void);
 int test_lac_map(void);
 int test_lac(void);
 int test_lac_variant(void);
+int test_lac_tree(void);
 
 // call f n times an return millisecnds
 int timer(void(*f)(void), int n)
@@ -46,6 +47,7 @@ int main()
 	test_lac_map();
     test_lac();
 	test_lac_variant();
+	test_lac_tree();
 
 	return 0;
 }
