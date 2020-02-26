@@ -35,8 +35,8 @@ in the dictionary using
 ```
 The _greater than_ (`>`) function is used to place a key and a value into
 the dictionary.  Values are retrieved using less than (`<`) in front of
-the key.  The similarity to shell file ouput and input (respectively)
-is intentional. The key is the file name and the value is the bits in
+the key with no white space.  The similarity to shell file ouput and input (respectively)
+is intentional. The key is the file name and the value is the content of
 the file.
 
 Use `load` to specify the _signature_ of the function returned by
@@ -50,7 +50,7 @@ The functions `dlopen`, `dlsym`, and `dlclose` from `<dlfcn.h>` are
 preloaded functions that can be used to get a pointer to a C function
 from a dynamic library.
 
-The standard C types are also preloaded. The `string` type is a pointer type
+The standard C types are also preloaded. The `string` type is a `void*` pointer type
 to a null terminated string of characters.
 
 The parentheses are not required since `dlsym` knows it needs two
@@ -109,10 +109,6 @@ characters up to the next white space are a key in the dictionary.
 
 A key token does not include the beginning less than character.
 
-Note that a token consisting of the single greater than character (`>`)
-is converted to a predefined key token that adds a key and value
-to a dictionary.
-
 ## Types
 
 The scalar types used by `libffi` are `schar`, `uchar`, `sshort`, `ushort`,
@@ -123,8 +119,7 @@ The scalar types used by `libffi` are `schar`, `uchar`, `sshort`, `ushort`,
 The `variant` type is a union of these types and a field indicating the type.
 
 The types `string` and `block` are pointer types where the
-pointer is a null terminated string of characters that have been allocated
-on the heap.
+pointer is a null terminated string of characters.
 
 A `cif` type is a pointer type that has a C function symbol,
 a `ffi_cif` member from `libffi` describing the C InterFace,
