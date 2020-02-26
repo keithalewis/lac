@@ -11,6 +11,17 @@ typedef struct {
 	size_t size;
 } lac_tree_datum;
 
+static inline int lac_tree_datum_cmp(const lac_tree_datum* a, const lac_tree_datum* b)
+{
+	int ret = b->size - a->size;
+	
+	if (ret == 0) {
+		ret = strncmp(a->data, b->data, a->size);
+	}
+
+	return ret;
+}
+
 typedef struct {
 	lac_tree_datum key;
 	lac_tree_datum val;
@@ -38,26 +49,22 @@ static inline int lac_tree_cmp(const void* a, const void* b)
 {
 	const lac_tree_datum* ka = &((const lac_tree_node*)a)->key;
 	const lac_tree_datum* kb = &((const lac_tree_node*)b)->key;
-
-	int ret = kb->size - ka->size;
 	
-	if (ret == 0) {
-		ret = strncmp(ka->data, kb->data, ka->size);
-	}
-
-	return ret;
+	return lac_tree_datum_cmp(ka, kb);
 }
 
 lac_tree lac_tree_create(void);
 
-// add new node and return NULL if exists
-lac_tree_node* lac_tree_put(lac_tree* tree, const lac_tree_datum key, const lac_tree_datum val);
+// add new node and return NULL if duplicate
+const lac_tree_node* lac_tree_put(lac_tree* tree, const lac_tree_datum key, const lac_tree_datum val);
+
 // pointer to value corresponding t0 key or NULL if not found
-lac_tree_datum* lac_tree_get(const lac_tree* tree, const lac_tree_datum key);
+const lac_tree_datum* lac_tree_get(const lac_tree* tree, const lac_tree_datum key);
+
 // return pointer to parent node or NULL if not found
-lac_tree_node* lac_tree_del(lac_tree* tree, const lac_tree_datum key);
+const lac_tree_node* lac_tree_del(lac_tree* tree, const lac_tree_datum key);
 
 void  lac_tree_destroy(lac_tree);
 
-// call action on each leaf node
-void lac_tree_walk(const lac_tree, void(*action)(lac_tree_node*));
+// call action on each postorder and leaf node
+void lac_tree_walk(const lac_tree tree, void(*action)(const lac_tree_node*));

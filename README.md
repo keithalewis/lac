@@ -6,35 +6,86 @@ This little language makes it possible to dynamically load C
 functions from shared libraries at runtime and call them using
 [libffi](https://github.com/libffi/libffi).
 
-The functions `dlopen`, `dlsym`, and `dlclose` from `<dlfcn.h>`
-can be used to get a pointer to a C function from a dynamic library.
+For example, if the function `puts` from the standard library has
+been **load**ed
+```
+<puts "Hello World!"
+```
+will print `Hello World!` (without quotes) and a trailing newline 
+to standard output and return an integer.
 
-Use `load` to specify the _signature_ of the function returned by `dlsym`
-to create a _cif_, a C InterFace. The signature specifies the return
-type of the function and the required arguments.
+The less than sign (`<`) indicates the key `puts` should be looked
+up in the _dictionary_.
 
-Use `call cif` to parse required arguments from the input stream and
-call the C function to return the specified return type.
+The `puts` function requires a string on the input stream
+and `lac` uses double quotes for strings that may
+contain spaces. The function is **call**ed with the string
+argument and returns an integer.
 
-A _dictionary_ is available for associating keys with values.
-Use `: key value` to add items to it.
+An equivalent way to do this is
+```
+<puts Hello\ World!
+```
+since backslash (`\`) can be used to escape the
+next character on the input stream.
 
-`Lac` _evaluates_ an input stream by reading white space separated
-tokens.  If the token is in the dictionary and is a _cif_ it is called.
-If the token is a _block_ then the block is converted to an input stream
-and is evaluated.
+The `puts` function from the C standard library can be placed
+in the dictionary using
+```
+>puts <load <int ( <dlsym ( <dlopen libc.so ) puts ) <string <void
+```
+The _greater than_ (`>`) token is a function that places a key and a value into the dictionary.
+Values are retrieved by using less than (`<`) in front of the key.
+The similarity to shell file ouput and input (respectively) is
+intentional. The key is the file name and the value is the
+bits in the file. 
 
-Evaluate expects a cif or a block that starts with a cif.
-It returns the return type of the cif signature.
+Use `load` to specify the _signature_ of the function returned by
+`dlsym` to create a _cif_: a C InterFace. The signature specifies the
+return type of the function, a pointer to a C function, and the required
+arguments. The arguments are terminated by `void`. The syntax is
+similar to the C function declaration. The type `void` is not
+a valid argument type. 
 
-When a cif is called it knows the number and types of required arguments.
-The cif _parses_ an input stream by reading white space separated
-tokens.  If the token is in the dictionary and is a _cif_ it is called.
-If the token is a _block_ then the block is converted to an input stream
-and gets evaluated. If the token is a _string_ it is parsed to the
-required argument type.
+The functions `dlopen`, `dlsym`, and `dlclose` from `<dlfcn.h>` are
+preloaded functions that can be used to get a pointer to a C function
+from a dynamic library.
 
-Parse knows the required argument type and ensures that is the result of the parse.
+All C types are also preloaded. E.g, the `string` type is a pointer type
+to a null terminated string of characters.
+
+The parentheses are not required since `dlsym` knows it needs two
+arguments, a pointer returned by `dlopen` and the string name of
+the function. Likewise, `dlopen` knows it only needs one argument,
+the string name of the library.
+
+They are used not just for readability; the closing parentheses
+ensures all required arguments have been supplied.
+
+An equivalent way to do the above is
+```
+>puts ( <load <int <dlsym <dlopen libc.so puts <string )
+```
+
+## Evaluation
+
+`Lac` _evaluates_ an input stream of characters by reading white space
+separated tokens.  
+
+If a token has first character less than (`<`) it
+is looked up in the dictionary.  If the value is a cif then it is called
+and its return type is the value. Otherwise the dictionary value is used.
+
+When a cif is called it knows the required argument types.  The input
+stream is evaluted as above for each argument. If the value is a string
+then it is parsed to the appropriate type.
+
+If the token has first character greater than ('>') then the following
+characters are used as a key in a new dictionary entry.
+The rest of the stream is evaluated as above and the result is
+the dictionary value.
+
+This is a complete description of how `lac` evaluates input streams.
 
 ## Tokens
 
@@ -42,10 +93,10 @@ A `lac` program parses a stream of characters from a file into _tokens_.
 Tokens are separated by white space according to `isspace`.
 
 If a token starts with a quote character (`'"'`) then white space is
-included up to the next quote character. Quote characters preceded by
+included up to the next quote character. Characters preceded by
 a backslash (`'\'`) get included in the token.
 
-The string token does not include the beginning and ending quote characters.  
+The _string_ token does not include the beginning and ending quote characters.  
 
 A _block token_ starts with a left brace character (`'{'`) and all
 characters are included up to the next right brace character (`'}'`) at
@@ -53,6 +104,9 @@ the same nesting level.  Right brace characters preceded by a  backslash
 (`'\'`) get included in the token.
 
 The block token does not include the beginning and ending brace characters.
+
+If a token starts with a less than character (`<`) the following characters
+up to the next white space are a key in the dictionary.
 
 ## Types
 
