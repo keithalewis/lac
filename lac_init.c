@@ -1,9 +1,6 @@
 // lac_init.c - initialize lac
 #include <dlfcn.h>
-#include "lac_init.h"
-#include "lac_ffi.h"
-#include "lac_map.h"
-#include "lac_variant.h"
+#include "lac.h"
 
 void put_(char* key, const void* val)
 {
@@ -70,7 +67,7 @@ void print_map(void)
 	lac_map_foreach(print_entry);
 }
 
-/*
+// if {expr} {body}
 lac_variant if_(const lac_variant expr, const lac_variant body)
 {
 	ensure (expr.type == &ffi_type_block);
@@ -78,13 +75,8 @@ lac_variant if_(const lac_variant expr, const lac_variant body)
 
 	lac_variant expr_ = lac_evaluate_block(expr);
 
-	if (1) {
-		lac_variant body_ = lac_evaluate_block(expr);
-	}
-	else {
-	}
+	return lac_variant_true(expr_) ? lac_evaluate_block(body) : expr_;
 }
-*/
 
 void lac_init(void)
 {
@@ -132,6 +124,11 @@ void lac_init(void)
 	put_cif(puts, lac_cif_alloc(&ffi_type_sint, puts, 1, type));
 	
 	put_cif(_, lac_cif_alloc(&ffi_type_void, print_map, 0, NULL));
+
+	// control flow
+	type[0] = &ffi_type_variant;
+	type[1] = &ffi_type_variant;
+	put_cif(if, lac_cif_alloc(&ffi_type_variant, if_, 2, type));
 }
 
 void lac_fini(void)

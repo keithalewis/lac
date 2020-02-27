@@ -77,6 +77,10 @@ lac_variant lac_evaluate(FILE* fp)
 	lac_variant result = { .type = &ffi_type_void };
 
 	lac_variant token = lac_parse_token(fp);
+
+	if (token.type == &ffi_type_void) {
+		return token;
+	}
 	
 	if (token.type == &ffi_type_block) {
 		result = lac_evaluate_block(token);
