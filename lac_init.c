@@ -3,6 +3,7 @@
 #include "lac_init.h"
 #include "lac_ffi.h"
 #include "lac_map.h"
+#include "lac_variant.h"
 
 void put_(char* key, const void* val)
 {
@@ -27,11 +28,6 @@ ffi_type* double_(void)
 int print_(const lac_variant v)
 {
 	return lac_variant_print(stdout, v);
-}
-
-// load lac types
-void lac_types(void)
-{
 }
 
 #define X(A,B,C,D) lac_variant lac_type_ ## B = (lac_variant) \
@@ -63,6 +59,17 @@ void lac_types(void)
 	name ## _cif .value._pointer = cif_ptr; \
 	lac_map_put(#name, &name ## _cif);
 
+void print_entry(char* key, void* val)
+{
+	lac_variant* v = val;
+	printf("%9s : %8s\n", key, ffi_type_name(v->type));
+}
+
+void print_map(void)
+{
+	lac_map_foreach(print_entry);
+}
+
 void lac_init(void)
 {
 	ffi_type_variant_prep();
@@ -75,10 +82,10 @@ void lac_init(void)
 
 	type[0] = &ffi_type_string;
 	type[1] = &ffi_type_pointer;
-	lac_map_put(">", lac_cif_alloc(&ffi_type_void, put_, 2, type));
+	put_cif(put, lac_cif_alloc(&ffi_type_void, put_, 2, type));
 
 	type[0] = &ffi_type_string;
-	lac_map_put("<", lac_cif_alloc(&ffi_type_pointer, get_, 1, type));
+	put_cif(get, lac_cif_alloc(&ffi_type_pointer, get_, 1, type));
 
 	put_int(RTLD_LAZY);
 	put_int(RTLD_NOW);
@@ -107,6 +114,8 @@ void lac_init(void)
 
 	type[0] = &ffi_type_string;
 	put_cif(puts, lac_cif_alloc(&ffi_type_sint, puts, 1, type));
+	
+	put_cif(_, lac_cif_alloc(&ffi_type_void, print_map, 0, NULL));
 }
 
 void lac_fini(void)

@@ -66,6 +66,20 @@ static inline const ffi_type *ffi_type_lookup(const char *name)
     return 0;
 }
 
+// convert ffi type to string name
+static inline const char* ffi_type_name(const ffi_type* type)
+{
+#define X(A,B,C,D) if (type == &ffi_type_ ## B) { return # B; }
+	FFI_TYPE_TABLE(X)
+#undef X
+	if (type == &ffi_type_variant) { return "variant"; }
+	if (type == &ffi_type_string) { return "string"; }
+	if (type == &ffi_type_block) { return "block"; }
+	if (type == &ffi_type_cif) { return "cif"; }
+
+    return 0;
+}
+
 // variant data type 
 typedef struct {
 	union {
@@ -195,6 +209,12 @@ static inline int lac_variant_print(FILE * os, const lac_variant v)
 {
 	if (v.type == &ffi_type_string || v.type == &ffi_type_block) {
 		return fputs(v.value._pointer, os);
+	}
+	if (v.type == &ffi_type_variant) {
+		return lac_variant_print(os, *(const lac_variant*)v.value._pointer);
+	}
+	if (v.type == &ffi_type_cif) {
+		return lac_variant_print(os, *(const lac_variant*)v.value._pointer);
 	}
 #define X(A,B,C,D) if (v.type == &ffi_type_ ## B) { \
 	return fprintf(os, "%" C, v.value._ ## B); }

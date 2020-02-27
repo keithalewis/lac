@@ -59,3 +59,4 @@ lac_map.t.o: lac_map.t.c ensure.h lac_map.h
 lac_parse.t.o: lac_parse.t.c ensure.h lac_variant.h
 lac_variant.t.o: lac_variant.t.c ensure.h lac_variant.h
 lac_tree.t.o: lac_tree.t.c ensure.h lac_tree.h
+lac_data.t.o: lac_data.t.c ensure.h lac_data.h

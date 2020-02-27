@@ -62,3 +62,12 @@ void *lac_map_get(const char* key)
 
 	return 0;
 }
+
+void lac_map_foreach(void (*action)(char*, void *))
+{
+	struct lac_entry *elm = 0;
+
+	LIST_FOREACH(elm, &map, st) {
+		action(elm->key, elm->val);
+	}
+}
