@@ -10,77 +10,7 @@ const char *file = "";
 
 jmp_buf lac_jmp_buf;
 const char* lac_strerror = "";
-/*
-lac_variant lac_call_thunk(FILE * fp, const lac_cif * thunk);
 
-// figure out what kind of token and ensure correct type
-lac_variant lac_evaluate_token(FILE* fp, ffi_type* type, lac_variant token)
-{
-	//ensure (token);
-
-	lac_variant v = { .type = &ffi_type_void };
-
-	const lac_cif* thunk = lac_map_get(token.value._pointer);
-	if (thunk) {
-		v = lac_call_thunk(fp, thunk);
-	}
-	else {
-		v = lac_variant_parse(type, token.value._pointer);
-	}
-
-	return v;
-}
-
-// call thunk on arguments from input stream
-lac_variant lac_call_thunk(FILE * fp, const lac_cif * thunk)
-{
-	lac_variant v = { .type = &ffi_type_void };
-
-	ensure (thunk);
-	const ffi_cif *cif = &thunk->cif;
-	int n = cif->nargs;
-
-	if (n == 0) {
-		lac_cif_call(thunk, &v, NULL);
-	}
-	else if (n > 0) {
-		// VLAs that get cleaned up after the call
-		lac_variant args[n];
-		void* addr[n];
-
-		for (int i = 0; i < n; ++i) {
-			lac_variant token = lac_parse_token(fp);
-			args[i] = lac_evaluate_token(fp, cif->arg_types[i], token);
-			addr[i] = lac_variant_address(&args[i]);
-		}
-
-		lac_cif_call(thunk, &v, addr);
-
-		for (int i = 0; i < n; ++i) {
-			lac_variant_free(&args[i]);
-		}
-	}
-	// free pointer args???
-
-	return v;
-}
-
-// call the thunk corresponding to token
-lac_variant lac_call_token(FILE* fp, const lac_variant token)
-{
-	lac_variant v = { .type = &ffi_type_void };
-
-	if (token.type == &ffi_type_block) {
-		FILE* is = fmemopen(token.value._pointer, strlen(token.value._pointer), "r");
-		v = lac_evaluate(is);
-		fclose (is);
-	}
-	else if (token.type == &ffi_type_cif) {
-	}
-
-	return v;
-}
-*/
 lac_variant lac_evaluate(FILE* fp);
 
 lac_variant lac_evaluate_type(ffi_type* type, const lac_variant token)

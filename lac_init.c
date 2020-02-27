@@ -70,6 +70,22 @@ void print_map(void)
 	lac_map_foreach(print_entry);
 }
 
+/*
+lac_variant if_(const lac_variant expr, const lac_variant body)
+{
+	ensure (expr.type == &ffi_type_block);
+	ensure (body.type == &ffi_type_block);
+
+	lac_variant expr_ = lac_evaluate_block(expr);
+
+	if (1) {
+		lac_variant body_ = lac_evaluate_block(expr);
+	}
+	else {
+	}
+}
+*/
+
 void lac_init(void)
 {
 	ffi_type_variant_prep();

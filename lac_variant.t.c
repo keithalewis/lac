@@ -2,6 +2,31 @@
 #include "ensure.h"
 #include "lac_variant.h"
 
+void test_lac_variant_types()
+{
+#define X(A,B,C,D) \
+	lac_variant B ## _ = lac_variant_ ## B(0); \
+	ensure (lac_variant_false(B ## _)); \
+	ensure (!lac_variant_true(B ## _));
+	FFI_TYPE_TABLE(X)
+#undef X
+
+#define X(A,B,C,D) \
+	ensure (*(A*)lac_variant_address(&B ## _) == 0); \
+	ensure (B ## _ .value._pointer == 0);
+	FFI_TYPE_TABLE(X)
+#undef X
+
+#define X(A,B,C,D) \
+	B ## _ . value._ ## B = (A)1; \
+	ensure (B ## _ .value._pointer != 0); \
+	ensure (!lac_variant_false(B ## _)); \
+	ensure (lac_variant_true(B ## _));
+	FFI_TYPE_TABLE(X)
+#undef X
+
+}
+
 void test_lac_variant_scan(char *in, lac_variant * pv)
 {
 	FILE *is = fmemopen(in, strlen(in), "r");
@@ -28,8 +53,10 @@ void test_lac_variant_print(const char *out, const lac_variant v)
 }
 
 #define TEST_PARSE(TYPE, STRING, VALUE) \
-	{ lac_variant v; v.type = &ffi_type_ ## TYPE; test_lac_variant_scan(STRING, &v); \
-	  ensure(VALUE == v.value._ ## TYPE); test_lac_variant_print(STRING, v); }
+	{ lac_variant v; v.type = &ffi_type_ ## TYPE; \
+	  test_lac_variant_scan(STRING, &v); \
+	  ensure(VALUE == v.value._ ## TYPE); \
+	  test_lac_variant_print(STRING, v); }
 
 int test_lac_variant_parse()
 {
@@ -46,6 +73,7 @@ int test_lac_variant_parse()
 int test_lac_variant()
 {
 	test_lac_variant_parse();
+	test_lac_variant_types();
 
 	return 0;
 }

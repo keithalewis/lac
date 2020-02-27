@@ -1,11 +1,10 @@
-#!!! add git submodule for libffi
 LAC_ = lac_ffi.c lac_map.c lac_parse.c lac_variant.c lac_init.c lac_tree.c
 SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
 LAC_T = lac_ffi.t.c lac_map.t.c lac_parse.t.c lac_variant.t.c lac_tree.t.c lac_data.t.c
 
-# get from pkg-config
-FFI_DIR = ./libffi/x86_64-pc-linux-gnu
+BUILD = $(eval $(shell make -s printvar VAR=build))$(build)
+FFI_DIR = ./libffi/$(BUILD)
 
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
@@ -40,6 +39,10 @@ valgrind: lac
 
 valgrind_t: lac.t
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./lac.t
+
+.PHONY: printvar
+printvar:
+	@make -f printvar.mk -f libffi/Makefile print-$(VAR)
 
 deps: $(SRCS_T)
 	@$(foreach c, $(SRCS_T), cc -MM $(c);)

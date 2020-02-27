@@ -115,6 +115,15 @@ static inline int lac_variant_istoken(const lac_variant* pv)
 		|| pv->type == &ffi_type_block;
 }
 
+static inline int lac_variant_true(const lac_variant v)
+{
+	return v.value._pointer != 0;
+}
+static inline int lac_variant_false(const lac_variant v)
+{
+	return v.value._pointer == 0;
+}
+
 static inline lac_variant* lac_variant_alloc(ffi_type* type)
 {
 	lac_variant* pv = malloc(sizeof(lac_variant));
