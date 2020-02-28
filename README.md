@@ -14,8 +14,9 @@ puts "Hello World!"
 will print `Hello World!` (without quotes) and a trailing newline.
 The function returns an integer value.
 
-The string token `puts` is looked up in the _dictionary_ and the C
-function `puts(3)` is *call*ed. It requires a string to be the
+The string token `puts` is looked up in the _dictionary_ and the
+corresponding C
+function `puts` is *call*ed. It requires a string to be the
 next token on the input stream.  `Lac` uses
 double quotes for strings that may contain spaces. The
 result of the call is an integer value.
@@ -69,26 +70,19 @@ that is associated with the key `puts` in the dictionary.
 `Lac` _evaluates_ an input stream of characters by reading white space
 separated _tokens_ and returns a _required type_. 
 
-If the initial token character is quote (`"`) then all characters until the
-next quote character are included in the token.  If the initial character
-is a left bracket (`{`) then all characters until the next right bracket
-(`}`) at the same nesting level are included.
-
-If the token matches the required type then the token is the result of
+If the token type matches the required type then the token is the result of
 the evaluation.
 
-The type `variant` matches every token.
+The wildcard type `variant` matches every token.
 
-If the required type is not a string or variant but the token is a string
+If the required type is not a string but the token is a string
 then its _value_ is looked up in the dictionary.
 
 If the value is a cif then it is called and its return type is the value,
 otherwise the dictionary value is the return type.
 
 If the value is not found in the dictionary then the string token is
-the result of the evaluation.
-
-This is a complete description of how `lac` evaluates an input stream.
+parsed based on the required type.
 
 ### Tokens
 

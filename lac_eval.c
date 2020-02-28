@@ -3,6 +3,33 @@
 #include "lac_map.h"
 #include "lac_eval.h"
 
+// evaluate token to type
+/*
+const lac_variant lac_eval(ffi_type* type, const lac_variant token)
+{
+	if (type == token.type || type == &ffi_type_variant) {
+		return token;
+	}
+
+	if (token.type == &ffi_type_string) {
+		//const lac_variant* pv = lac_map_get(token.value._pointer);
+		const lac_variant* pv = lac_map_get(lac_variant_address(token);
+		if (pv) { // in dictionary
+			if (pv->type == &ffi_type_cif) {
+				lac_cif* cif = pv->value._pointer;
+				result = lac_evaluate_cif(cif, fp);
+			}
+			else {
+				result = *pv;
+			}
+		}
+		else {
+			result = token;
+			// don't free token
+		}
+	}
+}
+*/
 lac_variant lac_evaluate_type(ffi_type* type, const lac_variant token)
 {
 	ensure (token.type == &ffi_type_string);
@@ -79,7 +106,8 @@ lac_variant lac_evaluate(FILE* fp)
 	}
 	else {
 		ensure (token.type == &ffi_type_string);
-		const lac_variant* pv = lac_map_get(token.value._pointer);
+		//const lac_variant* pv = lac_map_get(token.value._pointer);
+		const lac_variant* pv = lac_map_get(lac_variant_address(&token));
 		if (pv) {
 			if (pv->type == &ffi_type_cif) {
 				lac_cif* cif = pv->value._pointer;
