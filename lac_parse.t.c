@@ -1,6 +1,8 @@
 // lac_parse.t.cpp - test parsing
+#define _GNU_SOURCE
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "ensure.h"
 #include "lac_variant.h"

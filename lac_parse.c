@@ -1,4 +1,5 @@
 // lac_parse.c - parsing functions
+#define _GNU_SOURCE
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>

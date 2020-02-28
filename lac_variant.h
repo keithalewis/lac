@@ -91,23 +91,6 @@ typedef struct {
 	// size_t size; ???
 } lac_variant;
 
-// pointer address of variant value
-static inline void *lac_variant_address(lac_variant * pv)
-{
-#define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) return &pv->value._ ## B;
-	FFI_TYPE_TABLE(X)
-#undef X
-	// all other types are pointers
-	return &pv->value._pointer;
-}
-
-// E.g. lac_variant v = lac_variant_double(1.23)
-#define X(A,B,C,D) \
-static inline lac_variant lac_variant_ ## B(A a) { \
-	return (lac_variant){.type = &ffi_type_ ## B, .value._ ## B = a}; }
-	FFI_TYPE_TABLE(X)
-#undef X
-
 // return value from lac_parse_token
 static inline int lac_variant_istoken(const lac_variant* pv)
 {
@@ -119,9 +102,20 @@ static inline int lac_variant_true(const lac_variant v)
 {
 	return v.value._pointer != 0;
 }
+// if integer or floating point is 0 then pointer is 0
 static inline int lac_variant_false(const lac_variant v)
 {
 	return v.value._pointer == 0;
+}
+
+// pointer address of variant value
+static inline void *lac_variant_address(lac_variant * pv)
+{
+#define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) return &pv->value._ ## B;
+	FFI_TYPE_TABLE(X)
+#undef X
+	// all other types are pointers
+	return &pv->value._pointer;
 }
 
 static inline lac_variant* lac_variant_alloc(ffi_type* type)
@@ -132,6 +126,7 @@ static inline lac_variant* lac_variant_alloc(ffi_type* type)
 		return 0;
 
 	pv->type = type;
+	pv->value._pointer = 0;
 
 	return pv;
 }
@@ -145,24 +140,34 @@ static inline void lac_variant_free(lac_variant* pv)
 	//free (pv);
 }
 
-// compile time type conversion
-#define VARIANT_TO_TYPE(T, V) *(T*)lac_variant_address(&V)
-
-static inline int lac_variant_equal(const lac_variant a, const lac_variant b)
+static inline int lac_variant_cmp(const lac_variant a, const lac_variant b)
 {
-	if (a.type != b.type) {
-		return 0;
-	}
-#define X(A,B,C,D) if (a.value._ ## B == a.value._ ## B) { return 1; }
-	FFI_TYPE_TABLE(X)
+	int ret = a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
+	
+	if (ret == 0) {
+#define X(A,B,C,D) \
+	ret = a.value._ ## B < b.value._ ## B ? -1 \
+	: a.value._ ## B > a.value._ ## B ? -1 : 0;
+		FFI_TYPE_TABLE(X)
 #undef X
-	if (lac_variant_istoken(&a)) {
-		return 0 == strcmp(a.value._pointer, b.value._pointer);
+		if (lac_variant_istoken(&a)) {
+			ret = strcmp(a.value._pointer, b.value._pointer);
+		}
 	}
 
-	return 0;
+	return ret;
 }
 
+
+// E.g. lac_variant v = lac_variant_double(1.23)
+#define X(A,B,C,D) \
+static inline lac_variant lac_variant_ ## B(A a) { \
+	return (lac_variant){.type = &ffi_type_ ## B, .value._ ## B = a}; }
+	FFI_TYPE_TABLE(X)
+#undef X
+
+// compile time type conversion
+#define VARIANT_TO_TYPE(T, V) *(T*)lac_variant_address(&V)
 static inline void lac_variant_incr(lac_variant* pv)
 {
 	if (pv->type == &ffi_type_string || pv->type == &ffi_type_block) {

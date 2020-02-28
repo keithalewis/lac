@@ -1,4 +1,5 @@
 // lac_variant.t.c - test lac variant
+#define _GNU_SOURCE
 #include "ensure.h"
 #include "lac_variant.h"
 
@@ -70,10 +71,28 @@ int test_lac_variant_parse()
 	return 0;
 }
 
+int test_lac_variant_cmp()
+{
+/*
+	lac_variant a, b;
+
+	a.type = &ffi_type_sint;
+	a.value._sint = 1;
+	b.type = &ffi_type_sint;
+	b.value._sint = 2;
+
+	//ensure (0 == lac_variant_cmp(a,a));
+	//ensure (0 > lac_variant_cmp(a,b));
+	//ensure (0 < lac_variant_cmp(b,a));
+*/
+	return 0;
+}
+
 int test_lac_variant()
 {
 	test_lac_variant_parse();
 	test_lac_variant_types();
+	test_lac_variant_cmp();
 
 	return 0;
 }
