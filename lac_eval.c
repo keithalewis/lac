@@ -1,4 +1,5 @@
 // lac_eval.c
+#include <stdio.h>
 #include "lac_map.h"
 #include "lac_eval.h"
 
@@ -51,6 +52,7 @@ lac_variant lac_evaluate_block(const lac_variant token)
 	ensure (token.type == &ffi_type_block);
 	lac_variant result = { .type = &ffi_type_void };
 
+	FILE *fmemopen(void *buf, size_t size, const char *mode);
 	FILE* is = fmemopen(token.value._pointer,
 				strlen(token.value._pointer), "r");
 	result = lac_evaluate(is);

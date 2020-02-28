@@ -9,7 +9,7 @@ FFI_DIR = ./libffi/$(BUILD)
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 
-CFLAGS = -g -Wall -I $(FFI_DIR)/include
+CFLAGS = -g -Wall -std=c99 -I $(FFI_DIR)/include
 LDLIBS = -ldl -L $(FFI_DIR)/.libs -l:libffi.a
 
 lac: $(OBJS)
