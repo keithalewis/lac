@@ -4,37 +4,40 @@
 #include "lac_map.h"
 #include "lac_eval.h"
 
-// evaluate token to type
-/*
-const lac_variant lac_eval(ffi_type* type, FILE* fp)
+// read stream and convert to type
+lac_variant lac_eval(FILE* fp, ffi_type* type)
 {
-	lac_variant token = lac_parse_token(fp);
+	lac_variant result = { .type = &ffi_type_void, .value._pointer = NULL };
 
-	if (token.type == type || type == &ffi_type_variant) {
-		return token;
+	lac_variant token = lac_token_parse(fp);
+
+	if (token.type == type) { // || type == &ffi_type_variant) {
+		return token; // must be free'd
 	}
 	
 	if (token.type == &ffi_type_string) {
-		const lac_variant* pv = lac_map_get(lac_variant_address(&token));
+		const lac_variant* pv = lac_map_get(token.value._pointer);
 		if (pv) { // in dictionary
 			if (pv->type == &ffi_type_cif) {
 				lac_cif* cif = pv->value._pointer;
-				result = lac_eval_cif(cif, fp);
+				result = lac_eval_cif(fp, cif);
 			}
 			else {
-				result = *pv;
+				result = *pv; // must not be free'd!!!
 			}
 		}
 		else {
-			result = lac_variant_parse(type, lac_variant_address(token));
+			result = lac_variant_parse(type, token.value._pointer);
 		}
 	}
-	else if (type == &ffi_type_string) {
-		resulte = 
-	}
+	//else if (type == &ffi_type_string) {
+		//ensure (0 <= lac_variant_scan(fp, &result));
+	//}
+
+	return result;
 }
 
-lac_variant lac_eval_cif(lac_cif* cif, FILE* fp)
+lac_variant lac_eval_cif(FILE* fp, lac_cif* cif)
 {
 	ffi_cif* ffi = &cif->cif;
 	int n = ffi->nargs;
@@ -50,14 +53,19 @@ lac_variant lac_eval_cif(lac_cif* cif, FILE* fp)
 		void* addr[n];
 
 		for (int i = 0; i < n; ++i) {
-			args[i] = lac_eval_type(ffi->arg_types[i], fp);
+			args[i] = lac_eval(fp, ffi->arg_types[i]);
+			if (args[i].type == &ffi_type_variant) {
+				args[i] = (lac_variant)
+					{.type = &ffi_type_variant,
+					 .value._pointer = &args[i] };
+			}
 			addr[i] = lac_variant_address(&args[i]);
 		}
 
 		ffi_call(ffi, cif->sym, lac_variant_address(&v), addr);
 
 		for (int i = 0; i < n; ++i) {
-			lac_variant_free(&args[i]);
+	//!!!		lac_variant_free(&args[i]);
 		}
 	}
 	else {
@@ -66,7 +74,7 @@ lac_variant lac_eval_cif(lac_cif* cif, FILE* fp)
 
 	return v;
 }
-*/
+
 lac_variant lac_evaluate_type(ffi_type* type, const lac_variant token)
 {
 	ensure (token.type == &ffi_type_string);
@@ -131,7 +139,7 @@ lac_variant lac_evaluate(FILE* fp)
 {
 	lac_variant result = { .type = &ffi_type_void };
 
-	lac_variant token = lac_parse_token(fp);
+	lac_variant token = lac_token_parse(fp);
 
 	if (token.type == &ffi_type_void) {
 		return token;

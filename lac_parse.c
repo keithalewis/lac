@@ -68,7 +68,7 @@ static int stream_next_quote(FILE * is, FILE * os, const char q /*= '"'*/ )
 }
 
 // must call free on return value
-lac_variant lac_parse_token(FILE * is)
+lac_variant lac_token_parse(FILE * is)
 {
 	int c;
 	lac_variant v = { .type = &ffi_type_string };

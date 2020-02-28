@@ -73,7 +73,6 @@ int test_lac_variant_parse()
 
 int test_lac_variant_cmp()
 {
-/*
 	lac_variant a, b;
 
 	a.type = &ffi_type_sint;
@@ -81,10 +80,10 @@ int test_lac_variant_cmp()
 	b.type = &ffi_type_sint;
 	b.value._sint = 2;
 
-	//ensure (0 == lac_variant_cmp(a,a));
-	//ensure (0 > lac_variant_cmp(a,b));
-	//ensure (0 < lac_variant_cmp(b,a));
-*/
+	ensure (0 == lac_variant_cmp(a,a));
+	ensure (0 > lac_variant_cmp(a,b));
+	ensure (0 < lac_variant_cmp(b,a));
+
 	return 0;
 }
 

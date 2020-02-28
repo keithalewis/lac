@@ -2,7 +2,7 @@
 #pragma once
 #include "lac_ffi.h"
 
-extern lac_variant lac_evaluate_type(ffi_type* type, const lac_variant token);
-extern lac_variant lac_evaluate_cif(lac_cif* cif, FILE* fp);
-extern lac_variant lac_evaluate_block(const lac_variant token);
+extern lac_variant lac_eval(FILE* fp, ffi_type* type);
+extern lac_variant lac_eval_cif(FILE* fp, lac_cif* cif);
+
 extern lac_variant lac_evaluate(FILE* fp);

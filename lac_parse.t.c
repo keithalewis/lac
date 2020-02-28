@@ -8,7 +8,7 @@
 #include "lac_variant.h"
 
 // terminate with null pointer
-int test_lac_parse_tokens(char *t, ...)
+int test_lac_token_parse(char *t, ...)
 {
 	FILE *s = fmemopen(t, strlen(t), "r");
 
@@ -17,13 +17,13 @@ int test_lac_parse_tokens(char *t, ...)
 	lac_variant t_;
 	char *u = va_arg(ap, char *);
 	while (u) {
-		t_ = lac_parse_token(s);
+		t_ = lac_token_parse(s);
 		ensure(0 == strcmp(t_.value._pointer, u));
 		free(t_.value._pointer);
 		u = va_arg(ap, char *);
 	}
 
-	t_ = lac_parse_token(s);
+	t_ = lac_token_parse(s);
 	ensure(t_.type == &ffi_type_void);
 
 	fclose(s);
@@ -56,14 +56,14 @@ int test_lac_parse()
 {
 	test_lac_convert();
 
-	test_lac_parse_tokens("a b c", "a", "b", "c", 0);
-	test_lac_parse_tokens("a\tb c", "a", "b", "c", 0);
-	test_lac_parse_tokens("a\tb\r c", "a", "b", "c", 0);
-	test_lac_parse_tokens("a\tb\r \nc", "a", "b", "c", 0);
-	test_lac_parse_tokens("{a {b} c}", "a {b} c", 0);
-	test_lac_parse_tokens(" {a {b} c}  d", "a {b} c", "d", 0);
-	test_lac_parse_tokens("%g\n", "%g", 0);
-	test_lac_parse_tokens("\"%g\n\" h", "%g\n", "h", 0);
+	test_lac_token_parse("a b c", "a", "b", "c", 0);
+	test_lac_token_parse("a\tb c", "a", "b", "c", 0);
+	test_lac_token_parse("a\tb\r c", "a", "b", "c", 0);
+	test_lac_token_parse("a\tb\r \nc", "a", "b", "c", 0);
+	test_lac_token_parse("{a {b} c}", "a {b} c", 0);
+	test_lac_token_parse(" {a {b} c}  d", "a {b} c", "d", 0);
+	test_lac_token_parse("%g\n", "%g", 0);
+	test_lac_token_parse("\"%g\n\" h", "%g\n", "h", 0);
 
 	return 0;
 }

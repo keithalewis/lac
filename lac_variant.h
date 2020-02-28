@@ -91,7 +91,7 @@ typedef struct {
 	// size_t size; ???
 } lac_variant;
 
-// return value from lac_parse_token
+// return value from lac_token_parse
 static inline int lac_variant_istoken(const lac_variant* pv)
 {
 	return pv->type == &ffi_type_string
@@ -146,8 +146,8 @@ static inline int lac_variant_cmp(const lac_variant a, const lac_variant b)
 	
 	if (ret == 0) {
 #define X(A,B,C,D) \
-	ret = a.value._ ## B < b.value._ ## B ? -1 \
-	: a.value._ ## B > a.value._ ## B ? -1 : 0;
+		ret = a.value._ ## B < b.value._ ## B ? -1 \
+			: a.value._ ## B > b.value._ ## B ? 1 : 0;
 		FFI_TYPE_TABLE(X)
 #undef X
 		if (lac_variant_istoken(&a)) {
@@ -194,7 +194,7 @@ static inline void lac_variant_decr(lac_variant* pv)
 //   right curly bracket ('}') at the same nesting level.
 //   use '\' to escape '}`
 // returned pointer must be freed
-lac_variant lac_parse_token(FILE *);
+lac_variant lac_token_parse(FILE *);
 
 // convert from string to type
 static inline lac_variant lac_variant_parse(ffi_type* type, char* s)
@@ -242,7 +242,7 @@ static inline int lac_variant_print(FILE * os, const lac_variant v)
 static inline int lac_variant_scan(FILE * is, lac_variant * pv)
 {
 	if (pv->type == &ffi_type_string || pv->type == &ffi_type_block) {
-		lac_variant v = lac_parse_token(is);
+		lac_variant v = lac_token_parse(is);
 		if (v.type != pv->type) {
 			lac_variant_free(&v);
 			return EOF;

@@ -68,6 +68,7 @@ void print_map(void)
 }
 
 // if {expr} {body}
+/*
 lac_variant if_(const lac_variant expr, const lac_variant body)
 {
 	ensure (expr.type == &ffi_type_block);
@@ -77,6 +78,7 @@ lac_variant if_(const lac_variant expr, const lac_variant body)
 
 	return lac_variant_true(expr_) ? lac_evaluate_block(body) : expr_;
 }
+*/
 
 void lac_init(void)
 {
@@ -126,9 +128,11 @@ void lac_init(void)
 	put_cif(_, lac_cif_alloc(&ffi_type_void, print_map, 0, NULL));
 
 	// control flow
+	/*
 	type[0] = &ffi_type_variant;
 	type[1] = &ffi_type_variant;
 	put_cif(if, lac_cif_alloc(&ffi_type_variant, if_, 2, type));
+	*/
 }
 
 void lac_fini(void)
