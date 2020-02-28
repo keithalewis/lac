@@ -14,12 +14,11 @@ puts "Hello World!"
 will print `Hello World!` (without quotes) and a trailing newline.
 The function returns an integer value.
 
-The token `puts` is looked
-up in the _dictionary_ and the corresponding function
-requires a string on the input stream.
-`Lac` uses double quotes for strings that may
-contain spaces. The function is **call**ed with the string
-argument and returns an integer value.
+The string token `puts` is looked up in the _dictionary_ and the C
+function `puts(3)` is *call*ed. It requires a string to be the
+next token on the input stream.  `Lac` uses
+double quotes for strings that may contain spaces. The
+result of the call is an integer value.
 
 An equivalent way to do this is
 ```
@@ -62,13 +61,15 @@ An equivalent way to do the above is
 ```
 : puts ( load int dlsym dlopen libc.so puts string )
 ```
+The tokens inside the parentheses are evaluated to a cif
+that is associated with the key `puts` in the dictionary.
 
 ## Evaluation
 
 `Lac` _evaluates_ an input stream of characters by reading white space
-separated _tokens_ and returns the _required type_. 
+separated _tokens_ and returns a _required type_. 
 
-If the initial character is quote (`"`) then all characters until the
+If the initial token character is quote (`"`) then all characters until the
 next quote character are included in the token.  If the initial character
 is a left bracket (`{`) then all characters until the next right bracket
 (`}`) at the same nesting level are included.
@@ -76,8 +77,10 @@ is a left bracket (`{`) then all characters until the next right bracket
 If the token matches the required type then the token is the result of
 the evaluation.
 
-If the required type is not a string but the token is a string then
-its _value_ is looked up in the dictionary.
+The type `variant` matches every token.
+
+If the required type is not a string or variant but the token is a string
+then its _value_ is looked up in the dictionary.
 
 If the value is a cif then it is called and its return type is the value,
 otherwise the dictionary value is the return type.
