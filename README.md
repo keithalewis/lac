@@ -12,7 +12,7 @@ been **load**ed
 puts "Hello World!"
 ```
 will print `Hello World!` (without quotes) and a trailing newline.
-The function returns a integer value.
+The function returns an integer value.
 
 The token `puts` is looked
 up in the _dictionary_ and the corresponding function
@@ -23,7 +23,7 @@ argument and returns an integer value.
 
 An equivalent way to do this is
 ```
-$puts Hello\ World!
+puts Hello\ World!
 ```
 since backslash (`\`) can be used to escape the
 next character on the input stream.
@@ -36,10 +36,10 @@ in the dictionary using
 The _colon_ (`:`) function is used to place a key and a value into
 the dictionary. 
 
-Use `load` to specify the _signature_ of the function returned by
+Use `load` to specify the _signature_ of the pointer returned by
 `dlsym` to create a _cif_: a C InterFace. The signature specifies the
 return type of the function, a pointer to a C function, and the required
-arguments. The arguments are terminated by `void`. The syntax is
+arguments. The required arguments are terminated by `void`. The syntax is
 similar to the C function declaration. The type `void` is not
 a valid argument type. 
 
@@ -66,21 +66,28 @@ An equivalent way to do the above is
 ## Evaluation
 
 `Lac` _evaluates_ an input stream of characters by reading white space
-separated tokens.  
+separated _tokens_ and returns the _required type_. 
 
-The token is looked up in the dictionary.
-If the value is a cif then it is called
-and its return type is the value.
-Otherwise the dictionary value is used.
+If the initial character is quote (`"`) then all characters until the
+next quote character are included in the token.  If the initial character
+is a left bracket (`{`) then all characters until the next right bracket
+(`}`) at the same nesting level are included.
 
-When a cif is called it knows the required argument types.  The input
-stream is evaluted as above for each argument. If the resulting value
-is a string that is not a key in the dictionary then it is parsed to
-the appropriate argument type using `sscanf`.
+If the token matches the required type then the token is the result of
+the evaluation.
+
+If the required type is not a string but the token is a string then
+its _value_ is looked up in the dictionary.
+
+If the value is a cif then it is called and its return type is the value,
+otherwise the dictionary value is the return type.
+
+If the value is not found in the dictionary then the string token is
+the result of the evaluation.
 
 This is a complete description of how `lac` evaluates an input stream.
 
-## Tokens
+### Tokens
 
 A `lac` program parses a stream of characters from a file into _tokens_.
 Tokens are separated by white space according to `isspace`.
@@ -98,7 +105,7 @@ the same nesting level.  Right brace characters preceded by a  backslash
 
 A block token does not include the beginning and ending brace characters.
 
-## Types
+### Types
 
 The scalar types used by `libffi` are `schar`, `uchar`, `sshort`, `ushort`,
 `sint`, `uint`, `slong`, `ulong`, `float`, `double`, `sint8`, `uint8`,
@@ -118,12 +125,12 @@ Functions can have return type `void` but `void` cannot be used as an
 argument type.  Functions taking no arguments have an empty array of
 argument types.
 
-## Dictionary
+### Dictionary
 
 The _dictionary_ has strings as keys and variants as values.
 Use `: key value` to add items to the dictionary.
 
-## Built-in Types
+### Built-in Types
 
 We've see the built-in types, `dlopen`, `dlsym`, `dlclose`, `:`,
 `(`, `)` and all the standard C types. There are also the

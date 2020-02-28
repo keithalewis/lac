@@ -1,4 +1,4 @@
-LAC_ = lac_ffi.c lac_map.c lac_parse.c lac_variant.c lac_init.c lac_init.c
+LAC_ = lac_ffi.c lac_map.c lac_parse.c lac_variant.c lac_init.c lac_init.c lac_eval.c
 SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
 LAC_T = lac_ffi.t.c lac_map.t.c lac_parse.t.c lac_variant.t.c lac_data.t.c

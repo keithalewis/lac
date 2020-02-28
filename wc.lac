@@ -1,8 +1,7 @@
-> l int 0
-> w int 0
-> fp fopen wc.lac r
-ensure fp
-> c fgetc fp
+: l parse sint 0
+: w parse sint 0
+: fp fopen wc.lac r
+: c fgetc fp
 loop {
 	if == EOF c break
 	incr c
