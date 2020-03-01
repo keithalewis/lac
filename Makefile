@@ -1,8 +1,8 @@
-LAC_ = lac_ffi.c lac_map.c lac_parse.c lac_variant.c lac_init.c lac_init.c lac_eval.c
+LAC_ = lac_parse.c
 SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
 
-LAC_T = lac_ffi.t.c lac_map.t.c lac_parse.t.c lac_variant.t.c lac_data.t.c
+LAC_T = lac_parse.t.c
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 
@@ -56,17 +56,5 @@ deps: $(SRCS_T)
 # r!make deps
 lac.t.o: lac.t.c lac.h ensure.h lac_ffi.h lac_variant.h lac_init.h \
  lac_map.h lac_eval.h
-lac_ffi.o: lac_ffi.c ensure.h lac_ffi.h lac_variant.h
-lac_map.o: lac_map.c ensure.h
-lac_parse.o: lac_parse.c ensure.h lac_variant.h
-lac_variant.o: lac_variant.c lac_variant.h
-lac_init.o: lac_init.c lac.h ensure.h lac_ffi.h lac_variant.h lac_init.h \
- lac_map.h lac_eval.h
-lac_init.o: lac_init.c lac.h ensure.h lac_ffi.h lac_variant.h lac_init.h \
- lac_map.h lac_eval.h
-lac_eval.o: lac_eval.c lac_map.h lac_eval.h lac_ffi.h lac_variant.h
-lac_ffi.t.o: lac_ffi.t.c ensure.h lac_ffi.h lac_variant.h
-lac_map.t.o: lac_map.t.c ensure.h lac_map.h
-lac_parse.t.o: lac_parse.t.c ensure.h lac_variant.h
-lac_variant.t.o: lac_variant.t.c ensure.h lac_variant.h
-lac_data.t.o: lac_data.t.c ensure.h lac_data.h
+lac_parse.o: lac_parse.c ensure.h lac_parse.h
+lac_parse.t.o: lac_parse.t.c ensure.h lac_parse.h

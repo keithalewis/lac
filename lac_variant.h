@@ -188,14 +188,6 @@ static inline void lac_variant_decr(lac_variant* pv)
 
 // lac_variant_visit using _Generic???
 
-// tokens are separated by white space (isspace)
-// tokens starting with double quote ('"') end at the next quote
-//   use '\' to escape '"`
-// tokens starting with left curly bracket ('{') end the next
-//   right curly bracket ('}') at the same nesting level.
-//   use '\' to escape '}`
-// returned pointer must be freed
-lac_variant lac_token_parse(FILE *);
 
 // convert from string to type
 static inline lac_variant lac_variant_parse(ffi_type* type, char* s)

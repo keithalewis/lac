@@ -20,4 +20,4 @@ extern const char* lac_strerror;
 #define ensure(e) if (!(e)) { \
 		lac_strerror = ENSURE_SPOT "\nensure: \"" #e "\" failed\n"; \
 		longjmp(lac_jmp_buf, 1); \
-		} else (void)0;
+	} else (void)0;

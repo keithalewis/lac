@@ -4,15 +4,14 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "ensure.h"
-#include "lac_variant.h"
+#include "lac_parse.h"
 
-// return first character after white or not space
-static int stream_skip(FILE * is, int (*isa)(int), int space)
+// return first character after white (or not) space
+static int stream_skip_space(FILE * is)
 {
 	int c = fgetc(is);
 
-	while (EOF != c && (space ? isa(c) : !isa(c))) {
+	while (EOF != c && isspace(c)) {
 		c = fgetc(is);
 	}
 
@@ -24,6 +23,13 @@ static int stream_next_space(FILE * is, FILE * os)
 	int c = fgetc(is);
 
 	while (EOF != c && !isspace(c)) {
+		if (c == '\\') {
+			// escape backslash
+			c = fgetc(is);
+			if (EOF == c) {
+				return EOF;
+			}
+		}
 		fputc(c, os);
 		c = fgetc(is);
 	}
@@ -42,22 +48,25 @@ static int stream_next_match(FILE * is, FILE * os,
 	int c = fgetc(is);
 	while (EOF != c) {
 		if (c == '\\') {
-			fputc(c, os);
 			c = fgetc(is);
-			ensure(EOF != c);
+			if (EOF == c) {
+				return 0; // error
+			}
 		} else if (c == r) {
 			--level;
 		} else if (c == l) {
 			++level;
 		}
-		if (level == 0) {
+		if (0 == level) {
 			break;
 		}
 		fputc(c, os);
 		c = fgetc(is);
 	}
 
-	ensure(0 == level);
+	if (0 != level) {
+		return 0; // error
+	}
 
 	return c;
 }
@@ -67,35 +76,43 @@ static int stream_next_quote(FILE * is, FILE * os, const char q /*= '"'*/ )
 	return stream_next_match(is, os, q, q);
 }
 
-// must call free on return value
-lac_variant lac_token_parse(FILE * is)
+// must call free on return pointer
+char* lac_token_parse(FILE* is, size_t *n)
 {
 	int c;
-	lac_variant v = { .type = &ffi_type_string };
 
-	c = stream_skip(is, isspace, true);
+	c = stream_skip_space(is);
 
 	if (EOF == c) {
-		return (lac_variant){ .type = &ffi_type_void, .value._pointer = 0 };
+		// last token
+		*n = 0;
+		return "";
 	}
 
 	char *buf;
-	size_t size;
-	FILE *os = open_memstream(&buf, &size);
+	FILE *os = open_memstream(&buf, n);
 
+	int ret;
 	if (c == '"') {
-		stream_next_quote(is, os, '"');
+		ret = stream_next_quote(is, os, '"');
+		if (ret != '"' || ret == 0) {
+			*n = EOF; // error
+		}
 	} else if (c == '{') {
-		stream_next_match(is, os, '{', '}');
-		v.type = &ffi_type_block;
+		ret = stream_next_match(is, os, '{', '}');
+		if (ret != '}' || ret == 0) {
+			*n = EOF; // error
+		}
 	} else {
 		fputc(c, os);
-		stream_next_space(is, os);
+		ret = stream_next_space(is, os);
+		if (!isspace(ret) || ret == 0) {
+			*n = EOF; // error
+		}
 	}
 
+	// add null terminator
 	fclose(os);
-	
-	v.value._pointer = buf;
 
-	return v;
+	return buf;
 }
