@@ -1,5 +1,0 @@
-loop {
-	: c fgetc stdin
-	if equal c EOF break
-	putc c
-}

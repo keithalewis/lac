@@ -2,12 +2,16 @@
 #include <dlfcn.h>
 #include "lac.h"
 
-void put_(char* key, const void* val)
+// pointed to value must exist
+void put_(char* key, const lac_variant* val)
 {
-	lac_map_put(key, val);
+	lac_variant* v = lac_variant_alloc(val->type);
+	v->value = val->value;
+
+	lac_map_put(key, v);
 }
 
-const void* get_(const char* key)
+const lac_variant* get_(const char* key)
 {
 	return lac_map_get(key);
 }
@@ -25,6 +29,15 @@ ffi_type* double_(void)
 int print_(const lac_variant v)
 {
 	return lac_variant_print(stdout, v);
+}
+
+void nl_(void)
+{
+	printf("\n");
+}
+void tab_(void)
+{
+	printf("\t");
 }
 
 #define X(A,B,C,D) lac_variant lac_type_ ## B = (lac_variant) \
@@ -59,7 +72,7 @@ int print_(const lac_variant v)
 void print_entry(char* key, void* val)
 {
 	lac_variant* v = val;
-	printf("%9s : %8s\n", key, ffi_type_name(v->type));
+	printf("%9s : %8s\n", key, lac_name(v->type));
 }
 
 void print_map(void)
@@ -122,10 +135,18 @@ void lac_init(void)
 	type[0] = &ffi_type_variant;
 	put_cif(print, lac_cif_alloc(&ffi_type_sint, print_, 1, type));
 
+	put_cif(nl, lac_cif_alloc(&ffi_type_void, nl_, 0, NULL));
+	put_cif(tab, lac_cif_alloc(&ffi_type_void, tab_, 0, NULL));
+
 	type[0] = &ffi_type_string;
 	put_cif(puts, lac_cif_alloc(&ffi_type_sint, puts, 1, type));
 	
 	put_cif(_, lac_cif_alloc(&ffi_type_void, print_map, 0, NULL));
+
+	put_cif(getchar, lac_cif_alloc(&ffi_type_sint, getchar, 0, NULL));
+
+	type[0] = &ffi_type_sint;
+	put_cif(putchar, lac_cif_alloc(&ffi_type_sint, putchar, 1, type));
 
 	// control flow
 	/*

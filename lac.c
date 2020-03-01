@@ -1,7 +1,5 @@
 // lac.c - load and call C functions
 //#include <sys/queue.h>
-#include <dlfcn.h>
-#include <stdarg.h>
 #include "ensure.h"
 #include "lac.h"
 

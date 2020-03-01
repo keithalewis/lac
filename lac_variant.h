@@ -13,8 +13,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#include "ensure.h"
 
+// scalar types known to ffi
 //    type            ffi_type    print   scan
 #define FFI_TYPE_TABLE(X)                         \
 	X(char,           schar,      "c",    "c")    \
@@ -37,6 +37,7 @@ extern "C" {
 	X(int64_t,        sint64,     PRIi64, SCNi64) \
 	X(void*,          pointer,    "p",    "p")    \
 
+
 // X(FFI_TYPE_VOID,       void,        &ffi_type_void,
 // X(FFI_TYPE_LONGDOUBLE, long double, &ffi_type_longdouble,
 // X(FFI_TYPE_COMPLEX
@@ -53,7 +54,7 @@ extern ffi_type ffi_type_block;
 extern ffi_type ffi_type_cif;
 
 // convert string name to ffi type
-static inline const ffi_type *ffi_type_lookup(const char *name)
+static inline const ffi_type* lac_type(const char *name)
 {
 #define X(A,B,C,D) if (0 == strcmp(#B, name)) { return &ffi_type_ ## B; }
 	FFI_TYPE_TABLE(X)
@@ -67,7 +68,7 @@ static inline const ffi_type *ffi_type_lookup(const char *name)
 }
 
 // convert ffi type to string name
-static inline const char* ffi_type_name(const ffi_type* type)
+static inline const char* lac_name(const ffi_type* type)
 {
 #define X(A,B,C,D) if (type == &ffi_type_ ## B) { return # B; }
 	FFI_TYPE_TABLE(X)
@@ -114,7 +115,10 @@ static inline void *lac_variant_address(lac_variant * pv)
 #define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) return &pv->value._ ## B;
 	FFI_TYPE_TABLE(X)
 #undef X
-	// all other types are pointers
+	if (pv->type == &ffi_type_variant) {
+		pv->value._pointer = &pv->value._pointer;
+	}
+	// all other types are pointer types
 	return &pv->value._pointer;
 }
 
@@ -158,7 +162,6 @@ static inline int lac_variant_cmp(const lac_variant a, const lac_variant b)
 	return ret;
 }
 
-
 // E.g. lac_variant v = lac_variant_double(1.23)
 #define X(A,B,C,D) \
 static inline lac_variant lac_variant_ ## B(A a) { \
@@ -167,25 +170,23 @@ static inline lac_variant lac_variant_ ## B(A a) { \
 #undef X
 
 // compile time type conversion
+// E.g., double x = VARIANT_TO_TYPE(double, v);
 #define VARIANT_TO_TYPE(T, V) *(T*)lac_variant_address(&V)
+
 static inline void lac_variant_incr(lac_variant* pv)
 {
-	if (pv->type == &ffi_type_string || pv->type == &ffi_type_block) {
-		return;
-	}
 #define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) { ++pv->value._ ## B; }
 	FFI_TYPE_TABLE(X)
 #undef X
 }
 static inline void lac_variant_decr(lac_variant* pv)
 {
-	if (pv->type == &ffi_type_string || pv->type == &ffi_type_block) {
-		return;
-	}
 #define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) { --pv->value._ ## B; }
 	FFI_TYPE_TABLE(X)
 #undef X
 }
+
+// lac_variant_visit using _Generic???
 
 // tokens are separated by white space (isspace)
 // tokens starting with double quote ('"') end at the next quote
@@ -199,21 +200,24 @@ lac_variant lac_token_parse(FILE *);
 // convert from string to type
 static inline lac_variant lac_variant_parse(ffi_type* type, char* s)
 {
-	lac_variant v = { .type = &ffi_type_void };
+	lac_variant v = { .type = type };
+
+	if (lac_variant_istoken(&v)) {
+		v.value._pointer = s;
+
+		return v;
+	}
 
 	int ret = -1;
 #define X(A,B,C,D) if (type == &ffi_type_ ## B) { \
 	ret = sscanf(s, "%" D, &(v.value._ ## B)); }
 	FFI_TYPE_TABLE(X)
 #undef X
-	if (ret == -1) {
-		v.type = type;
-		v.value._pointer = s;
-		ret = strlen(s);
+	if (ret < 0) {
+		// false type
+		v.type = &ffi_type_void;
+		v.value._pointer = NULL;
 	}
-	ensure (ret > 0);
-
-	v.type = type;
 
 	return v;
 }
@@ -221,20 +225,29 @@ static inline lac_variant lac_variant_parse(ffi_type* type, char* s)
 // print formatted value to output stream
 static inline int lac_variant_print(FILE * os, const lac_variant v)
 {
+	int ret = -1;
+
 	if (v.type == &ffi_type_string || v.type == &ffi_type_block) {
-		return fputs(v.value._pointer, os);
+		ret = fputs(v.value._pointer, os);
 	}
-	if (v.type == &ffi_type_variant) {
-		return lac_variant_print(os, *(const lac_variant*)v.value._pointer);
+	else if (v.type == &ffi_type_variant) {
+		ret = lac_variant_print(os, *(const lac_variant*)v.value._pointer);
 	}
-	if (v.type == &ffi_type_cif) {
-		return lac_variant_print(os, *(const lac_variant*)v.value._pointer);
+	else if (v.type == &ffi_type_cif) {
+		ret = lac_variant_print(os, *(const lac_variant*)v.value._pointer);
 	}
+	else {
 #define X(A,B,C,D) if (v.type == &ffi_type_ ## B) { \
-	return fprintf(os, "%" C, v.value._ ## B); }
-	FFI_TYPE_TABLE(X)
+		ret = fprintf(os, "%" C, v.value._ ## B); }
+		FFI_TYPE_TABLE(X)
 #undef X
-	return -1;		// print failed
+	}
+	// check isatty(fileno(os)) ???
+	if (os == stdout || os == stderr) {
+		fflush(os);
+	}
+
+	return ret;		// print failed
 }
 
 // read formatted value from input stream
