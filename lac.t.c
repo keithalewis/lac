@@ -39,10 +39,9 @@ int main()
 {
 	if (setjmp(lac_jmp_buf)) {
 		fputs(lac_strerror, stderr);
-		
+
 		return -1;
 	}
-
 	//test_lac_ffi();
 	test_lac_parse();
 	//test_lac_map();

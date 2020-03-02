@@ -62,35 +62,34 @@ int test_next_space()
 	char* s;
 
 	s = lac_token_string("\\", &n);
-	ensure (1 == n); // error
+	ensure (1 == n);
 	ensure ('\\' == s[0]);
 	ensure (0 == s[1]);
 	free(s);
 
 	s = lac_token_string("\\\\", &n);
-	ensure (1 == n); // error
+	ensure (1 == n);
 	ensure ('\\' == s[0]);
 	ensure (0 == s[1]);
 	free(s);
 
 	s = lac_token_string("\\\\\\", &n);
-	ensure (2 == n); // error
+	ensure (2 == n);
 	ensure ('\\' == s[0]);
 	ensure ('\\' == s[1]);
 	ensure (0 == s[2]);
 	free(s);
 
 	s = lac_token_string("\\ ", &n);
-	ensure (1 == n); // error
-	ensure ('\\' == s[0]);
+	ensure (1 == n);
+	ensure (' ' == s[0]);
 	ensure (0 == s[1]);
 	free(s);
 
 	s = lac_token_string("\\\\ ", &n);
-	ensure (2 == n); // error
+	ensure (1 == n); 
 	ensure ('\\' == s[0]);
-	ensure (' ' == s[1]);
-	ensure (0 == s[2]);
+	ensure (0 == s[1]);
 	free(s);
 
 	return 0;
@@ -109,10 +108,15 @@ int test_lac_token_parse(char *t, ...)
 	while (u) {
 		t_ = lac_token_parse(s, &n);
 
-		ensure(strlen(t_) == n)
-		ensure(strlen(u) == n)
-		ensure(0 == strncmp(t_, u, n));
-		free(t_);
+		if (n == EOF) {
+			ensure(0 == strcmp(t_, u));
+		}
+		else {
+			ensure(strlen(t_) == n)
+			ensure(strlen(u) == n)
+			ensure(0 == strncmp(t_, u, n));
+			free(t_);
+		}
 
 		u = va_arg(ap, char *);
 	}
@@ -121,23 +125,19 @@ int test_lac_token_parse(char *t, ...)
 	// no more tokens
 	ensure(n == 0);
 	ensure(*t_ == 0);
+	free(t_);
 
 	fclose(s);
 
 	return 0;
 }
-int test_lac_token_fail()
+int test_lac_token()
 {
-	char* s;
-	size_t n;
-	s = lac_token_string("\"", &n);
-	ensure (EOF == n);
-	ensure (0 == s[0]);
-	free(s); // one byte was allocated
-	/*
-	test_lac_token_parse(" \"", "", 0);
+	// fails
+	test_lac_token_parse(" \"", "\"", 0);
 	test_lac_token_parse("{", "", 0);
 	test_lac_token_parse("\"a", "a", 0);
+	/*
 	test_lac_token_parse("\"\"\"", "", "", 0);
 	test_lac_token_parse("\"\"\"", "\"", 0);
 	test_lac_token_parse(" \t", "", 0);
@@ -148,11 +148,28 @@ int test_lac_token_fail()
 	return 0;
 }
 
+int test_repl()
+{
+	char* s;
+	size_t n;
+	s = lac_token_parse(stdin, &n);
+	while (n) {
+		printf("%ld: >%s<\n", n, s);
+		fflush(stdout);
+		//fsync(1);
+		s = lac_token_parse(stdin, &n);
+	}
+
+	return 0;
+}
+
+
 int test_lac_parse()
 {
+	//test_repl();
 	test_skip_space();
 	test_next_space();
-	test_lac_token_fail();
+	test_lac_token();
 	//test_lac_convert();
 
 	test_lac_token_parse("a b c", "a", "b", "c", 0);
