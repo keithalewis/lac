@@ -63,15 +63,14 @@ lac_cif *lac_cif_prep_var(const lac_cif * p, unsigned nargs,
 	return p_;
 }
 
-void lac_cif_call(const lac_cif * pcif, lac_variant * result, void **args)
+void lac_cif_call(lac_cif * pcif, lac_variant * result, void **args)
 {
 	result->type = pcif->cif.rtype;
 
-	ffi_call((ffi_cif *) & pcif->cif, pcif->sym,
-		 lac_variant_address(result), args);
+	ffi_call(&pcif->cif, FFI_FN(pcif->sym), lac_variant_address(result), args);
 }
 
-lac_cif *lac_cif_vload(const char *lib, ffi_type * ret, const char *sym,
+static lac_cif *lac_cif_vload(const char *lib, ffi_type * ret, const char *sym,
 		       va_list ap)
 {
 	ffi_type *arg[32];	// maximum number of arguments

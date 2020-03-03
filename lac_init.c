@@ -3,7 +3,7 @@
 #include "lac.h"
 
 // pointed to value must exist
-void put_(char* key, const lac_variant* val)
+static void put_(char* key, const lac_variant* val)
 {
 	lac_variant* v = lac_variant_alloc(val->type);
 	v->value = val->value;
@@ -11,36 +11,36 @@ void put_(char* key, const lac_variant* val)
 	lac_map_put(key, v);
 }
 
-const lac_variant* get_(const char* key)
+static const lac_variant* get_(const char* key)
 {
 	return lac_map_get(key);
 }
 
-lac_variant parse_(ffi_type* type, char* s)
+static lac_variant parse_(ffi_type* type, char* s)
 {
 	return lac_variant_parse(type, s);
 }
 
-ffi_type* double_(void)
+static ffi_type* double_(void)
 {
 	return &ffi_type_double;
 }
 
-int print_(const lac_variant v)
+static int print_(const lac_variant v)
 {
 	return lac_variant_print(stdout, v);
 }
 
-void nl_(void)
+static void nl_(void)
 {
 	printf("\n");
 }
-void tab_(void)
+static void tab_(void)
 {
 	printf("\t");
 }
 
-#define X(A,B,C,D) lac_variant lac_type_ ## B = (lac_variant) \
+#define X(A,B,C,D) lac_variant lac_type_ ## B = \
 	{ .type = &ffi_type_pointer, .value._pointer = &ffi_type_ ## B};
 	FFI_TYPE_TABLE(X)
 #undef X
@@ -69,13 +69,13 @@ void tab_(void)
 	name ## _cif .value._pointer = cif_ptr; \
 	lac_map_put(#name, &name ## _cif);
 
-void print_entry(char* key, void* val)
+static void print_entry(const char* key, const void* val)
 {
-	lac_variant* v = val;
+	const lac_variant* v = val;
 	printf("%9s : %8s\n", key, lac_name(v->type));
 }
 
-void print_map(void)
+static void print_map(void)
 {
 	lac_map_foreach(print_entry);
 }

@@ -37,7 +37,7 @@ lac_cif *lac_cif_prep_var(const lac_cif * pcif, unsigned nargs,
 			  ffi_type ** arg_types);
 
 // call ffi_call and store result
-void lac_cif_call(const lac_cif * pcif, lac_variant * result, void **args);
+void lac_cif_call(lac_cif * pcif, lac_variant * result, void **args);
 
 // load symbol from library
 // terminate arg types with null pointer
