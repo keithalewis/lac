@@ -164,6 +164,7 @@ static int test_repl()
 }
 
 
+int test_lac_parse();
 int test_lac_parse()
 {
 	//test_repl();
