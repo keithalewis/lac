@@ -5,6 +5,18 @@
 #include "lac_ffi.h"
 #include "lac_eval.h"
 
+static lac_variant lac_token(FILE* fp)
+{
+	lac_variant v = {.type = &ffi_type_string_malloc};
+
+	size_t n;
+	v.value._pointer = lac_token_parse(fp, &n);
+	ensure (n != EOF); // pass pointer to ensure???
+	// free pointer ???
+
+	return v;
+}
+
 // Call C function
 static lac_variant lac_call(FILE* fp, lac_cif* cif);
 
@@ -13,16 +25,20 @@ lac_variant lac_eval(FILE* fp, ffi_type* type)
 {
 	lac_variant result;
 
-	lac_variant token = lac_token_parse(fp);
+	lac_variant token = lac_token(fp);
 
-	if (token.type == type) { // || type == &ffi_type_variant) {
+	if (token.type == type) { // malloc'd ???
 		return token; // must be free'd
 	}
 	
 	if (token.type == &ffi_type_string) {
+		/*
 		if (token.value._pointer[0] == '`'') {
-			result = lac_variant_parse(type, token.value._pointer + 1);
+			// ??? string_malloc
+			// don't lookup
+			return lac_variant_parse(type, token.value._pointer + 1);
 		}
+		*/
 		const lac_variant* pv = lac_map_get(token.value._pointer);
 		if (pv) { // in dictionary
 			if (pv->type == &ffi_type_cif) {
@@ -35,6 +51,7 @@ lac_variant lac_eval(FILE* fp, ffi_type* type)
 		}
 		else {
 			result = lac_variant_parse(type, token.value._pointer);
+			lac_variant_free(&token);
 		}
 	}
 	//else if (type == &ffi_type_string) {
@@ -67,25 +84,13 @@ lac_variant lac_eval_cif(FILE* fp, lac_cif* cif)
 		ffi_call(ffi, cif->sym, lac_variant_address(&v), addr);
 
 		for (int i = 0; i < n; ++i) {
-	//!!!		lac_variant_free(&args[i]);
+			lac_variant_free(&args[i]);
 		}
 	}
 	else {
+		ensure (n < 0);
 		// variadic
 	}
 
 	return v;
-}
-
-lac_variant lac_evaluate_block(const lac_variant token)
-{
-	lac_variant result = { .type = &ffi_type_void };
-
-	FILE *fmemopen(void *buf, size_t size, const char *mode);
-	FILE* is = fmemopen(token.value._pointer,
-				strlen(token.value._pointer), "r");
-	//result = lac_evaluate(is);
-	fclose (is);
-
-	return result;
 }

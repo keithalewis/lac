@@ -4,6 +4,7 @@
 #include "ensure.h"
 #include "lac_map.h"
 
+int test_lac_map();
 int test_lac_map()
 {
 	const char key[] = "key";

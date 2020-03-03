@@ -15,8 +15,9 @@ int test_lac_variant(void);
 int test_lac_tree(void);
 int test_lac_data(void);
 
-// call f n times an return millisecnds
-int timer(void(*f)(void), int n)
+// call f n times and return millisecnds
+/*
+static int timer(void(*f)(void), int n)
 {
 	clock_t b = clock();
 	for (int i = 0; i < n; ++i) {
@@ -26,6 +27,7 @@ int timer(void(*f)(void), int n)
 	
 	return ((e - b)*1000)/CLOCKS_PER_SEC;
 }
+*/
 
 int test_lac()
 {
@@ -42,11 +44,12 @@ int main()
 
 		return -1;
 	}
-	//test_lac_ffi();
+
 	test_lac_parse();
-	//test_lac_map();
-    //test_lac();
 	test_lac_variant();
+	test_lac_map();
+	//test_lac_ffi();
+    //test_lac();
 	//test_lac_tree();
 	//test_lac_data();
 

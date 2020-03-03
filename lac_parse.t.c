@@ -7,7 +7,7 @@
 #include "ensure.h"
 #include "lac_parse.h"
 
-char* lac_token_string(char* s, size_t* n)
+static char* lac_token_string(char* s, size_t* n)
 {
 	char* t;
 
@@ -18,7 +18,7 @@ char* lac_token_string(char* s, size_t* n)
 	return t;
 }
 
-int test_skip_space()
+static int test_skip_space()
 {
 	size_t n;
 	char* s;
@@ -56,7 +56,7 @@ int test_skip_space()
 	return 0;
 }
 
-int test_next_space()
+static int test_next_space()
 {
 	size_t n;
 	char* s;
@@ -96,7 +96,7 @@ int test_next_space()
 }
 
 // terminate with null pointer
-int test_lac_token_parse(char *t, ...)
+static int test_lac_token_parse(char *t, ...)
 {
 	FILE *s = fmemopen(t, strlen(t), "r");
 
@@ -108,7 +108,7 @@ int test_lac_token_parse(char *t, ...)
 	while (u) {
 		t_ = lac_token_parse(s, &n);
 
-		if (n == EOF) {
+		if (n == (size_t)EOF) {
 			ensure(0 == strcmp(t_, u));
 		}
 		else {
@@ -131,7 +131,7 @@ int test_lac_token_parse(char *t, ...)
 
 	return 0;
 }
-int test_lac_token()
+static int test_lac_token()
 {
 	// fails
 	test_lac_token_parse(" \"", "\"", 0);
@@ -148,7 +148,7 @@ int test_lac_token()
 	return 0;
 }
 
-int test_repl()
+static int test_repl()
 {
 	char* s;
 	size_t n;

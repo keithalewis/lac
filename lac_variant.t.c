@@ -3,7 +3,7 @@
 #include "ensure.h"
 #include "lac_variant.h"
 
-void test_lac_variant_types()
+static void test_lac_variant_types()
 {
 #define X(A,B,C,D) \
 	lac_variant B ## _ = lac_variant_ ## B(0); \
@@ -28,7 +28,7 @@ void test_lac_variant_types()
 
 }
 
-void test_lac_variant_print(const char *out, const lac_variant v)
+static void test_lac_variant_print(const char *out, const lac_variant v)
 {
 	char *buf;
 	size_t size;
@@ -48,7 +48,7 @@ void test_lac_variant_print(const char *out, const lac_variant v)
 	  ensure(VALUE == v.value._ ## TYPE); \
 	  test_lac_variant_print(STRING, v); }
 
-int test_lac_variant_parse()
+static int test_lac_variant_parse()
 {
 	TEST_PARSE(schar, "x", 'x');
 	TEST_PARSE(sint, "123", 123);
@@ -62,7 +62,7 @@ int test_lac_variant_parse()
 	return 0;
 }
 
-int test_lac_variant_cmp()
+static int test_lac_variant_cmp()
 {
 	lac_variant a, b;
 
@@ -78,6 +78,7 @@ int test_lac_variant_cmp()
 	return 0;
 }
 
+int test_lac_variant();
 int test_lac_variant()
 {
 	test_lac_variant_parse();

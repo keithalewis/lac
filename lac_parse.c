@@ -147,7 +147,7 @@ char* lac_token_parse(FILE* is, size_t *n)
 	fclose(os); // sets *n
 
 	if (ret == 0) {
-		*n = EOF; // parse failed
+		*n = (size_t)EOF; // parse failed
 	}
 
 	return buf;

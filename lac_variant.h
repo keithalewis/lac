@@ -1,20 +1,12 @@
 // lac_variant.h -  variant type for argument stack
 #pragma once
-#include <errno.h>
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <ffi.h>
-#ifdef __cplusplus
-}
-#endif
 
-// scalar types known to ffi
 //    type            ffi_type    print   scan
 #define FFI_TYPE_TABLE(X)                         \
 	X(char,           schar,      "c",    "c")    \
@@ -25,7 +17,7 @@ extern "C" {
 	X(unsigned short, ushort,     "hu",   "hu")   \
 	X(long,           slong,      "li",   "li")   \
 	X(unsigned long,  ulong,      "lu",   "lu")   \
-	X(float,          float,      "g",    "g")    \
+	X(float,          float,      "g",    "f")    \
 	X(double,         double,     "g",    "lf")   \
 	X(uint8_t,        uint8,      PRIu8,  SCNu8)  \
 	X(int8_t,         sint8,      PRIi8,  SCNi8)  \
@@ -42,7 +34,18 @@ extern "C" {
 // X(FFI_TYPE_COMPLEX
 // X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer, 
 
+// variant data type 
+typedef struct {
+	union {
+#define X(A,B,C,D) A _ ## B;
+		FFI_TYPE_TABLE(X)
+#undef X
+	} value;
+	ffi_type *type;
+} lac_variant;
+
 // must be initialized by ffi_type_variant_prep()
+extern void ffi_type_variant_prep(void);
 extern ffi_type ffi_type_variant;
 
 // pointer to null terminated characters
@@ -80,18 +83,7 @@ static inline const char* lac_name(const ffi_type* type)
     return 0;
 }
 
-// variant data type 
-typedef struct {
-	union {
-#define X(A,B,C,D) A _ ## B;
-		FFI_TYPE_TABLE(X)
-#undef X
-	} value;
-	ffi_type *type;
-	// size_t size; ???
-} lac_variant;
-
-// if integer or floating point is 0 then pointer is 0
+// if integral or floating point is 0 then pointer is 0
 static inline int lac_variant_false(const lac_variant v)
 {
 	return v.value._pointer == 0;
@@ -101,7 +93,7 @@ static inline int lac_variant_true(const lac_variant v)
 	return v.value._pointer != 0;
 }
 
-// pointer address of variant value
+// pointer address of variant value for ffi_call
 static inline void *lac_variant_address(lac_variant * pv)
 {
 #define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) return &pv->value._ ## B;
@@ -119,7 +111,7 @@ static inline lac_variant* lac_variant_alloc(ffi_type* type)
 		return 0;
 
 	pv->type = type;
-	pv->value._pointer = 0; // zero out union
+	pv->value._pointer = 0; // zeros out union
 
 	return pv;
 }
@@ -168,24 +160,6 @@ static inline lac_variant lac_variant_ ## B(A a) { \
 // E.g., double x = VARIANT_TO_TYPE(double, v);
 #define VARIANT_TO_TYPE(T, V) *(T*)lac_variant_address(&V)
 
-/* use visit ???
-static inline void lac_variant_incr(lac_variant* pv)
-{
-#define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) { ++pv->value._ ## B; }
-	FFI_TYPE_TABLE(X)
-#undef X
-}
-static inline void lac_variant_decr(lac_variant* pv)
-{
-#define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) { --pv->value._ ## B; }
-	FFI_TYPE_TABLE(X)
-#undef X
-}
-*/
-
-// lac_variant_visit using _Generic???
-
-
 // convert from string to type
 static inline lac_variant lac_variant_parse(ffi_type* type, char* s)
 {
@@ -197,6 +171,13 @@ static inline lac_variant lac_variant_parse(ffi_type* type, char* s)
 	else if (type == &ffi_type_string_malloc) {
 		size_t n = strlen(s);
 		v.value._pointer = malloc(n + 1);
+		if (!v.value._pointer) {
+			// return null pointer, just like malloc
+			v.type = &ffi_type_pointer;
+			v.value._pointer = 0;
+
+			return v;
+		}
 		strcpy(v.value._pointer, s);
 	}
 	else {
@@ -247,3 +228,21 @@ static inline int lac_variant_print(FILE * os, const lac_variant v)
 
 	return ret;
 }
+
+/* use visit ???
+static inline void lac_variant_incr(lac_variant* pv)
+{
+#define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) { ++pv->value._ ## B; }
+	FFI_TYPE_TABLE(X)
+#undef X
+}
+static inline void lac_variant_decr(lac_variant* pv)
+{
+#define X(A,B,C,D) if (pv->type == &ffi_type_ ## B) { --pv->value._ ## B; }
+	FFI_TYPE_TABLE(X)
+#undef X
+}
+*/
+
+// lac_variant_visit using _Generic???
+

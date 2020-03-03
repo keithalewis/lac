@@ -17,13 +17,14 @@ ffi_type ffi_type_string_malloc = FFI_POINTER;
 ffi_type ffi_type_string_cif = FFI_POINTER;
 ffi_type ffi_type_string_cif_malloc = FFI_POINTER;
 
-static const ffi_type *ffi_variant_union_elements[] =
+static ffi_type *ffi_variant_union_elements[] =
     { &ffi_type_pointer, NULL };
+
 static ffi_type ffi_type_variant_union = {
 	.size = 0,
 	.alignment = 0,
 	.type = FFI_TYPE_STRUCT,
-	.elements = (ffi_type **) ffi_variant_union_elements
+	.elements = ffi_variant_union_elements
 };
 
 #define X(A,B,C,D) &ffi_type_ ## B ,
@@ -64,7 +65,7 @@ struct struct_align_variant {
 	char c;
 	lac_variant x;
 };
-static const ffi_type *ffi_variant_elements[] = {
+static ffi_type *ffi_variant_elements[] = {
 	&ffi_type_variant_union,
 	&ffi_type_pointer,
 	NULL
@@ -74,6 +75,6 @@ ffi_type ffi_type_variant = {
 	.size = sizeof(lac_variant),
 	.alignment = offsetof(struct struct_align_variant, x),
 	.type = FFI_TYPE_STRUCT,
-	.elements = (ffi_type **) ffi_variant_elements
+	.elements = ffi_variant_elements
 };
 
