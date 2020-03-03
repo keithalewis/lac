@@ -14,8 +14,8 @@ struct struct_align_pointer {
 
 ffi_type ffi_type_string = FFI_POINTER;
 ffi_type ffi_type_string_malloc = FFI_POINTER;
-ffi_type ffi_type_string_cif = FFI_POINTER;
-ffi_type ffi_type_string_cif_malloc = FFI_POINTER;
+ffi_type ffi_type_cif = FFI_POINTER;
+ffi_type ffi_type_cif_malloc = FFI_POINTER;
 
 static ffi_type *ffi_variant_union_elements[] =
     { &ffi_type_pointer, NULL };

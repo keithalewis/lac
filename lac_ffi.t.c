@@ -12,7 +12,7 @@ static int incr(int i)
 }
 */
 
-int test_lac_cif()
+static int test_lac_cif()
 {
 /*
   {
@@ -119,7 +119,7 @@ int test_lac_cif()
 
 		lac_variant result;
 		lac_cif_call(p, &result, values);
-		ensure(result.value._sint == strlen(s) + 1);
+		ensure(result.value._sint == (int)(strlen(s) + 1));
 
 		lac_cif_free(p);
 	}
@@ -127,16 +127,17 @@ int test_lac_cif()
 	return 0;
 }
 
-lac_variant f(const lac_variant v)
+static lac_variant f(const lac_variant v)
 {
 	lac_variant r;
+	r.type = v.type; // ignored
 	r.type = &ffi_type_sint;
 	r.value._sint = 2;
 
 	return r;
 }
 
-int test_lac_cif_variant()
+static int test_lac_cif_variant()
 {
 	ffi_type_variant_prep();
 	ffi_cif cif;
@@ -160,6 +161,7 @@ int test_lac_cif_variant()
 	return 0;
 }
 
+int test_lac_ffi();
 int test_lac_ffi()
 {
 	test_lac_cif();

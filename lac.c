@@ -1,6 +1,5 @@
 // lac.c - load and call C functions
 //#include <sys/queue.h>
-#include "ensure.h"
 #include "lac.h"
 
 int line = 0;

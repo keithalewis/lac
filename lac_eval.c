@@ -1,6 +1,8 @@
 // lac_eval.c
 #define _GNU_SOURCE
 #include <stdio.h>
+#include "ensure.h"
+#include "lac_parse.h"
 #include "lac_map.h"
 #include "lac_ffi.h"
 #include "lac_eval.h"
@@ -11,7 +13,7 @@ static lac_variant lac_token(FILE* fp)
 
 	size_t n;
 	v.value._pointer = lac_token_parse(fp, &n);
-	ensure (n != EOF); // pass pointer to ensure???
+	ensure (n != (size_t)EOF); // pass pointer to ensure???
 	// free pointer ???
 
 	return v;
@@ -61,10 +63,10 @@ lac_variant lac_eval(FILE* fp, ffi_type* type)
 	return result;
 }
 
-lac_variant lac_eval_cif(FILE* fp, lac_cif* cif)
+lac_variant lac_call(FILE* fp, lac_cif* cif)
 {
 	ffi_cif* ffi = &cif->cif;
-	int n = ffi->nargs;
+	int n = (int)ffi->nargs;
 	lac_variant v;
 	v.type = ffi->rtype;
 	// allocate memory for v based on v.type???

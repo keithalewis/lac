@@ -1,6 +1,8 @@
 // lac_init.c - initialize lac
 #include <dlfcn.h>
-#include "lac.h"
+#include "lac_map.h"
+#include "lac_ffi.h"
+#include "lac_init.h"
 
 // pointed to value must exist
 static void put_(char* key, const lac_variant* val)
