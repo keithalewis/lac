@@ -26,14 +26,17 @@ static int test_skip_space()
 	s = lac_token_string("", &n);
 	ensure (0 == n);
 	ensure (0 == *s);
+	free (s);
 
 	s = lac_token_string(" ", &n);
 	ensure (0 == n);
 	ensure (0 == *s);
+	free (s);
 
 	s = lac_token_string(" \n\t\r", &n);
 	ensure (0 == n);
 	ensure (0 == *s);
+	free (s);
 
 	s = lac_token_string(" \n\t\ra", &n);
 	ensure (1 == n);
