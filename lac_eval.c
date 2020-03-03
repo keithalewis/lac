@@ -2,7 +2,11 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include "lac_map.h"
+#include "lac_ffi.h"
 #include "lac_eval.h"
+
+// Call C function
+static lac_variant lac_call(FILE* fp, lac_cif* cif);
 
 // read stream and convert to type
 lac_variant lac_eval(FILE* fp, ffi_type* type)
@@ -16,11 +20,14 @@ lac_variant lac_eval(FILE* fp, ffi_type* type)
 	}
 	
 	if (token.type == &ffi_type_string) {
+		if (token.value._pointer[0] == '`'') {
+			result = lac_variant_parse(type, token.value._pointer + 1);
+		}
 		const lac_variant* pv = lac_map_get(token.value._pointer);
 		if (pv) { // in dictionary
 			if (pv->type == &ffi_type_cif) {
 				lac_cif* cif = pv->value._pointer;
-				result = lac_eval_cif(fp, cif);
+				result = lac_call(fp, cif);
 			}
 			else {
 				result = *pv; // must not be free'd!!!

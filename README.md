@@ -16,8 +16,9 @@ and return an integer value, as documented in
 the [puts(3)](http://man7.org/linux/man-pages/man3/puts.3.html)
 man page.
 
-The string token `puts` is looked up in the _dictionary_ and the
-corresponding C function is *call*ed. It requires a string to be the
+Every string token beginning with underscore (`_`)
+is looked up in the _dictionary_ and the
+corresponding C function is *call*ed. `Puts` requires a string to be the
 next token on the input stream.  `Lac` uses double quotes for strings
 that may contain spaces. The result of the call is an integer value.
 
@@ -25,15 +26,15 @@ An equivalent way to do this is
 ```
 puts Hello\ World!
 ```
-since backslash (`\`) can be used to escape the next character on the
+since backslash (`\`) can be used to escape white space characters on the
 input stream.
 
 The `puts` function from the C standard library can be placed
 in the dictionary using
 ```
-: puts load sint ( dlsym ( dlopen libc.so ) puts ) pointer void
+_ puts load sint ( dlsym ( dlopen libc.so ) puts ) pointer void
 ```
-The _colon_ (`:`) function is used to place a _key_ and a _value_ into
+The _underscore_ (`_`) function is used to place a _key_ and a _value_ into
 the dictionary. 
 
 Use `load` to specify the _signature_ of the pointer returned by
@@ -60,7 +61,7 @@ ensures all required arguments have been supplied.
 
 An equivalent way to do the above is
 ```
-: puts ( load int dlsym dlopen libc.so puts string )
+_ puts ( load int dlsym dlopen libc.so puts string )
 ```
 The tokens inside the parentheses are evaluated to a cif
 that is associated with the key `puts` in the dictionary.
@@ -69,19 +70,24 @@ that is associated with the key `puts` in the dictionary.
 
 `Lac` _evaluates_ an _input stream_ of white space
 separated string tokens and returns the _required type_. 
+It evaluates the input stream until no more tokens are found.
 
-If the token type matches the required type then the token is the result of
-the evaluation.
+If the required type is not a string then its _value_ is looked up in
+the dictionary.  Values can be any of the standard C integal types,
+floating point numbers, or pointers.
 
-If the required type is not a string but the token is a string
-then its _value_ is looked up in the dictionary.
+If the value is a `cif` then it evaluates the input stream based on its
+required argument types and calls the corresponding C function to produce
+the required type.  This must match the return value of the function.
 
-If the value is a cif then it
-evaluates the input stream based on the argument types
-it requires and is called to produce the return type.
+If the value is not a `cif` its type must must match the required type.
 
 If the value is not found in the dictionary then the string token is
 parsed based on the required type.
+
+If a token starts with a backtick character (`'`'`) then it is
+not looked up in the dictionary and the backtick is removed.
+The required type must be a string.
 
 ### Tokens
 

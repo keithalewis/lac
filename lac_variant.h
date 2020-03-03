@@ -46,10 +46,12 @@ extern "C" {
 // must be initialized by ffi_type_variant_prep()
 extern ffi_type ffi_type_variant;
 
+//??? use enumerated values ???
+//??? indicate if they must be free'd
 // pointer types
 extern ffi_type ffi_type_string;
 
-extern ffi_type ffi_type_block;
+extern ffi_type ffi_type_block; // no need!!! it is just a string
 
 extern ffi_type ffi_type_cif;
 
@@ -91,6 +93,8 @@ typedef struct {
 	ffi_type *type;
 	// size_t size; ???
 } lac_variant;
+
+//??? split out lac pointers and include their size
 
 // return value from lac_token_parse
 static inline int lac_variant_istoken(const lac_variant* pv)
