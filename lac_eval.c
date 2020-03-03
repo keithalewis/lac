@@ -4,7 +4,7 @@
 #include "ensure.h"
 #include "lac_parse.h"
 #include "lac_map.h"
-#include "lac_ffi.h"
+#include "lac_cif.h"
 #include "lac_eval.h"
 
 static lac_variant lac_token(FILE* fp)
@@ -33,28 +33,26 @@ lac_variant lac_eval(FILE* fp, ffi_type* type)
 		return token; // must be free'd
 	}
 	
-	if (token.type == &ffi_type_string) {
-		/*
-		if (token.value._pointer[0] == '`'') {
-			// ??? string_malloc
-			// don't lookup
-			return lac_variant_parse(type, token.value._pointer + 1);
-		}
-		*/
-		const lac_variant* pv = lac_map_get(token.value._pointer);
-		if (pv) { // in dictionary
-			if (pv->type == &ffi_type_cif) {
-				lac_cif* cif = pv->value._pointer;
-				result = lac_call(fp, cif);
-			}
-			else {
-				result = *pv; // must not be free'd!!!
-			}
+	/*
+	if (token.value._pointer[0] == '`'') {
+		// ??? string_malloc
+		// don't lookup
+		return lac_variant_parse(type, token.value._pointer + 1);
+	}
+	*/
+	const lac_variant* pv = lac_map_get(token.value._pointer);
+	if (pv) { // in dictionary
+		if (pv->type == &ffi_type_cif) {
+			lac_cif* cif = pv->value._pointer;
+			result = lac_call(fp, cif);
 		}
 		else {
-			result = lac_variant_parse(type, token.value._pointer);
-			lac_variant_free(&token);
+			result = *pv; // must not be free'd!!!
 		}
+	}
+	else {
+		result = lac_variant_parse(type, token.value._pointer);
+		//lac_variant_free(&token);
 	}
 	//else if (type == &ffi_type_string) {
 		//ensure (0 <= lac_variant_scan(fp, &result));

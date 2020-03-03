@@ -1,7 +1,7 @@
 // lac_init.c - initialize lac
 #include <dlfcn.h>
 #include "lac_map.h"
-#include "lac_ffi.h"
+#include "lac_cif.h"
 #include "lac_init.h"
 
 // pointed to value must exist
