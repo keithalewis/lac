@@ -46,7 +46,7 @@ int main()
 	test_lac_parse();
 	//test_lac_map();
     //test_lac();
-	//test_lac_variant();
+	test_lac_variant();
 	//test_lac_tree();
 	//test_lac_data();
 

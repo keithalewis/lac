@@ -28,16 +28,6 @@ void test_lac_variant_types()
 
 }
 
-void test_lac_variant_scan(char *in, lac_variant * pv)
-{
-	FILE *is = fmemopen(in, strlen(in), "r");
-
-	int ret = lac_variant_scan(is, pv);
-	ensure(ret != 0 && ret != EOF);
-
-	fclose(is);
-}
-
 void test_lac_variant_print(const char *out, const lac_variant v)
 {
 	char *buf;
@@ -46,7 +36,7 @@ void test_lac_variant_print(const char *out, const lac_variant v)
 
 	int ret = lac_variant_print(os, v);
 	ensure(ret >= 0);
-	fclose(os);		// fflush out
+	fclose(os);	
 
 	ensure(0 == strcmp(out, buf));
 
@@ -54,8 +44,7 @@ void test_lac_variant_print(const char *out, const lac_variant v)
 }
 
 #define TEST_PARSE(TYPE, STRING, VALUE) \
-	{ lac_variant v; v.type = &ffi_type_ ## TYPE; \
-	  test_lac_variant_scan(STRING, &v); \
+	{ lac_variant v = lac_variant_parse(&ffi_type_ ## TYPE, STRING); \
 	  ensure(VALUE == v.value._ ## TYPE); \
 	  test_lac_variant_print(STRING, v); }
 

@@ -6,21 +6,16 @@ struct struct_align_pointer {
 	char c;
 	void* x;
 };
-ffi_type ffi_type_string = {
-	sizeof(void*),
-	offsetof(struct struct_align_pointer, x),
-	FFI_TYPE_POINTER, NULL
-};
-ffi_type ffi_type_block = {
-	sizeof(void*),
-	offsetof(struct struct_align_pointer, x),
-	FFI_TYPE_POINTER, NULL
-};
-ffi_type ffi_type_cif = {
-	sizeof(void*),
-	offsetof(struct struct_align_pointer, x),
-	FFI_TYPE_POINTER, NULL
-};
+
+#define FFI_POINTER { \
+	sizeof(void*), \
+	offsetof(struct struct_align_pointer, x), \
+	FFI_TYPE_POINTER, NULL}
+
+ffi_type ffi_type_string = FFI_POINTER;
+ffi_type ffi_type_string_malloc = FFI_POINTER;
+ffi_type ffi_type_string_cif = FFI_POINTER;
+ffi_type ffi_type_string_cif_malloc = FFI_POINTER;
 
 static const ffi_type *ffi_variant_union_elements[] =
     { &ffi_type_pointer, NULL };

@@ -169,7 +169,7 @@ int test_lac_parse()
 	//test_repl();
 	test_skip_space();
 	test_next_space();
-	test_lac_token();
+	//test_lac_token();
 	//test_lac_convert();
 
 	test_lac_token_parse("a b c", "a", "b", "c", 0);
@@ -177,12 +177,10 @@ int test_lac_parse()
 	test_lac_token_parse("a\tb\r c", "a", "b", "c", 0);
 	test_lac_token_parse("a\tb\r \nc", "a", "b", "c", 0);
 	test_lac_token_parse("\"a b\" c", "a b", "c", 0);
-	/*
 	test_lac_token_parse("{a {b} c}", "a {b} c", 0);
 	test_lac_token_parse(" {a {b} c}  d", "a {b} c", "d", 0);
 	test_lac_token_parse("%g\n", "%g", 0);
 	test_lac_token_parse("\"%g\n\" h", "%g\n", "h", 0);
-	*/
 
 	return 0;
 }

@@ -1,8 +1,8 @@
-LAC_ = lac_parse.c
+LAC_ = lac_parse.c lac_variant.c
 SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
 
-LAC_T = lac_parse.t.c
+LAC_T = lac_parse.t.c lac_variant.t.c
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 
@@ -54,7 +54,8 @@ deps: $(SRCS_T)
 	@$(foreach c, $(SRCS_T), cc -MM $(c);)
 
 # r!make deps
-lac.t.o: lac.t.c lac.h ensure.h lac_ffi.h lac_variant.h lac_init.h \
- lac_map.h lac_eval.h
-lac_parse.o: lac_parse.c ensure.h lac_parse.h
+lac.t.o: lac.t.c lac.h ensure.h lac_parse.h
+lac_parse.o: lac_parse.c lac_parse.h
+lac_variant.o: lac_variant.c lac_variant.h
 lac_parse.t.o: lac_parse.t.c ensure.h lac_parse.h
+lac_variant.t.o: lac_variant.t.c ensure.h lac_variant.h
