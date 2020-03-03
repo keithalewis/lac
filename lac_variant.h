@@ -25,7 +25,7 @@ extern "C" {
 	X(unsigned short, ushort,     "hu",   "hu")   \
 	X(long,           slong,      "li",   "li")   \
 	X(unsigned long,  ulong,      "lu",   "lu")   \
-	X(float,          float,      "f",    "f")    \
+	X(float,          float,      "g",    "g")    \
 	X(double,         double,     "g",    "lf")   \
 	X(uint8_t,        uint8,      PRIu8,  SCNu8)  \
 	X(int8_t,         sint8,      PRIi8,  SCNi8)  \

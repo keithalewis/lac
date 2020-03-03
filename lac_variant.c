@@ -1,7 +1,7 @@
 // lac_variant.c - variant type
 #include "lac_variant.h"
 
-// special pointer tyes where the pointer is malloc'd
+// pointer types
 struct struct_align_pointer {
 	char c;
 	void* x;

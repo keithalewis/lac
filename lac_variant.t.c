@@ -53,6 +53,8 @@ int test_lac_variant_parse()
 	TEST_PARSE(schar, "x", 'x');
 	TEST_PARSE(sint, "123", 123);
 	TEST_PARSE(double, "1.23", 1.23);
+	//TEST_PARSE(float, "1.500000", 1.5);
+	TEST_PARSE(float, "1.5", 1.5);
 	TEST_PARSE(sint32, "123", 123);
 	TEST_PARSE(uint32, "123", 123);
 	TEST_PARSE(sint32, "-123", -123);
