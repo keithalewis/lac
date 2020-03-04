@@ -65,7 +65,9 @@ static inline const ffi_type* lac_type(const char *name)
 #undef X
 	if (0 == strcmp("variant", name)) { return &ffi_type_variant; }
 	if (0 == strcmp("string", name)) { return &ffi_type_string; }
+	if (0 == strcmp("string_malloc", name)) { return &ffi_type_string_malloc; }
 	if (0 == strcmp("cif", name)) { return &ffi_type_cif; }
+	if (0 == strcmp("cif_malloc", name)) { return &ffi_type_cif_malloc; }
 
     return 0;
 }
@@ -78,7 +80,9 @@ static inline const char* lac_name(const ffi_type* type)
 #undef X
 	if (type == &ffi_type_variant) { return "variant"; }
 	if (type == &ffi_type_string) { return "string"; }
+	if (type == &ffi_type_string_malloc) { return "string_malloc"; }
 	if (type == &ffi_type_cif) { return "cif"; }
+	if (type == &ffi_type_cif_malloc) { return "cif_malloc"; }
 
     return 0;
 }

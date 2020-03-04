@@ -42,11 +42,6 @@ static void tab_(void)
 	printf("\t");
 }
 
-#define X(A,B,C,D) lac_variant lac_type_ ## B = \
-	{ .type = &ffi_type_pointer, .value._pointer = &ffi_type_ ## B};
-	FFI_TYPE_TABLE(X)
-#undef X
-
 #define put_ffi_type(name) \
 	static lac_variant name ## _; \
 	name ## _ .type = &ffi_type_pointer; \
@@ -74,7 +69,7 @@ static void tab_(void)
 static void print_entry(const char* key, const void* val)
 {
 	const lac_variant* v = val;
-	printf("%9s : %8s\n", key, lac_name(v->type));
+	printf("%9s : %8s\n", key, lac_name(v->type)); // !!!use fnmatch()
 }
 
 static void print_map(void)
