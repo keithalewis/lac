@@ -7,7 +7,7 @@
 #include "lac_map.h"
 
 struct lac_entry {
-	char* key;
+	char *key;
 	const void *val;
 	 LIST_ENTRY(lac_entry) st;
 	// struct { struct entry* next; struct entry* prev } st;
@@ -15,7 +15,7 @@ struct lac_entry {
 
 static LIST_HEAD(head, lac_entry) map = LIST_HEAD_INITIALIZER(struct head);
 
-void lac_map_put(const char* key, const void *val)
+void lac_map_put(const char *key, const void *val)
 {
 	//static LIST_HEAD(head, entry) map = LIST_HEAD_INITIALIZER(struct head);
 	// struct head { struct entry* lh_first} map = { NULL };
@@ -29,7 +29,7 @@ void lac_map_put(const char* key, const void *val)
 	// elm->field.prev = &head->first
 }
 
-static struct lac_entry* lac_map_find(const char* key)
+static struct lac_entry *lac_map_find(const char *key)
 {
 	struct lac_entry *elm = 0;
 
@@ -42,7 +42,7 @@ static struct lac_entry* lac_map_find(const char* key)
 	return elm;
 }
 
-void lac_map_del(const char* key)
+void lac_map_del(const char *key)
 {
 	struct lac_entry *elm = lac_map_find(key);
 
@@ -53,7 +53,7 @@ void lac_map_del(const char* key)
 	}
 }
 
-const void *lac_map_get(const char* key)
+const void *lac_map_get(const char *key)
 {
 	struct lac_entry *elm = lac_map_find(key);
 
@@ -64,7 +64,7 @@ const void *lac_map_get(const char* key)
 	return 0;
 }
 
-void lac_map_foreach(void (*action)(const char*, const void *))
+void lac_map_foreach(void (*action) (const char *, const void *))
 {
 	struct lac_entry *elm = 0;
 

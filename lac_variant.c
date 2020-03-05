@@ -4,7 +4,7 @@
 // pointer types
 struct struct_align_pointer {
 	char c;
-	void* x;
+	void *x;
 };
 
 #define FFI_POINTER { \
@@ -17,8 +17,7 @@ ffi_type ffi_type_string_malloc = FFI_POINTER;
 ffi_type ffi_type_cif = FFI_POINTER;
 ffi_type ffi_type_cif_malloc = FFI_POINTER;
 
-static ffi_type *ffi_variant_union_elements[] =
-    { &ffi_type_pointer, NULL };
+static ffi_type *ffi_variant_union_elements[] = { &ffi_type_pointer, NULL };
 
 static ffi_type ffi_type_variant_union = {
 	.size = 0,
@@ -32,6 +31,7 @@ ffi_type *ffi_type_variant_union_elements[] = {
 	FFI_TYPE_TABLE(X)
 	NULL
 };
+
 #undef X
 
 // assume union_type->elements initialized by ffi_type[2] = { ?, NULL}
@@ -77,4 +77,3 @@ ffi_type ffi_type_variant = {
 	.type = FFI_TYPE_STRUCT,
 	.elements = ffi_variant_elements
 };
-

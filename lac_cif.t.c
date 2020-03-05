@@ -130,7 +130,7 @@ static int test_lac_cif()
 static lac_variant f(const lac_variant v)
 {
 	lac_variant r;
-	r.type = v.type; // ignored
+	r.type = v.type;	// ignored
 	r.type = &ffi_type_sint;
 	r.value._sint = 2;
 
@@ -145,7 +145,8 @@ static int test_lac_cif_variant()
 	void *values[1];
 	lac_variant r = (lac_variant) {.type = &ffi_type_sint };
 	lac_variant v = (lac_variant) {.type = &ffi_type_double,.value._double =
-		    1.23 };
+		    1.23
+	};
 
 	/* Initialize the argument info vectors */
 	args[0] = &ffi_type_variant;

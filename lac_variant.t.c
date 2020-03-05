@@ -11,21 +11,18 @@ static void test_lac_variant_types()
 	ensure (!lac_variant_true(B ## _));
 	FFI_TYPE_TABLE(X)
 #undef X
-
 #define X(A,B,C,D) \
 	ensure (*(A*)lac_variant_address(&B ## _) == 0); \
 	ensure (B ## _ .value._pointer == 0);
-	FFI_TYPE_TABLE(X)
+	    FFI_TYPE_TABLE(X)
 #undef X
-
 #define X(A,B,C,D) \
 	B ## _ . value._ ## B = (A)1; \
 	ensure (B ## _ .value._pointer != 0); \
 	ensure (!lac_variant_false(B ## _)); \
 	ensure (lac_variant_true(B ## _));
-	FFI_TYPE_TABLE(X)
+	    FFI_TYPE_TABLE(X)
 #undef X
-
 }
 
 static void test_lac_variant_print(const char *out, const lac_variant v)
@@ -36,7 +33,7 @@ static void test_lac_variant_print(const char *out, const lac_variant v)
 
 	int ret = lac_variant_print(os, &v);
 	ensure(ret >= 0);
-	fclose(os);	
+	fclose(os);
 
 	ensure(0 == strcmp(out, buf));
 
@@ -71,9 +68,9 @@ static int test_lac_variant_cmp()
 	b.type = &ffi_type_sint;
 	b.value._sint = 2;
 
-	ensure (0 == lac_variant_cmp(a,a));
-	ensure (0 > lac_variant_cmp(a,b));
-	ensure (0 < lac_variant_cmp(b,a));
+	ensure(0 == lac_variant_cmp(a, a));
+	ensure(0 > lac_variant_cmp(a, b));
+	ensure(0 < lac_variant_cmp(b, a));
 
 	return 0;
 }

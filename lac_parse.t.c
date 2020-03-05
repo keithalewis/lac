@@ -7,9 +7,9 @@
 #include "ensure.h"
 #include "lac_parse.h"
 
-static char* lac_token_string(char* s, size_t* n)
+static char *lac_token_string(char *s, size_t * n)
 {
-	char* t;
+	char *t;
 
 	FILE *is = fmemopen(s, strlen(s), "r");
 	t = lac_token_parse(is, n);
@@ -21,40 +21,40 @@ static char* lac_token_string(char* s, size_t* n)
 static int test_skip_space()
 {
 	size_t n;
-	char* s;
+	char *s;
 
 	s = lac_token_string("", &n);
-	ensure (0 == n);
-	ensure (0 == *s);
-	free (s);
+	ensure(0 == n);
+	ensure(0 == *s);
+	free(s);
 
 	s = lac_token_string(" ", &n);
-	ensure (0 == n);
-	ensure (0 == *s);
-	free (s);
+	ensure(0 == n);
+	ensure(0 == *s);
+	free(s);
 
 	s = lac_token_string(" \n\t\r", &n);
-	ensure (0 == n);
-	ensure (0 == *s);
-	free (s);
+	ensure(0 == n);
+	ensure(0 == *s);
+	free(s);
 
 	s = lac_token_string(" \n\t\ra", &n);
-	ensure (1 == n);
-	ensure ('a' == s[0]);
-	ensure (0 == s[1]); // null terminated
-	free (s);
+	ensure(1 == n);
+	ensure('a' == s[0]);
+	ensure(0 == s[1]);	// null terminated
+	free(s);
 
 	s = lac_token_string(" \n\t\ra ", &n);
-	ensure (1 == n);
-	ensure ('a' == s[0]);
-	ensure (0 == s[1]); // null terminated
-	free (s);
+	ensure(1 == n);
+	ensure('a' == s[0]);
+	ensure(0 == s[1]);	// null terminated
+	free(s);
 
 	s = lac_token_string(" \n\t\r\\", &n);
-	ensure (1 == n);
-	ensure ('\\' == s[0]); // not skipped
-	ensure (0 == s[1]);
-	free (s);
+	ensure(1 == n);
+	ensure('\\' == s[0]);	// not skipped
+	ensure(0 == s[1]);
+	free(s);
 
 	return 0;
 }
@@ -62,37 +62,37 @@ static int test_skip_space()
 static int test_next_space()
 {
 	size_t n;
-	char* s;
+	char *s;
 
 	s = lac_token_string("\\", &n);
-	ensure (1 == n);
-	ensure ('\\' == s[0]);
-	ensure (0 == s[1]);
+	ensure(1 == n);
+	ensure('\\' == s[0]);
+	ensure(0 == s[1]);
 	free(s);
 
 	s = lac_token_string("\\\\", &n);
-	ensure (1 == n);
-	ensure ('\\' == s[0]);
-	ensure (0 == s[1]);
+	ensure(1 == n);
+	ensure('\\' == s[0]);
+	ensure(0 == s[1]);
 	free(s);
 
 	s = lac_token_string("\\\\\\", &n);
-	ensure (2 == n);
-	ensure ('\\' == s[0]);
-	ensure ('\\' == s[1]);
-	ensure (0 == s[2]);
+	ensure(2 == n);
+	ensure('\\' == s[0]);
+	ensure('\\' == s[1]);
+	ensure(0 == s[2]);
 	free(s);
 
 	s = lac_token_string("\\ ", &n);
-	ensure (1 == n);
-	ensure (' ' == s[0]);
-	ensure (0 == s[1]);
+	ensure(1 == n);
+	ensure(' ' == s[0]);
+	ensure(0 == s[1]);
 	free(s);
 
 	s = lac_token_string("\\\\ ", &n);
-	ensure (1 == n); 
-	ensure ('\\' == s[0]);
-	ensure (0 == s[1]);
+	ensure(1 == n);
+	ensure('\\' == s[0]);
+	ensure(0 == s[1]);
 	free(s);
 
 	return 0;
@@ -105,19 +105,18 @@ static int test_lac_token_parse(char *t, ...)
 
 	va_list ap;
 	va_start(ap, t);
-	char* t_;
+	char *t_;
 	char *u = va_arg(ap, char *);
 	size_t n;
 	while (u) {
 		t_ = lac_token_parse(s, &n);
 
-		if (n == (size_t)EOF) {
+		if (n == (size_t) EOF) {
 			ensure(0 == strcmp(t_, u));
-		}
-		else {
+		} else {
 			ensure(strlen(t_) == n)
-			ensure(strlen(u) == n)
-			ensure(0 == strncmp(t_, u, n));
+			    ensure(strlen(u) == n)
+			    ensure(0 == strncmp(t_, u, n));
 			free(t_);
 		}
 
@@ -134,6 +133,7 @@ static int test_lac_token_parse(char *t, ...)
 
 	return 0;
 }
+
 static int test_lac_token()
 {
 	// fails
@@ -141,19 +141,19 @@ static int test_lac_token()
 	test_lac_token_parse("{", "", 0);
 	test_lac_token_parse("\"a", "a", 0);
 	/*
-	test_lac_token_parse("\"\"\"", "", "", 0);
-	test_lac_token_parse("\"\"\"", "\"", 0);
-	test_lac_token_parse(" \t", "", 0);
-	test_lac_token_parse(" \"\"", "", 0);
-	test_lac_token_parse(" \" \"", " ", 0);
-	*/
+	   test_lac_token_parse("\"\"\"", "", "", 0);
+	   test_lac_token_parse("\"\"\"", "\"", 0);
+	   test_lac_token_parse(" \t", "", 0);
+	   test_lac_token_parse(" \"\"", "", 0);
+	   test_lac_token_parse(" \" \"", " ", 0);
+	 */
 
 	return 0;
 }
 
 static int test_repl()
 {
-	char* s;
+	char *s;
 	size_t n;
 	s = lac_token_parse(stdin, &n);
 	while (n) {
@@ -165,7 +165,6 @@ static int test_repl()
 
 	return 0;
 }
-
 
 int test_lac_parse();
 int test_lac_parse()
@@ -188,6 +187,7 @@ int test_lac_parse()
 
 	return 0;
 }
+
 /*
 int test_lac_convert()
 {
@@ -210,4 +210,3 @@ int test_lac_convert()
 	return 0;
 }
 */
-

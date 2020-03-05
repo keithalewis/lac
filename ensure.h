@@ -4,7 +4,7 @@
 #include <setjmp.h>
 
 extern jmp_buf lac_jmp_buf;
-extern const char* lac_strerror;
+extern const char *lac_strerror;
 
 #define ENSURE_HASH_(x) #x
 #define ENSURE_STRZ_(x) ENSURE_HASH_(x)

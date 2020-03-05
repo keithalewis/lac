@@ -5,22 +5,22 @@
 #include "lac_init.h"
 
 // pointed to value must exist
-static void put_(char* key, const lac_variant* val)
+static void put_(char *key, const lac_variant * val)
 {
 	lac_map_put(key, val);
 }
 
-static const lac_variant* get_(const char* key)
+static const lac_variant *get_(const char *key)
 {
 	return lac_map_get(key);
 }
 
-static lac_variant parse_(ffi_type* type, char* s)
+static lac_variant parse_(ffi_type * type, char *s)
 {
 	return lac_variant_parse(type, s);
 }
 
-static ffi_type* double_(void)
+static ffi_type *double_(void)
 {
 	return &ffi_type_double;
 }
@@ -34,6 +34,7 @@ static void nl_(void)
 {
 	printf("\n");
 }
+
 static void tab_(void)
 {
 	printf("\t");
@@ -63,10 +64,10 @@ static void tab_(void)
 	name ## _cif .value._pointer = cif_ptr; \
 	lac_map_put(#name, &name ## _cif);
 
-static void print_entry(const char* key, const void* val)
+static void print_entry(const char *key, const void *val)
 {
-	const lac_variant* v = val;
-	printf("%9s : %8s\n", key, lac_name(v->type)); // !!!use fnmatch()
+	const lac_variant *v = val;
+	printf("%9s : %8s\n", key, lac_name(v->type));	// !!!use fnmatch()
 }
 
 static void print_map(void)
@@ -91,7 +92,7 @@ void lac_init(void)
 {
 	ffi_type_variant_prep();
 
-	ffi_type* type[8];
+	ffi_type *type[8];
 
 	put_pointer(stdin);
 	put_pointer(stdout);
@@ -121,8 +122,7 @@ void lac_init(void)
 #define X(A,B,C,D) put_ffi_type(B);
 	FFI_TYPE_TABLE(X)
 #undef X
-
-	type[0] = &ffi_type_pointer;
+	    type[0] = &ffi_type_pointer;
 	type[1] = &ffi_type_string;
 	put_cif(parse, lac_cif_alloc(&ffi_type_variant, parse_, 2, type));
 
@@ -134,7 +134,7 @@ void lac_init(void)
 
 	type[0] = &ffi_type_string;
 	put_cif(puts, lac_cif_alloc(&ffi_type_sint, puts, 1, type));
-	
+
 	put_cif(_, lac_cif_alloc(&ffi_type_void, print_map, 0, NULL));
 
 	put_cif(getchar, lac_cif_alloc(&ffi_type_sint, getchar, 0, NULL));
@@ -144,10 +144,10 @@ void lac_init(void)
 
 	// control flow
 	/*
-	type[0] = &ffi_type_variant;
-	type[1] = &ffi_type_variant;
-	put_cif(if, lac_cif_alloc(&ffi_type_variant, if_, 2, type));
-	*/
+	   type[0] = &ffi_type_variant;
+	   type[1] = &ffi_type_variant;
+	   put_cif(if, lac_cif_alloc(&ffi_type_variant, if_, 2, type));
+	 */
 }
 
 void lac_fini(void)

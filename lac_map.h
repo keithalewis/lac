@@ -2,10 +2,10 @@
 #pragma once
 
 // add possibly redundant entry
-extern void lac_map_put(const char*, const void *val);
+extern void lac_map_put(const char *, const void *val);
 // return 0 if entry not found
-extern const void *lac_map_get(const char*);
+extern const void *lac_map_get(const char *);
 // remove entry from map
-extern void lac_map_del(const char*);
+extern void lac_map_del(const char *);
 // call action on each key-value pair in map
-extern void lac_map_foreach(void (*action)(const char*, const void *));
+extern void lac_map_foreach(void (*action) (const char *, const void *));

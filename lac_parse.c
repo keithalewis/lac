@@ -31,8 +31,7 @@ static int stream_next_space(FILE * is, FILE * os)
 				fputc(c, os);
 
 				return EOF;
-			}
-			else if (!isspace(c_)) {
+			} else if (!isspace(c_)) {
 				fputc(c, os);
 			}
 
@@ -57,17 +56,15 @@ static int stream_next_match(FILE * is, FILE * os,
 			--level;
 		} else if (c == l) {
 			++level;
-		}
-		else if (c == '\\') {
+		} else if (c == '\\') {
 			int c_ = fgetc(is);
 
 			if (c_ == EOF) {
 				fputc(c, os);
 
 				// assert (level != 0);
-				return 0; // error
-			}
-			else if (c_ != l && c_ != r) {
+				return 0;	// error
+			} else if (c_ != l && c_ != r) {
 				fputc(c, os);
 			}
 
@@ -76,8 +73,7 @@ static int stream_next_match(FILE * is, FILE * os,
 		// don't include right delimiter
 		if (level != 0) {
 			fputc(c, os);
-		}
-		else {
+		} else {
 			break;
 		}
 
@@ -85,7 +81,7 @@ static int stream_next_match(FILE * is, FILE * os,
 	}
 
 	if (0 != level) {
-		return 0; // error
+		return 0;	// error
 	}
 
 	return c;
@@ -97,7 +93,7 @@ static int stream_next_quote(FILE * is, FILE * os, const char q /*= '"'*/ )
 }
 
 // must call free on return pointer if n > 0
-char* lac_token_parse(FILE* is, size_t *n)
+char *lac_token_parse(FILE * is, size_t * n)
 {
 	int c;
 	char *buf;
@@ -109,8 +105,7 @@ char* lac_token_parse(FILE* is, size_t *n)
 		int c_ = fgetc(is);
 		if (c_ == EOF) {
 			fputc(c, os);
-		}
-		else if (isspace(c_)) {
+		} else if (isspace(c_)) {
 			fputc(c_, os);
 			c_ = fgetc(is);
 		}
@@ -123,31 +118,30 @@ char* lac_token_parse(FILE* is, size_t *n)
 		return buf;
 	}
 
-
 	int ret;
 
 	if (c == '"') {
 		ret = stream_next_quote(is, os, '"');
 		if (ret != '"') {
-			ret = 0; // error
+			ret = 0;	// error
 		}
 	} else if (c == '{') {
 		ret = stream_next_match(is, os, '{', '}');
 		if (ret != '}') {
-			ret = 0; // error
+			ret = 0;	// error
 		}
 	} else {
 		fputc(c, os);
 		ret = stream_next_space(is, os);
 		if (!isspace(ret) && ret != EOF) {
-			ret = 0; // error
+			ret = 0;	// error
 		}
 	}
 
-	fclose(os); // sets *n
+	fclose(os);		// sets *n
 
 	if (ret == 0) {
-		*n = (size_t)EOF; // parse failed
+		*n = (size_t) EOF;	// parse failed
 	}
 
 	return buf;

@@ -35,7 +35,7 @@ int test_lac()
 }
 
 jmp_buf lac_jmp_buf;
-const char* lac_strerror;
+const char *lac_strerror;
 
 int main()
 {
@@ -49,7 +49,7 @@ int main()
 	test_lac_variant();
 	test_lac_map();
 	test_lac_ffi();
-    //test_lac();
+	//test_lac();
 	//test_lac_tree();
 	//test_lac_data();
 
