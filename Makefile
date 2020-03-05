@@ -49,7 +49,7 @@ libffi/autogen.sh:
 
 .PHONY : clean
 clean:
-	rm -f lac lac.t *.o
+	rm -f lac lac.t *.o *~
 
 valgrind: lac
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./lac
