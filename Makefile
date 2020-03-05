@@ -17,11 +17,10 @@ printvar:
 BUILD = $(eval $(shell make -s printvar VAR=build))$(build)
 FFI_DIR = ./libffi/$(BUILD)
 
-# -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused
 # static analysis flags
 SFLAGS = -Wall -Wextra -Wcast-align -Wcast-qual -Wdisabled-optimization \
-	-Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs \
-	-Wredundant-decls -Wsign-conversion \
+	-Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations \
+	-Wmissing-include-dirs -Wredundant-decls -Wsign-conversion \
 	-Wswitch-default -Wundef -Wno-unused-function
 CFLAGS = -g $(SFLAGS) -I $(FFI_DIR)/include
 # link to static lib
@@ -55,8 +54,22 @@ valgrind: lac
 valgrind_t: lac.t
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./lac.t
 
+.PHONY : indent
 
 deps: $(SRCS_T)
 	@$(foreach c, $(SRCS_T), cc -MM $(c);)
 
 # r!make deps
+lac.t.o: lac.t.c lac.h ensure.h lac_parse.h lac_variant.h lac_map.h \
+ lac_init.h lac_cif.h lac_eval.h
+lac_parse.o: lac_parse.c lac_parse.h
+lac_variant.o: lac_variant.c lac_variant.h
+lac_map.o: lac_map.c ensure.h lac_map.h
+lac_cif.o: lac_cif.c ensure.h lac_cif.h lac_variant.h
+lac_init.o: lac_init.c lac_map.h lac_cif.h lac_variant.h lac_init.h
+lac_eval.o: lac_eval.c ensure.h lac_parse.h lac_map.h lac_cif.h \
+ lac_variant.h lac_eval.h
+lac_parse.t.o: lac_parse.t.c ensure.h lac_parse.h
+lac_variant.t.o: lac_variant.t.c ensure.h lac_variant.h
+lac_map.t.o: lac_map.t.c ensure.h lac_map.h
+lac_cif.t.o: lac_cif.t.c ensure.h lac_cif.h lac_variant.h

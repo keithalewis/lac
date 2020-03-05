@@ -202,24 +202,24 @@ static inline lac_variant lac_variant_parse(ffi_type* type, char* s)
 }
 
 // print formatted value to output stream
-static inline int lac_variant_print(FILE * os, const lac_variant v)
+static inline int lac_variant_print(FILE * os, const lac_variant* pv)
 {
 	int ret = -1;
 
-	if (v.type == &ffi_type_string) {
-		ret = fputs(v.value._pointer, os);
+	if (pv->type == &ffi_type_string) {
+		ret = fputs(pv->value._pointer, os);
 	}
-	else if (v.type == &ffi_type_string_malloc) {
-		ret = fputs(v.value._pointer, os);
+	else if (pv->type == &ffi_type_string_malloc) {
+		ret = fputs(pv->value._pointer, os);
 	}
-	else if (v.type == &ffi_type_variant) {
-		ret = lac_variant_print(os, *(const lac_variant*)v.value._pointer);
+	else if (pv->type == &ffi_type_variant) {
+		ret = lac_variant_print(os, (const lac_variant*)pv->value._pointer);
 	}
 	else {
 		if (0) { ; } // force first match in FFI_TYPE_TABLE
 #define X(A,B,C,D) \
-		else if (v.type == &ffi_type_ ## B) { \
-			ret = fprintf(os, "%" C, (A)v.value._ ## B); \
+		else if (pv->type == &ffi_type_ ## B) { \
+			ret = fprintf(os, "%" C, (A)pv->value._ ## B); \
 		}
 		FFI_TYPE_TABLE(X)
 #undef X

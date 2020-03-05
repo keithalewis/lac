@@ -34,7 +34,7 @@ static void test_lac_variant_print(const char *out, const lac_variant v)
 	size_t size;
 	FILE *os = open_memstream(&buf, &size);
 
-	int ret = lac_variant_print(os, v);
+	int ret = lac_variant_print(os, &v);
 	ensure(ret >= 0);
 	fclose(os);	
 

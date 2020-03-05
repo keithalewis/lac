@@ -7,10 +7,7 @@
 // pointed to value must exist
 static void put_(char* key, const lac_variant* val)
 {
-	lac_variant* v = lac_variant_alloc(val->type);
-	v->value = val->value;
-
-	lac_map_put(key, v);
+	lac_map_put(key, val);
 }
 
 static const lac_variant* get_(const char* key)
@@ -28,9 +25,9 @@ static ffi_type* double_(void)
 	return &ffi_type_double;
 }
 
-static int print_(const lac_variant v)
+static int print_(const lac_variant pv)
 {
-	return lac_variant_print(stdout, v);
+	return lac_variant_print(stdout, &pv);
 }
 
 static void nl_(void)
