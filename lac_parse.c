@@ -1,167 +1,148 @@
 // lac_parse.c - parsing functions
+#define _GNU_SOURCE
+#include <ctype.h>
+#include <stdbool.h>
 #include <stdlib.h>
-#include "ensure.h"
-#include "lac_stream.h"
+#include <stdio.h>
 #include "lac_parse.h"
 
-lac_token lac_token_alloc(const char* s, size_t n)
+// return first character after white (or not) space
+static int stream_skip_space(FILE * is)
 {
-	lac_token t;
+	int c = fgetc(is);
 
-	if (0 == n) {
-		n = strlen(s);
-	}
-	t.b = malloc(n + 1);
-	strcpy(t.b, s);
-	t.e = t.b + n;
-
-	return t;
-}
-lac_token lac_token_copy(const lac_token* t)
-{
-	return lac_token_alloc(t->b, t->e - t->b);
-}
-void lac_token_free(lac_token* t)
-{
-	free (t->b);
-}
-
-bool lac_token_empty(const lac_token t)
-{
-	return t.b == t.e;
-}
-
-// return information if error
-const char* lac_token_error(const lac_token t)
-{
-	return t.e == 0 ? t.b : 0;
-}
-
-int lac_token_size(const lac_token t)
-{
-	return t.e - t.b;
-}
-
-int lac_token_equal(const lac_token t, const lac_token u)
-{
-	int n = lac_token_size(t);
-	
-	return n == lac_token_size(u) && 0 == strncmp(t.b, u.b, n);
-}
-
-bool lac_token_last(const lac_token t)
-{
-	return EOF == *t.e;
-}
-
-int lac_token_is_string(const lac_token t)
-{
-	return '"' == *t.b ;
-}
-
-int lac_token_is_block(const lac_token t)
-{
-	return '{' == *t.b ;
-}
-
-// return first character after white or not space
-static int stream_skip(lac_stream* fp, int(*is)(int), int space)
-{
-	int c = lac_stream_getc(fp);
-
-	while (EOF != c && (space ? is(c) : !is(c))) {
-		c = lac_stream_getc(fp);
+	while (EOF != c && isspace(c)) {
+		c = fgetc(is);
 	}
 
 	return c;
 }
 
-static char* stream_next_space(lac_stream* fp, char* b)
+static int stream_next_space(FILE * is, FILE * os)
 {
-	int c = lac_stream_getc(fp);
-	while (EOF != c && !isspace(c)) {
-		*b++ = c;
-		c = lac_stream_getc(fp);
-	}
-	*b = c; // final character
+	int c = fgetc(is);
 
-	return b;
+	while (c != EOF && !isspace(c)) {
+		if (c == '\\') {
+			// escape white space
+			int c_ = fgetc(is);
+
+			if (c_ == EOF) {
+				fputc(c, os);
+
+				return EOF;
+			} else if (!isspace(c_)) {
+				fputc(c, os);
+			}
+
+			c = c_;
+		}
+		fputc(c, os);
+		c = fgetc(is);
+	}
+
+	return c;
 }
 
-// match delimiter at same nesting level
-// return pointer past matching right delimiter
-// Use b to write buffer.
-static char* stream_next_match(lac_stream* fp, char* b, 
-	char l /*= '{'*/, char r /*= '}'*/)
+// match delimiters at same nesting level
+static int stream_next_match(FILE * is, FILE * os,
+			     char l /*= '{'*/ , char r /*= '}'*/ )
 {
 	size_t level = 1;
 
-	int c = lac_stream_getc(fp);
-	while (EOF != c && level != 0) {
-		if (c == '\\') {
-			*b++ = c;
-			c = lac_stream_getc(fp);
-			ensure (EOF != c);
-		}
-		else if (c == r) {
+	int c = fgetc(is);
+	while (level && c != EOF) {
+		if (c == r) {
 			--level;
-		}
-		else if (c == l) {
+		} else if (c == l) {
 			++level;
+		} else if (c == '\\') {
+			int c_ = fgetc(is);
+
+			if (c_ == EOF) {
+				fputc(c, os);
+
+				// assert (level != 0);
+				return 0;	// error
+			} else if (c_ != l && c_ != r) {
+				fputc(c, os);
+			}
+
+			c = c_;
 		}
-		*b++ = c;
-		c = lac_stream_getc(fp);
+		// don't include right delimiter
+		if (level != 0) {
+			fputc(c, os);
+		} else {
+			break;
+		}
+
+		c = fgetc(is);
 	}
-	*b = c; // final character
 
-	ensure (EOF == c || 0 == level);
+	if (0 != level) {
+		return 0;	// error
+	}
 
-	return b;
-}
-static char* stream_next_quote(lac_stream* fp, char* b, const char q /*= '"'*/)
-{
-	return stream_next_match(fp, b, q, q);
+	return c;
 }
 
-// copy stream into static buffer and return view
-lac_token lac_stream_token_next(lac_stream* fp)
+static int stream_next_quote(FILE * is, FILE * os, const char q /*= '"'*/ )
 {
-	static char buf[MAX_TOKEN_BUF];
+	return stream_next_match(is, os, q, q);
+}
+
+// must call free on return pointer if n > 0
+char *lac_token_parse(FILE * is, size_t * n)
+{
 	int c;
-	char* b = buf;
-	char* e = buf;
+	char *buf;
+	FILE *os = open_memstream(&buf, n);
 
-	c = stream_skip(fp, isspace, true);
+	c = stream_skip_space(is);
 
-	if (EOF == c) {
-		*e = EOF;
-
-		return (lac_token){b,e};
+	if (c == '\\') {
+		int c_ = fgetc(is);
+		if (c_ == EOF) {
+			fputc(c, os);
+		} else if (isspace(c_)) {
+			fputc(c_, os);
+			c_ = fgetc(is);
+		}
+		c = c_;
 	}
 
-	e = buf;
-	*e++ = c;
-	
+	if (c == EOF) {
+		fclose(os);
+
+		return buf;
+	}
+
+	int ret;
+
 	if (c == '"') {
-		e = stream_next_quote(fp, e, '"');
-	}
-	else if (c == '{') {
-		e = stream_next_match(fp, e, '{', '}');
-	}
-	else {
-		e = stream_next_space(fp, e);
+		ret = stream_next_quote(is, os, '"');
+		if (ret != '"') {
+			ret = 0;	// error
+		}
+	} else if (c == '{') {
+		ret = stream_next_match(is, os, '{', '}');
+		if (ret != '}') {
+			ret = 0;	// error
+		}
+	} else {
+		fputc(c, os);
+		ret = stream_next_space(is, os);
+		if (!isspace(ret) && ret != EOF) {
+			ret = 0;	// error
+		}
 	}
 
-	/*
-	if (e_ == 0) {
-		return (lac_token){b,0}; // error
+	fclose(os);		// sets *n
+
+	if (ret == 0) {
+		*n = (size_t) EOF;	// parse failed
 	}
 
-	// tokens must be space separated
-	if (e_ != e && !isspace(*e_)) {
-		return (lac_token){b,0};
-	}
-	*/
-
-	return (lac_token){b, e};
+	return buf;
 }

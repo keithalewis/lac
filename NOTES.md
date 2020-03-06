@@ -92,3 +92,115 @@ variant add(const variant a, const variant b)
 : int gcd -- int int {
 }
 ```
+
+Primary functions: `dlopen`, `dlsym`, `dlclose`, `load`, `loadv`, `unload`, `call`, `callv`
+
+Use &xxx to get ffi_type_xxx address
+
+Use '(' to store stack depth and ')' to assert it is the same as last matching '('
+
+```
+: cos load &double ( dlsym dlopen libm.so.6 cos ) &double
+```
+
+```
+: key val
+```
+
+## wc
+
+: l int 0 # char* "l" -> void* &lac_variant{value._sint = 0, .type = &ffi_type_sint}
+: w int 0
+: fp fopen file.txt r
+: c fgetc fp
+loop {
+	if == c EOF break
+	incr c
+	if isspace c incr w
+	if == c '\n' incr l
+	: c fgetc fp
+}
+printf "%d %d %d" l w c
+fclose fp
+
+## Use va_args? No! It would have types x nargs cases
+
+token = lac_parse_token(stream)
+
+lac_variant lac_call_token(stream, token)
+{
+	thunk = get(token)
+	ensure thunk // token must refer to a cif
+	return lac_call_thunk(fp, thunk)
+}
+
+lac_variant lac_call_thunk(fp, thunk)
+{
+	lac_variant v
+
+    n = thunk->nargs
+	lac_variant args[n]
+	void* addr[n]
+	for (i = 0..n) {
+		char* tok = lac_parse_token(fp)
+		args[i] = lac_evaluate_token(fp, tok)
+		addr[i] = address(args[i])
+	}
+	lac_cif_call(thunk, &result, addr)
+
+	return v;
+}
+
+lac_variant lac_evaluate_token(fp, tok)
+{
+	lac_variant v;
+
+	if (*tok == ") {
+	}
+	else if (*tok = {) {
+	}
+	else if (thunk = get(tok)) {
+		v = lac_call_thunk(fp, thunk)
+	}
+	else {
+		scan v
+	}
+
+	return v;
+}
+
+use intptr_t to switch on ffi_type pointers
+
+evaluate(is, dict) -- look in dict first, then global dict
+
+void loop_(const lac_variant block)
+{
+	ensure (block.type == &ffi_type_block);
+	const char* s =  lac_variant_address(block);
+	size_t n = strlen(s);
+	// ???local dictionary???
+	// set break = false
+	// set continue = false
+	while (true) {
+		FILE* is = fmemopen(s, n, "r");
+		evaluate(is);
+		fclose(is);
+		if (break)
+			break;
+		if (continue)
+			continue;
+	}
+}
+
+eval(is, dict) -> variant
+	token = next(is)
+	variant = get(token, dict)
+	if not found
+		return token
+	if cif
+		return call(variant, is, dict)
+	if block
+		return eval(fmemopen(block), dict)
+	return variant
+
+

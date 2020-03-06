@@ -1,82 +1,212 @@
 // lac_parse.t.cpp - test parsing
+#define _GNU_SOURCE
 #include <stdarg.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "ensure.h"
 #include "lac_parse.h"
-#include "lac_stream.h"
+
+static char *lac_token_string(char *s, size_t * n)
+{
+	char *t;
+
+	FILE *is = fmemopen(s, strlen(s), "r");
+	t = lac_token_parse(is, n);
+	fclose(is);
+
+	return t;
+}
+
+static int test_skip_space()
+{
+	size_t n;
+	char *s;
+
+	s = lac_token_string("", &n);
+	ensure(0 == n);
+	ensure(0 == *s);
+	free(s);
+
+	s = lac_token_string(" ", &n);
+	ensure(0 == n);
+	ensure(0 == *s);
+	free(s);
+
+	s = lac_token_string(" \n\t\r", &n);
+	ensure(0 == n);
+	ensure(0 == *s);
+	free(s);
+
+	s = lac_token_string(" \n\t\ra", &n);
+	ensure(1 == n);
+	ensure('a' == s[0]);
+	ensure(0 == s[1]);	// null terminated
+	free(s);
+
+	s = lac_token_string(" \n\t\ra ", &n);
+	ensure(1 == n);
+	ensure('a' == s[0]);
+	ensure(0 == s[1]);	// null terminated
+	free(s);
+
+	s = lac_token_string(" \n\t\r\\", &n);
+	ensure(1 == n);
+	ensure('\\' == s[0]);	// not skipped
+	ensure(0 == s[1]);
+	free(s);
+
+	return 0;
+}
+
+static int test_next_space()
+{
+	size_t n;
+	char *s;
+
+	s = lac_token_string("\\", &n);
+	ensure(1 == n);
+	ensure('\\' == s[0]);
+	ensure(0 == s[1]);
+	free(s);
+
+	s = lac_token_string("\\\\", &n);
+	ensure(1 == n);
+	ensure('\\' == s[0]);
+	ensure(0 == s[1]);
+	free(s);
+
+	s = lac_token_string("\\\\\\", &n);
+	ensure(2 == n);
+	ensure('\\' == s[0]);
+	ensure('\\' == s[1]);
+	ensure(0 == s[2]);
+	free(s);
+
+	s = lac_token_string("\\ ", &n);
+	ensure(1 == n);
+	ensure(' ' == s[0]);
+	ensure(0 == s[1]);
+	free(s);
+
+	s = lac_token_string("\\\\ ", &n);
+	ensure(1 == n);
+	ensure('\\' == s[0]);
+	ensure(0 == s[1]);
+	free(s);
+
+	return 0;
+}
 
 // terminate with null pointer
-int test_lac_parse_tokens(char* t, ...)
+static int test_lac_token_parse(char *t, ...)
 {
-	va_list ap;
-	lac_token t0 = LAC_TOKEN(t, 0);
-	lac_stream_string_view v = LAC_STREAM_STRING_TOKEN(t0);
-	lac_stream s = lac_stream_string(&v);
+	FILE *s = fmemopen(t, strlen(t), "r");
 
-	lac_token t_;
+	va_list ap;
 	va_start(ap, t);
-	char* u = va_arg(ap, char*);
+	char *t_;
+	char *u = va_arg(ap, char *);
+	size_t n;
 	while (u) {
-		t_ = lac_stream_token_next(&s);
-		ensure (lac_token_equal(t_, LAC_TOKEN(u, 0)));
-		u = va_arg(ap, char*);
+		t_ = lac_token_parse(s, &n);
+
+		if (n == (size_t) EOF) {
+			ensure(0 == strcmp(t_, u));
+		} else {
+			ensure(strlen(t_) == n)
+			    ensure(strlen(u) == n)
+			    ensure(0 == strncmp(t_, u, n));
+			free(t_);
+		}
+
+		u = va_arg(ap, char *);
 	}
 
-	t_ = lac_stream_token_next(&s);
-	ensure (lac_token_last(t_));
+	t_ = lac_token_parse(s, &n);
+	// no more tokens
+	ensure(n == 0);
+	ensure(*t_ == 0);
+	free(t_);
+
+	fclose(s);
 
 	return 0;
 }
 
-int test_lac_parse_alloc()
+static int test_lac_token()
 {
-	char tok[] = "tok";
-	lac_token t = (lac_token){tok, tok + 3};
-	lac_token u = lac_token_alloc(tok, 0);
-	ensure (lac_token_equal(t, u));
-	lac_token v = lac_token_copy(&u);
-	ensure (lac_token_equal(u, v));
-
-	lac_token_free(&v);
-	lac_token_free(&u);
+	// fails
+	test_lac_token_parse(" \"", "\"", 0);
+	test_lac_token_parse("{", "", 0);
+	test_lac_token_parse("\"a", "a", 0);
+	/*
+	   test_lac_token_parse("\"\"\"", "", "", 0);
+	   test_lac_token_parse("\"\"\"", "\"", 0);
+	   test_lac_token_parse(" \t", "", 0);
+	   test_lac_token_parse(" \"\"", "", 0);
+	   test_lac_token_parse(" \" \"", " ", 0);
+	 */
 
 	return 0;
 }
 
+static int test_repl()
+{
+	char *s;
+	size_t n;
+	s = lac_token_parse(stdin, &n);
+	while (n) {
+		printf("%ld: >%s<\n", n, s);
+		fflush(stdout);
+		//fsync(1);
+		s = lac_token_parse(stdin, &n);
+	}
+
+	return 0;
+}
+
+int test_lac_parse();
 int test_lac_parse()
 {
-	test_lac_parse_alloc();
-	test_lac_parse_tokens("a b c", "a", "b", "c", 0);
-	test_lac_parse_tokens("a\tb c", "a", "b", "c", 0);
-	test_lac_parse_tokens("a\tb\r c", "a", "b", "c", 0);
-	test_lac_parse_tokens("a\tb\r \nc", "a", "b", "c", 0);
-	test_lac_parse_tokens("\"b \" \"", "\"b \"", 0);
-	test_lac_parse_tokens("{a {b} c}", "{a {b} c}", 0);
-	test_lac_parse_tokens(" {a {b} c}  d", "{a {b} c}", "d", 0);
-	test_lac_parse_tokens("%g\n", "%g", 0); // ???
-	/*
-	{
-		lac_token v = LAC_TOKEN("\"b c");
+	//test_repl();
+	test_skip_space();
+	test_next_space();
+	//test_lac_token();
+	//test_lac_convert();
 
-		t = lac_token_next(v.b, v.e);
-		assert (lac_token_error(t));
-	}
-	{
-		lac_token v = LAC_TOKEN("\"b \"c ");
-
-		t = lac_token_next(v.b, v.e);
-		// missing whitespace after matching quote
-		assert (lac_token_error(t));
-		assert (0 == strncmp(v.b, "\"b \"c", 5));
-	}
-		lac_token v = LAC_TOKEN("{a {b} c");
-
-		t = lac_token_next(v.b, v.e);
-		assert (lac_token_error(t));
-	}
-	{
-	}
-	*/
+	test_lac_token_parse("a b c", "a", "b", "c", 0);
+	test_lac_token_parse("a\tb c", "a", "b", "c", 0);
+	test_lac_token_parse("a\tb\r c", "a", "b", "c", 0);
+	test_lac_token_parse("a\tb\r \nc", "a", "b", "c", 0);
+	test_lac_token_parse("\"a b\" c", "a b", "c", 0);
+	test_lac_token_parse("{a {b} c}", "a {b} c", 0);
+	test_lac_token_parse(" {a {b} c}  d", "a {b} c", "d", 0);
+	test_lac_token_parse("%g\n", "%g", 0);
+	test_lac_token_parse("\"%g\n\" h", "%g\n", "h", 0);
 
 	return 0;
 }
+
+/*
+int test_lac_convert()
+{
+	{
+		lac_variant w = lac_variant_parse(&ffi_type_sint, "123");
+		ensure (w.type = &ffi_type_sint);
+		ensure (w.value._sint == 123);
+	}
+	{
+		lac_variant w = lac_variant_parse(&ffi_type_double, "1.23");
+		ensure (w.type = &ffi_type_double);
+		ensure (w.value._double == 1.23);
+	}
+	{
+		lac_variant w = lac_variant_parse(&ffi_type_string, "foo bar");
+		ensure (w.type = &ffi_type_string);
+		ensure (0 == strcmp(w.value._pointer, "foo bar"));
+	}
+
+	return 0;
+}
+*/

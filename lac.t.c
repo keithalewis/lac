@@ -1,63 +1,57 @@
 // lac.t.cpp
-#include <math.h>
-#include <dlfcn.h>
-#include <stdio.h>
-#include "ensure.h"
-#include "lac_ffi.h"
-#include "lac_parse.h"
-#include "lac_map.h"
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <string.h>
+#include <time.h>
+#include "lac.h"
 
-int test_lac(void)
+int test_lac_ffi(void);
+int test_lac_parse(void);
+int test_lac_map(void);
+int test_lac(void);
+int test_lac_variant(void);
+int test_lac_tree(void);
+int test_lac_data(void);
+
+// call f n times and return millisecnds
+/*
+static int timer(void(*f)(void), int n)
 {
-	{
-		ffi_type *args[1];
-		args[0] = &ffi_type_pointer;
-		lac_cif* pcif = lac_cif_alloc(&ffi_type_sint, puts, 1, args);
-		void *values[1];
-		char *s;
-
-		/* Initialize the argument info vectors */
-		//ffi_status ret = lac_cif_prep (pcif, &ffi_type_sint, args);
-		//assert (FFI_OK == ret);
-
-		values[0] = &s;
-		s = "Hello world";
-		lac_variant result;
-		lac_cif_call(pcif, &result, values);
-		assert (result.value.i == strlen(s) + 1); // puts writes final \0
-
-		lac_token k = LAC_TOKEN("puts", 0);
-		lac_map_put(k, pcif);
-		const lac_cif* pcif_ = lac_map_get(k);
-		ensure (pcif_);
-		s = "Hello dbm";
-		lac_cif_call(pcif_, &result, values);
-
-		lac_cif_free(pcif);
+	clock_t b = clock();
+	for (int i = 0; i < n; ++i) {
+		f();
 	}
+	clock_t e = clock();
+	
+	return ((e - b)*1000)/CLOCKS_PER_SEC;
+}
+*/
 
+int test_lac()
+{
 	return 0;
 }
 
+jmp_buf lac_jmp_buf;
+const char *lac_strerror;
+
 int main()
 {
-	int test_lac_ffi(void);
-	int test_lac_parse(void);
-	int test_lac_stack(void);
-	int test_lac_map(void);
-	int test_lac_stream(void);
-	int test_lac(void);
-	int test_lac_variant(void);
-	int test_lac_buffer(void);
+	if (setjmp(lac_jmp_buf)) {
+		fputs(lac_strerror, stderr);
 
-	test_lac_ffi();
+		return -1;
+	}
+
 	test_lac_parse();
-	test_lac_stack();
-	test_lac_map();
-	test_lac_stream();
-//	test_lac();
 	test_lac_variant();
-	//test_lac_buffer();
+	test_lac_map();
+	test_lac_ffi();
+	//test_lac();
+	//test_lac_tree();
+	//test_lac_data();
 
 	return 0;
 }
