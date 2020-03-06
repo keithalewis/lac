@@ -11,7 +11,7 @@ CFLAGS = -g -Wall -I $(FFI_DIR)/include
 HDRS = ensure.h lac.h lac_cif.h lac_eval.h lac_init.h lac_map.h \
 	lac_parse.h lac_variant.h
 
-all: lac lac.t
+all: libffi lac lac.t
 
 # Get value of VAR from libffi Makefile
 .PHONY: printvar
@@ -46,7 +46,7 @@ libffi/configure: libffi/autogen.sh
 	(cd libffi; CFLAGS="-g -O0"  ./configure --enable-debug --disable-docs)
 
 libffi/autogen.sh: 
-	git submodule update --remote
+	git submodule update --init --recursive
 
 .PHONY : clean
 clean:
