@@ -64,6 +64,9 @@ IFLAGS = -nbad -bap -nbc -bbo -hnl -br -brs -c33 -cd33 -ncdb -ce -ci4 \
 indent: $(SRCS_T) $(HDRS)
 	indent $(IFLAGS) $^
 
+print: $(SRCS_T) $(HDRS)
+	enscript -i4 -p - $^ | ps2pdf - lac.pdf
+
 deps: $(SRCS_T)
 	@$(foreach c, $(SRCS_T), cc -MM $(c);)
 
