@@ -1,3 +1,5 @@
+![Build Status](https://github.com/keithalewis/lac/workflows/C/C++%20CI/badge.svg)
+
 # Load And Call
 
 Load and call C functions at runtime.
