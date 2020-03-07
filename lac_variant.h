@@ -187,7 +187,11 @@ static inline lac_variant lac_variant_parse(ffi_type * type, char *s)
 {
 	lac_variant v = {.type = type };
 
-	if (type == &ffi_type_string) {
+	if (type == &ffi_type_variant) {
+		v.type = &ffi_type_string; // malloc???
+		v.value._pointer = s;
+	}
+	else if (type == &ffi_type_string) {
 		v.value._pointer = s;
 	}
 	else if (type == &ffi_type_string_malloc) {
