@@ -57,8 +57,8 @@ valgrind: lac
 valgrind_t: lac.t
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./lac.t
 
-IFLAGS = -nbad -bap -nbc -bbo -hnl -br -brs -c33 -cd33 -ncdb -ce -ci4 \
-         -cli0 -d0 -di1 -nfc1 -i8 -ip0 -l80 -lp -npcs -nprs -npsl -sai \
+IFLAGS = -nbad -bap -nbc -bbo -hnl -br -brs -c33 -cd33 -ncdb -nce -ci4 \
+         -cli0 -d0 -di1 -nfc1 -i4 -ip0 -l80 -lp -npcs -nprs -npsl -sai \
          -saf -saw -ncs -nsc -sob -nfca -cp33 -ss -ts8 -il1
 
 indent: $(SRCS_T) $(HDRS)

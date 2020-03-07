@@ -75,9 +75,23 @@ static int test_lac_variant_cmp()
 	return 0;
 }
 
+static int test_lac_variant_alloc()
+{
+	lac_variant* p = lac_variant_alloc();
+
+	ensure (p);
+	ensure (p->type == &ffi_type_void);
+	ensure (p->value._pointer == 0);
+
+	free(p);
+
+	return 0;
+}
+
 int test_lac_variant();
 int test_lac_variant()
 {
+	test_lac_variant_alloc();
 	test_lac_variant_parse();
 	test_lac_variant_types();
 	test_lac_variant_cmp();

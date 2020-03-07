@@ -57,6 +57,29 @@ extern ffi_type ffi_type_string_malloc;
 extern ffi_type ffi_type_cif;
 extern ffi_type ffi_type_cif_malloc;
 
+static inline lac_variant *lac_variant_alloc(void)
+{
+	lac_variant *pv = malloc(sizeof(lac_variant));
+
+	if (!pv)
+		return 0;
+
+	pv->type = &ffi_type_void;
+	pv->value._pointer = 0;	// zeros out union
+
+	return pv;
+}
+
+static inline void lac_variant_free(lac_variant * pv)
+{
+	if (pv->type == &ffi_type_string_malloc) {
+		free(pv->value._pointer);
+	} else if (pv->type == &ffi_type_cif_malloc) {
+		free(pv->value._pointer);
+	}
+}
+
+
 // convert string name to ffi type
 static inline const ffi_type *lac_type(const char *name)
 {
@@ -127,29 +150,6 @@ static inline void *lac_variant_address(lac_variant * pv)
 	    // all other types are pointer types
 	    return &pv->value._pointer;	// even lac_variant???
 }
-
-static inline lac_variant *lac_variant_alloc(ffi_type * type)
-{
-	lac_variant *pv = malloc(sizeof(lac_variant));
-
-	if (!pv)
-		return 0;
-
-	pv->type = type;
-	pv->value._pointer = 0;	// zeros out union
-
-	return pv;
-}
-
-static inline void lac_variant_free(lac_variant * pv)
-{
-	if (pv->type == &ffi_type_string_malloc) {
-		free(pv->value._pointer);
-	} else if (pv->type == &ffi_type_cif_malloc) {
-		free(pv->value._pointer);
-	}
-}
-
 static inline int lac_variant_cmp(const lac_variant a, const lac_variant b)
 {
 	int ret = a.type < b.type ? -1 : a.type > b.type ? 1 : 0;
@@ -189,7 +189,8 @@ static inline lac_variant lac_variant_parse(ffi_type * type, char *s)
 
 	if (type == &ffi_type_string) {
 		v.value._pointer = s;
-	} else if (type == &ffi_type_string_malloc) {
+	}
+	else if (type == &ffi_type_string_malloc) {
 		size_t n = strlen(s);
 		v.value._pointer = malloc(n + 1);
 		if (!v.value._pointer) {
@@ -200,7 +201,8 @@ static inline lac_variant lac_variant_parse(ffi_type * type, char *s)
 			return v;
 		}
 		strcpy(v.value._pointer, s);
-	} else {
+	} 
+	else {
 		int ret = -1;
 #define X(A,B,C,D) if (type == &ffi_type_ ## B) { \
 		ret = sscanf(s, "%" D, &(v.value._ ## B)); }

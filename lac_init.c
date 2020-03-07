@@ -1,18 +1,30 @@
 // lac_init.c - initialize lac
 #include <dlfcn.h>
+#include "ensure.h"
 #include "lac_map.h"
 #include "lac_cif.h"
 #include "lac_init.h"
 
 // pointed to value must exist
-static void put_(char *key, const lac_variant * val)
+static void put_(char *key, const lac_variant val)
 {
-	lac_map_put(key, val);
+	lac_variant* pv  = lac_variant_alloc();
+
+	ensure (pv);
+	*pv = val; // pointers must exist
+
+	lac_map_put(key, pv);
 }
 
-static const lac_variant *get_(const char *key)
+static lac_variant get_(const char *key)
 {
-	return lac_map_get(key);
+	const lac_variant* val = lac_map_get(key);
+
+	if (!val) {
+		return (lac_variant){.type = &ffi_type_void, .value._pointer = 0};
+	}
+
+	return *val;
 }
 
 static lac_variant parse_(ffi_type * type, char *s)
@@ -99,11 +111,11 @@ void lac_init(void)
 	put_pointer(stderr);
 
 	type[0] = &ffi_type_string;
-	type[1] = &ffi_type_pointer;
+	type[1] = &ffi_type_variant;
 	put_cif(put, lac_cif_alloc(&ffi_type_void, put_, 2, type));
 
 	type[0] = &ffi_type_string;
-	put_cif(get, lac_cif_alloc(&ffi_type_pointer, get_, 1, type));
+	put_cif(get, lac_cif_alloc(&ffi_type_variant, get_, 1, type));
 
 	put_int(RTLD_LAZY);
 	put_int(RTLD_NOW);

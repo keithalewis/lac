@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "lac_parse.h"
 
-// return first character after white (or not) space
+// return first character after white space
 static int stream_skip_space(FILE * is)
 {
 	int c = fgetc(is);
@@ -18,6 +18,7 @@ static int stream_skip_space(FILE * is)
 	return c;
 }
 
+// write non space characters to output steam and escape backslash
 static int stream_next_space(FILE * is, FILE * os)
 {
 	int c = fgetc(is);
@@ -44,7 +45,7 @@ static int stream_next_space(FILE * is, FILE * os)
 	return c;
 }
 
-// match delimiters at same nesting level
+// match delimiters at same nesting level and escape backslash
 static int stream_next_match(FILE * is, FILE * os,
 			     char l /*= '{'*/ , char r /*= '}'*/ )
 {
@@ -101,11 +102,13 @@ char *lac_token_parse(FILE * is, size_t * n)
 
 	c = stream_skip_space(is);
 
+	// escape backslash
 	if (c == '\\') {
 		int c_ = fgetc(is);
 		if (c_ == EOF) {
 			fputc(c, os);
-		} else if (isspace(c_)) {
+		} 
+		else  {
 			fputc(c_, os);
 			c_ = fgetc(is);
 		}
@@ -141,7 +144,7 @@ char *lac_token_parse(FILE * is, size_t * n)
 	fclose(os);		// sets *n
 
 	if (ret == 0) {
-		*n = (size_t) EOF;	// parse failed
+		*n = 0;	// parse failed
 	}
 
 	return buf;

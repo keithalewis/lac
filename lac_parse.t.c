@@ -7,6 +7,7 @@
 #include "ensure.h"
 #include "lac_parse.h"
 
+// turn string into FILE*
 static char *lac_token_string(char *s, size_t * n)
 {
 	char *t;
@@ -90,9 +91,10 @@ static int test_next_space()
 	free(s);
 
 	s = lac_token_string("\\\\ ", &n);
-	ensure(1 == n);
+	ensure(2 == n);
 	ensure('\\' == s[0]);
-	ensure(0 == s[1]);
+	ensure(' ' == s[1]);
+	ensure(0 == s[2]);
 	free(s);
 
 	return 0;
