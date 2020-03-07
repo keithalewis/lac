@@ -182,6 +182,7 @@ FFI_TYPE_TABLE(X)
 // compile time type conversion
 // E.g., double x = VARIANT_TO_TYPE(double, v);
 #define VARIANT_TO_TYPE(T, V) *(T*)lac_variant_address(&V)
+
 // convert from string to type
 static inline lac_variant lac_variant_parse(ffi_type * type, char *s)
 {

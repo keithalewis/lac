@@ -87,7 +87,7 @@ static void print_map(void)
 	lac_map_foreach(print_entry);
 }
 
-// if {expr} {body}
+// if expr body
 /*
 lac_variant if_(const lac_variant expr, const lac_variant body)
 {
