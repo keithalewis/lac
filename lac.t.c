@@ -31,7 +31,7 @@ static int timer(void(*f)(void), int n)
 
 int test_lac()
 {
-	return 0;
+    return 0;
 }
 
 jmp_buf lac_jmp_buf;
@@ -39,19 +39,19 @@ const char *lac_strerror;
 
 int main()
 {
-	if (setjmp(lac_jmp_buf)) {
-		fputs(lac_strerror, stderr);
+    if (setjmp(lac_jmp_buf)) {
+	fputs(lac_strerror, stderr);
 
-		return -1;
-	}
+	return -1;
+    }
 
-	test_lac_parse();
-	test_lac_variant();
-	test_lac_map();
-	test_lac_ffi();
-	//test_lac();
-	//test_lac_tree();
-	//test_lac_data();
+    test_lac_parse();
+    test_lac_variant();
+    test_lac_map();
+    test_lac_ffi();
+    //test_lac();
+    //test_lac_tree();
+    //test_lac_data();
 
-	return 0;
+    return 0;
 }

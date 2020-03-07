@@ -8,4 +8,4 @@ extern const void *lac_map_get(const char *);
 // remove entry from map
 extern void lac_map_del(const char *);
 // call action on each key-value pair in map
-extern void lac_map_foreach(void (*action) (const char *, const void *));
+extern void lac_map_foreach(void (*action)(const char *, const void *));
