@@ -1,13 +1,13 @@
-LAC_ = lac_parse.c lac_variant.c lac_map.c lac_cif.c lac_init.c lac_eval.c
+LAC_ = lac_parse.c lac_variant.c lac_map.c lac_cif.c lac_init.c lac_eval.c lac_token.c
 SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
 
-LAC_T  = lac_parse.t.c lac_variant.t.c lac_map.t.c lac_cif.t.c
+LAC_T  = lac_parse.t.c lac_variant.t.c lac_map.t.c lac_cif.t.c lac_token.t.c
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 
 HDRS = ensure.h lac.h lac_cif.h lac_eval.h lac_init.h lac_map.h \
-	lac_parse.h lac_variant.h
+	lac_parse.h lac_variant.h lac_token.h
 
 all: lac lac.t
 
@@ -57,9 +57,7 @@ valgrind: lac
 valgrind_t: lac.t
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes ./lac.t
 
-IFLAGS = -nbad -bap -nbc -bbo -hnl -br -brs -c33 -cd33 -ncdb -nce -ci4 \
-         -cli0 -d0 -di1 -nfc1 -i4 -ip0 -l80 -lp -npcs -nprs -npsl -sai \
-         -saf -saw -ncs -nsc -sob -nfca -cp33 -ss -ts8 -il1
+IFLAGS = -kr
 
 indent: $(SRCS_T) $(HDRS)
 	indent $(IFLAGS) $^

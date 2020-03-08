@@ -4,6 +4,7 @@
 #include "lac_map.h"
 #include "lac_cif.h"
 #include "lac_init.h"
+#include "lac_eval.h"
 
 // pointed to value must exist
 static void put_(char *key, const lac_variant val)
@@ -90,10 +91,11 @@ static void print_map(void)
 
 // if expr body
 /*
-lac_variant if_(const lac_variant expr, const lac_variant body)
+static lac_variant if_(const lac_variant expr, const lac_variant body)
 {
-	ensure (expr.type == &ffi_type_block);
-	ensure (body.type == &ffi_type_block);
+	//ensure (expr.type == &ffi_type_block);
+	//ensure (body.type == &ffi_type_block);
+	FILE* es = fmemopen(s, strlen(s), "r")
 
 	lac_variant expr_ = lac_evaluate_block(expr);
 

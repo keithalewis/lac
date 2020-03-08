@@ -216,3 +216,12 @@ Ole-Johan Dahl syntax.
 -------------------------------------------
 {P} loop: S; while B: T; repeat; {Q and ~B} 
 ```
+Use file descriptors.
+
+Use backtick to execute shell command in child and open pipe to read.
+
+`token_read` fd -> token
+
+`scan_token` token -> type
+
+`eval_token`

@@ -83,9 +83,9 @@ static inline void lac_variant_free(lac_variant * pv)
 // Self-contained variant + data
 // If size > 0 pointer is hooked up to data
 typedef struct {
-	lac_variant variant;
-	size_t size;
-	char data[];
+    lac_variant variant;
+    size_t size;
+    char data[];
 } lac_variant_data;
 
 // convert string name to ffi type
@@ -244,7 +244,9 @@ static inline int lac_variant_print(FILE * os, const lac_variant * pv)
 	ret = fputs(pv->value._pointer, os);
     }
     else if (pv->type == &ffi_type_variant) {
-	ret = lac_variant_print(os, (const lac_variant *)pv->value._pointer);
+	ret =
+	    lac_variant_print(os,
+			      (const lac_variant *) pv->value._pointer);
     }
     else {
 	if (0) {;

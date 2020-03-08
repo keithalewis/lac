@@ -14,7 +14,7 @@ static lac_variant lac_token(FILE * fp)
 
     size_t n;
     v.value._pointer = lac_token_parse(fp, &n);
-    ensure(n != (size_t)EOF);	// pass pointer to ensure???
+    ensure(n != (size_t) EOF);	// pass pointer to ensure???
     // free pointer ???
 
     return v;
@@ -55,7 +55,7 @@ lac_variant lac_eval_type(FILE * fp, ffi_type * type)
 lac_variant lac_call_cif(FILE * fp, lac_cif * cif)
 {
     ffi_cif *ffi = &cif->cif;
-    int n = (int)ffi->nargs;
+    int n = (int) ffi->nargs;
     lac_variant result;
     result.type = ffi->rtype;
     // allocate memory for result based on result.type???
@@ -85,6 +85,17 @@ lac_variant lac_call_cif(FILE * fp, lac_cif * cif)
     else {
 	ensure(n < 0);
 	// variadic
+    }
+
+    return result;
+}
+
+lac_variant lac_eval(FILE * fp)
+{
+    lac_variant result;
+
+    while (!feof(fp)) {
+	result = lac_eval_type(fp, &ffi_type_cif);
     }
 
     return result;

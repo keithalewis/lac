@@ -60,14 +60,14 @@ static int test_lac_cif()
 	if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1, &ffi_type_sint, args)
 	    == FFI_OK) {
 	    s = "Hello World!";
-	    ffi_call(&cif, (void *)puts, &rc, values);
+	    ffi_call(&cif, (void *) puts, &rc, values);
 	    /* rc now holds the result of the call to puts */
 
 	    /* values holds a pointer to the function's arg, so to 
 	       call puts() again all we need to do is change the 
 	       value of s */
 	    s = "This is cool!";
-	    ffi_call(&cif, (void *)puts, &rc, values);
+	    ffi_call(&cif, (void *) puts, &rc, values);
 	}
     }
     {
@@ -119,7 +119,7 @@ static int test_lac_cif()
 
 	lac_variant result;
 	lac_cif_call(p, &result, values);
-	ensure(result.value._sint == (int)(strlen(s) + 1));
+	ensure(result.value._sint == (int) (strlen(s) + 1));
 
 	free(p);
     }
@@ -144,8 +144,8 @@ static int test_lac_cif_variant()
     ffi_type *args[1];
     void *values[1];
     lac_variant r = (lac_variant) {.type = &ffi_type_sint };
-    lac_variant v = (lac_variant) {.type = &ffi_type_double,.value._double =
-	    1.23
+    lac_variant v = (lac_variant) {.type =
+	    &ffi_type_double,.value._double = 1.23
     };
 
     /* Initialize the argument info vectors */
@@ -154,7 +154,7 @@ static int test_lac_cif_variant()
 
     if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1, &ffi_type_variant, args) ==
 	FFI_OK) {
-	ffi_call(&cif, (void *)f, lac_variant_address(&r), values);
+	ffi_call(&cif, (void *) f, lac_variant_address(&r), values);
 	ensure(r.type == &ffi_type_sint);
 	ensure(r.value._sint == 2);
     }
