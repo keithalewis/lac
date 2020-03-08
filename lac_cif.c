@@ -4,6 +4,7 @@
 #include "ensure.h"
 #include "lac_cif.h"
 
+
 size_t lac_cif_size(lac_cif * pcif)
 {
     return sizeof(lac_cif) + pcif->cif.nargs * sizeof(void *);

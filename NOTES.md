@@ -204,3 +204,15 @@ eval(is, dict) -> variant
 	return variant
 
 
+https://web.archive.org/web/20090824073244/http://pplab.snu.ac.kr/courses/adv_pl05/papers/p261-knuth.pdf
+
+Ole-Johan Dahl syntax.
+
+`loop; S; while ~B: T; repeat;`
+
+```
+                   {P}S{Q}
+               {Q and ~B}T{P}
+-------------------------------------------
+{P} loop: S; while B: T; repeat; {Q and ~B} 
+```
