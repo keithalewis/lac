@@ -15,15 +15,19 @@
 
 // string, type, data, size
 #define TOKEN_TEST(X) \
-X("", EOF, 0, 0) \
-X(" \n\t\ra ", 'a', "a", 1)
+X(" \n\t\ra ", 'a', "a", 1) \
+X("\"a b\"", '"', "a b", 3) \
+X(" \"a b\"\r", '"', "a b", 3) \
+X(" {a b}\r", '{', "a b", 3) \
+X("{a {b c} d}", '{', "a {b c} d", 9) \
+X(" {a {b c} d}\r", '{', "a {b c} d", 9) \
 
 // turn string into FILE*
 static lac_token lac_token_string(char *s)
 {
     lac_token t;
 
-    FILE* is = fmemopen(s, strlen(s), "r");
+    FILE *is = fmemopen(s, strlen(s), "r");
     t = lac_read_token(is);
     fclose(is);
 
@@ -32,8 +36,15 @@ static lac_token lac_token_string(char *s)
 
 static int test_skip_space()
 {
-
-    return 0;
+    lac_token t;
+#define X(I, T, D, S) \
+    t = lac_token_string(I); \
+    ensure (t.type == T); \
+    if (D != NULL) { ensure (0 == strcmp(t.data, D)); } \
+    ensure (t.size == S);
+    TOKEN_TEST(X)
+#undef X
+	return 0;
 }
 
 /*
@@ -120,10 +131,10 @@ static int test_repl()
     lac_token t;
     t = lac_read_token(stdin);
     while (t.type != EOF) {
-        printf("%ld: >%s<\n", t.size, t.data);
-        fflush(stdout);
-        //fsync(1);
-        t = lac_read_token(stdin);
+	printf("%ld: >%s<\n", t.size, t.data);
+	fflush(stdout);
+	//fsync(1);
+	t = lac_read_token(stdin);
     }
 
     return 0;
@@ -132,44 +143,8 @@ static int test_repl()
 int test_lac_token();
 int test_lac_token()
 {
-    test_repl();
-    //test_skip_space();
-    //test_next_space();
-    //test_lac_token();
-    //test_lac_convert();
-/*
-    test_lac_token_parse("a b c", "a", "b", "c", 0);
-    test_lac_token_parse("a\tb c", "a", "b", "c", 0);
-    test_lac_token_parse("a\tb\r c", "a", "b", "c", 0);
-    test_lac_token_parse("a\tb\r \nc", "a", "b", "c", 0);
-    test_lac_token_parse("\"a b\" c", "a b", "c", 0);
-    test_lac_token_parse("{a {b} c}", "a {b} c", 0);
-    test_lac_token_parse(" {a {b} c}  d", "a {b} c", "d", 0);
-    test_lac_token_parse("%g\n", "%g", 0);
-    test_lac_token_parse("\"%g\n\" h", "%g\n", "h", 0);
-*/
+    test_skip_space();
+    //test_repl();
+
     return 0;
 }
-
-/*
-int test_lac_convert()
-{
-	{
-		lac_variant w = lac_variant_parse(&ffi_type_sint, "123");
-		ensure (w.type = &ffi_type_sint);
-		ensure (w.value._sint == 123);
-	}
-	{
-		lac_variant w = lac_variant_parse(&ffi_type_double, "1.23");
-		ensure (w.type = &ffi_type_double);
-		ensure (w.value._double == 1.23);
-	}
-	{
-		lac_variant w = lac_variant_parse(&ffi_type_string, "foo bar");
-		ensure (w.type = &ffi_type_string);
-		ensure (0 == strcmp(w.value._pointer, "foo bar"));
-	}
-
-	return 0;
-}
-*/
