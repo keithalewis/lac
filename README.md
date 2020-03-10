@@ -186,3 +186,15 @@ loop {
 printf "%d %d %d\n" l w c
 fclose fp
 ```
+
+```
+proc sint foo {double} {
+	return cmp x x
+}
+```
+```
+_ puts int (dlsym ...) {double sint}
+```
+```
+_ printf int (dlsym ...) {string ...}
+```
