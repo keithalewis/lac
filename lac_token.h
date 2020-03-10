@@ -7,11 +7,11 @@
 // Tokens starting with left curly bracket ('{') end at the next
 //   right curly bracket ('}') at the same nesting level.
 //
-// Use backslash '\' to escape any character.
+// Use backslash '\' to escape quote or brace character.
 //
 // Returned pointer points at n characters.
-// If n == EOF then no more tokens
-// If n == 0 then parse failed and pointer has the failed parse.
+// If type == EOF then no more tokens
+// If type == 0 then parse failed and pointer has the failed parse.
 // Returned pointer must be free'd.
 
 typedef struct {

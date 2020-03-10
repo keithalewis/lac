@@ -191,6 +191,35 @@ FFI_TYPE_TABLE(X)
 // compile time type conversion
 // E.g., double x = VARIANT_TO_TYPE(double, v);
 #define VARIANT_TO_TYPE(T, V) *(T*)lac_variant_address(&V)
+
+static inline lac_variant lac_variant_scan(ffi_type* type, char* s)
+{
+    lac_variant v = {.type = type };
+
+	int ret = -1;
+    if (type == &ffi_type_pointer) {
+        ret = 0;
+        v.value._pointer = s;
+    }
+#define X(A,B,C,D) \
+    else if (type == &ffi_type_ ## B) { \
+		ret = sscanf(s, "%" D, &(v.value._ ## B)); }
+	    FFI_TYPE_TABLE(X)
+#undef X
+    else { 
+        // ffi_type_cif is dubious
+        ret = 0;
+        v.value._pointer = s;
+    }
+
+    if (ret < 0) { // scan failed
+        v.type = &ffi_type_void;
+        v.value._pointer = NULL;
+    }
+
+    return v;
+}
+
 // convert from string to type
 static inline lac_variant lac_variant_parse(ffi_type * type, char *s)
 {
