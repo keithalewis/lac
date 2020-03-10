@@ -7,17 +7,17 @@
 int test_lac_map();
 int test_lac_map()
 {
-	const char key[] = "key";
-	char val[] = "val";
-	lac_map_put(key, val);
-	const char *v = lac_map_get(key);
-	ensure(0 == strcmp(v, val));
-	v = lac_map_get(key);
-	ensure(0 == strcmp(v, val));
-	v = lac_map_get("foo");
-	lac_map_del(key);
-	v = lac_map_get(key);
-	ensure(0 == v);
+    const char key[] = "key";
+    char val[] = "val";
+    lac_map_put(key, val);
+    const char *v = lac_map_get(key);
+    ensure(0 == strcmp(v, val));
+    v = lac_map_get(key);
+    ensure(0 == strcmp(v, val));
+    v = lac_map_get("foo");
+    lac_map_del(key);
+    v = lac_map_get(key);
+    ensure(0 == v);
 
-	return 0;
+    return 0;
 }

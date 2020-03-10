@@ -13,11 +13,10 @@ extern "C" {
 }
 #endif
 #include "lac_variant.h"
-// thunk corresponding to string name of symbol
-typedef struct {
-	void *sym;
-	ffi_cif cif;
-	ffi_type *arg_types[];	// flexible length array
+typedef struct {		// thunk corresponding to string name of symbol
+    void *sym;
+    ffi_cif cif;
+    ffi_type *arg_types[];	// flexible length array
 } lac_cif;
 
 // allocate n args and set cif.arg_types to arg_types
@@ -40,6 +39,8 @@ void lac_cif_call(lac_cif * pcif, lac_variant * result, void **args);
 
 // load symbol from library
 // terminate arg types with null pointer
-lac_cif *lac_cif_load(const char *lib, ffi_type * ret, const char *sym, ...);
+lac_cif *lac_cif_load(const char *lib, ffi_type * ret, const char *sym,
+		      ...);
 // load varargs function (nargs = -nargs)
-lac_cif *lac_cif_loadv(const char *lib, ffi_type * ret, const char *sym, ...);
+lac_cif *lac_cif_loadv(const char *lib, ffi_type * ret, const char *sym,
+		       ...);

@@ -18,9 +18,14 @@ and return an integer value, as documented in
 the [puts(3)](http://man7.org/linux/man-pages/man3/puts.3.html)
 man page.
 
-Every string token beginning with underscore (`_`)
-is looked up in the _dictionary_ and the
-corresponding C function is *call*ed. `Puts` requires a string to be the
+Lac reads space seperated tokens from the input stream, looks
+up its corresponding function, and calls it. The rest of the
+input on the remaining input.
+
+If the token in the
+
+and the corresponding
+C function is *call*ed. The `puts` function requires a string to be the
 next token on the input stream.  `Lac` uses double quotes for strings
 that may contain spaces. The result of the call is an integer value.
 
@@ -51,7 +56,7 @@ preloaded.
 
 The standard C types are also preloaded. The token `sint` indicates
 the type of a signed int that is native to the platform. The `pointer`
-type is a `void*` pointer. It must point to a null terminated string of characters.
+type is a `void*` pointer.
 
 The parentheses are not required since `dlsym` knows it needs two
 arguments, a pointer returned by `dlopen` and the string name of

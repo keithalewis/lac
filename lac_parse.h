@@ -2,15 +2,15 @@
 #pragma once
 #include <stdio.h>
 
-// tokens are separated by white space (isspace) or end of file
-// tokens starting with double quote ('"') end at the next quote
-//   use '\' to escape '"`
-// tokens starting with left curly bracket ('{') end the next
+// Tokens are separated by white space (isspace) or end of file.
+// Tokens starting with double quote ('"') end at the next double quote.
+// Tokens starting with left curly bracket ('{') end at the next
 //   right curly bracket ('}') at the same nesting level.
-//   use '\' to escape '{` and '}'
 //
-// returned pointer points at n characters
-// if n == 0 then no more tokens
-// if n == EOF then parse failed
-// returned pointer must be free'd
-char *lac_token_parse(FILE * is, size_t * n /*, size_t* nl */ );
+// Use backslash '\' to escape any character.
+//
+// Returned pointer points at n characters.
+// If n == EOF then no more tokens
+// If n == 0 then parse failed and pointer has the failed parse.
+// Returned pointer must be free'd.
+char *lac_token_parse(FILE * is, size_t *n /*, size_t* nl */ );

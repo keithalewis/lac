@@ -9,35 +9,35 @@ static void test_lac_variant_types()
 	lac_variant B ## _ = lac_variant_ ## B(0); \
 	ensure (lac_variant_false(B ## _)); \
 	ensure (!lac_variant_true(B ## _));
-	FFI_TYPE_TABLE(X)
+    FFI_TYPE_TABLE(X)
 #undef X
 #define X(A,B,C,D) \
 	ensure (*(A*)lac_variant_address(&B ## _) == 0); \
 	ensure (B ## _ .value._pointer == 0);
-	    FFI_TYPE_TABLE(X)
+	FFI_TYPE_TABLE(X)
 #undef X
 #define X(A,B,C,D) \
 	B ## _ . value._ ## B = (A)1; \
 	ensure (B ## _ .value._pointer != 0); \
 	ensure (!lac_variant_false(B ## _)); \
 	ensure (lac_variant_true(B ## _));
-	    FFI_TYPE_TABLE(X)
+	FFI_TYPE_TABLE(X)
 #undef X
 }
 
 static void test_lac_variant_print(const char *out, const lac_variant v)
 {
-	char *buf;
-	size_t size;
-	FILE *os = open_memstream(&buf, &size);
+    char *buf;
+    size_t size;
+    FILE *os = open_memstream(&buf, &size);
 
-	int ret = lac_variant_print(os, &v);
-	ensure(ret >= 0);
-	fclose(os);
+    int ret = lac_variant_print(os, &v);
+    ensure(ret >= 0);
+    fclose(os);
 
-	ensure(0 == strcmp(out, buf));
+    ensure(0 == strcmp(out, buf));
 
-	free(buf);
+    free(buf);
 }
 
 #define TEST_PARSE(TYPE, STRING, VALUE) \
@@ -47,40 +47,54 @@ static void test_lac_variant_print(const char *out, const lac_variant v)
 
 static int test_lac_variant_parse()
 {
-	TEST_PARSE(schar, "x", 'x');
-	TEST_PARSE(sint, "123", 123);
-	TEST_PARSE(double, "1.23", 1.23);
-	//TEST_PARSE(float, "1.500000", 1.5);
-	TEST_PARSE(float, "1.5", 1.5);
-	TEST_PARSE(sint32, "123", 123);
-	TEST_PARSE(uint32, "123", 123);
-	TEST_PARSE(sint32, "-123", -123);
+    TEST_PARSE(schar, "x", 'x');
+    TEST_PARSE(sint, "123", 123);
+    TEST_PARSE(double, "1.23", 1.23);
+    //TEST_PARSE(float, "1.500000", 1.5);
+    TEST_PARSE(float, "1.5", 1.5);
+    TEST_PARSE(sint32, "123", 123);
+    TEST_PARSE(uint32, "123", 123);
+    TEST_PARSE(sint32, "-123", -123);
 
-	return 0;
+    return 0;
 }
 
 static int test_lac_variant_cmp()
 {
-	lac_variant a, b;
+    lac_variant a, b;
 
-	a.type = &ffi_type_sint;
-	a.value._sint = 1;
-	b.type = &ffi_type_sint;
-	b.value._sint = 2;
+    a.type = &ffi_type_sint;
+    a.value._sint = 1;
+    b.type = &ffi_type_sint;
+    b.value._sint = 2;
 
-	ensure(0 == lac_variant_cmp(a, a));
-	ensure(0 > lac_variant_cmp(a, b));
-	ensure(0 < lac_variant_cmp(b, a));
+    ensure(0 == lac_variant_cmp(a, a));
+    ensure(0 > lac_variant_cmp(a, b));
+    ensure(0 < lac_variant_cmp(b, a));
 
-	return 0;
+    return 0;
+}
+
+static int test_lac_variant_alloc()
+{
+    lac_variant *p = lac_variant_alloc();
+
+    ensure(p);
+    ensure(p->type == &ffi_type_void);
+    ensure(p->value._pointer == 0);
+
+    free(p);
+
+    return 0;
 }
 
 int test_lac_variant();
 int test_lac_variant()
 {
-	test_lac_variant_parse();
-	test_lac_variant_types();
-	test_lac_variant_cmp();
+    test_lac_variant_alloc();
+    test_lac_variant_parse();
+    test_lac_variant_types();
+    test_lac_variant_cmp();
 
-	return 0;
+    return 0;
 }

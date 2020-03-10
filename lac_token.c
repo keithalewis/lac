@@ -1,10 +1,10 @@
-// lac_parse.c - parsing functions
+// lac_token.c - parse tokens from stream
 #define _GNU_SOURCE
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "lac_parse.h"
+#include "lac_token.h"
 
 // return first character after white space
 static int stream_skip_space(FILE * is)
@@ -99,34 +99,23 @@ static int stream_next_quote(FILE * is, FILE * os, const char q /*= '"'*/ )
 }
 
 // must call free on return pointer if n > 0
-char *lac_token_parse(FILE * is, size_t *n)
+lac_token lac_read_token(FILE * is /*, int* nl */ )
 {
-    int c;
-    char *buf;
-    FILE *os = open_memstream(&buf, n);
+    lac_token token;
+    int ret;
 
-    c = stream_skip_space(is);
-
-    // escape backslash
-    if (c == '\\') {
-	int c_ = fgetc(is);
-	if (c_ == EOF) {
-	    fputc(c, os);
-	}
-	else {
-	    fputc(c_, os);
-	    c_ = fgetc(is);
-	}
-	c = c_;
-    }
+    int c = stream_skip_space(is);
 
     if (c == EOF) {
-	fclose(os);
+	token.type = EOF;
+	token.data = NULL;
+	token.size = 0;
 
-	return buf;
+	return token;
     }
 
-    int ret;
+    token.type = c;
+    FILE *os = open_memstream(&token.data, &token.size);
 
     if (c == '"') {
 	ret = stream_next_quote(is, os, '"');
@@ -148,11 +137,11 @@ char *lac_token_parse(FILE * is, size_t *n)
 	}
     }
 
-    fclose(os);			// sets *n
+    fclose(os);
 
     if (ret == 0) {
-	*n = 0;			// parse failed
+	token.type = 0;		// parse failed
     }
 
-    return buf;
+    return token;
 }
