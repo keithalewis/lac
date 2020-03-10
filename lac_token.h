@@ -20,4 +20,4 @@ typedef struct {
     size_t size; // number of characters read
 } lac_token;
 
-extern lac_token lac_read_token(FILE *is /*, size_t* nl */);
+extern lac_token lac_token_read(FILE *is /*, size_t* nl */);

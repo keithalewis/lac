@@ -99,7 +99,7 @@ static int stream_next_quote(FILE *is, FILE *os, const char q /*= '"'*/)
 }
 
 // must call free on return pointer if n > 0
-lac_token lac_read_token(FILE *is /*, int* nl */)
+lac_token lac_token_read(FILE *is /*, int* nl */)
 {
     lac_token token;
     int ret;

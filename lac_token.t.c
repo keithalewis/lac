@@ -28,7 +28,7 @@ static lac_token lac_token_string(char *s)
     lac_token t;
 
     FILE *is = fmemopen(s, strlen(s), "r");
-    t = lac_read_token(is);
+    t = lac_token_read(is);
     fclose(is);
 
     return t;
@@ -131,12 +131,12 @@ static int test_lac_token_parse(char *t, ...)
 static int test_repl()
 {
     lac_token t;
-    t = lac_read_token(stdin);
+    t = lac_token_read(stdin);
     while (t.type != EOF) {
         printf("%ld: >%s<\n", t.size, t.data);
         fflush(stdout);
         // fsync(1);
-        t = lac_read_token(stdin);
+        t = lac_token_read(stdin);
     }
 
     return 0;
