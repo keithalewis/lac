@@ -26,7 +26,7 @@ FFI_DIR = ./libffi/$(BUILD)
 SFLAGS = -Wall -Wextra -Wcast-align -Wcast-qual -Wdisabled-optimization \
 	-Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations \
 	-Wmissing-include-dirs -Wredundant-decls -Wsign-conversion \
-	-Wswitch-default -Wundef -Wno-unused-function
+	-Wswitch-default -Wundef -Wno-unused-function -fno-strict-aliasing
 CFLAGS = -g $(SFLAGS) -I $(FFI_DIR)/include
 # link to static lib
 LDLIBS = -ldl -L $(FFI_DIR)/.libs -l:libffi.a
@@ -62,6 +62,10 @@ IFLAGS = -kr
 
 indent: $(SRCS_T) $(HDRS)
 	indent $(IFLAGS) $^
+
+clang-format: $(SRCS_T) $(HDRS)
+	clang-format -i $^
+
 
 print: $(SRCS_T) $(HDRS)
 	enscript -i4 -p - $^ | ps2pdf - lac.pdf

@@ -15,9 +15,9 @@
 // Returned pointer must be free'd.
 
 typedef struct {
-    int type;			// initial non whitespace character;
-    char *data;			// string of characters
-    size_t size;		// number of characters read
+    int type;    // initial non whitespace character;
+    char *data;  // string of characters
+    size_t size; // number of characters read
 } lac_token;
 
-extern lac_token lac_read_token(FILE * is /*, size_t* nl */ );
+extern lac_token lac_read_token(FILE *is /*, size_t* nl */);

@@ -1,10 +1,10 @@
 // lac_init.c - initialize lac
-#include <dlfcn.h>
-#include "ensure.h"
-#include "lac_map.h"
-#include "lac_cif.h"
 #include "lac_init.h"
+#include "ensure.h"
+#include "lac_cif.h"
 #include "lac_eval.h"
+#include "lac_map.h"
+#include <dlfcn.h>
 
 // pointed to value must exist
 static void put_(char *key, const lac_variant val)
@@ -12,7 +12,7 @@ static void put_(char *key, const lac_variant val)
     lac_variant *pv = lac_variant_alloc();
 
     ensure(pv);
-    *pv = val;			// pointers must exist
+    *pv = val; // pointers must exist
 
     lac_map_put(key, pv);
 }
@@ -22,14 +22,13 @@ static lac_variant get_(const char *key)
     const lac_variant *val = lac_map_get(key);
 
     if (!val) {
-	return (lac_variant) {
-	.type = &ffi_type_void,.value._pointer = 0};
+        return (lac_variant){.type = &ffi_type_void, .value._pointer = 0};
     }
 
     return *val;
 }
 
-static lac_variant parse_(ffi_type * type, char *s)
+static lac_variant parse_(ffi_type *type, char *s)
 {
     return lac_variant_parse(type, s);
 }
@@ -54,34 +53,34 @@ static void tab_(void)
     printf("\t");
 }
 
-#define put_ffi_type(name) \
-	static lac_variant name ## _; \
-	name ## _ .type = &ffi_type_pointer; \
-	name ## _ .value._pointer = &ffi_type_ ## name; \
-	lac_map_put(#name, &name ## _);
+#define put_ffi_type(name)                                                     \
+    static lac_variant name##_;                                                \
+    name##_.type = &ffi_type_pointer;                                          \
+    name##_.value._pointer = &ffi_type_##name;                                 \
+    lac_map_put(#name, &name##_);
 
-#define put_pointer(name) \
-	static lac_variant name ## _; \
-	name ## _ .type = &ffi_type_pointer; \
-	name ## _ .value._pointer = name; \
-	lac_map_put(#name, &name ## _);
+#define put_pointer(name)                                                      \
+    static lac_variant name##_;                                                \
+    name##_.type = &ffi_type_pointer;                                          \
+    name##_.value._pointer = name;                                             \
+    lac_map_put(#name, &name##_);
 
-#define put_int(name) \
-	static lac_variant name ## _; \
-	name ## _ .type = &ffi_type_sint; \
-	name ## _ .value._sint = name; \
-	lac_map_put(#name, &name ## _);
+#define put_int(name)                                                          \
+    static lac_variant name##_;                                                \
+    name##_.type = &ffi_type_sint;                                             \
+    name##_.value._sint = name;                                                \
+    lac_map_put(#name, &name##_);
 
-#define put_cif(name, cif_ptr) \
-	static lac_variant name ## _cif; \
-	name ## _cif .type = &ffi_type_cif; \
-	name ## _cif .value._pointer = cif_ptr; \
-	lac_map_put(#name, &name ## _cif);
+#define put_cif(name, cif_ptr)                                                 \
+    static lac_variant name##_cif;                                             \
+    name##_cif.type = &ffi_type_cif;                                           \
+    name##_cif.value._pointer = cif_ptr;                                       \
+    lac_map_put(#name, &name##_cif);
 
 static void print_entry(const char *key, const void *val)
 {
     const lac_variant *v = val;
-    printf("%9s : %8s\n", key, lac_name(v->type));	// !!!use fnmatch()
+    printf("%9s : %8s\n", key, lac_name(v->type)); // !!!use fnmatch()
 }
 
 static void print_map(void)
@@ -93,13 +92,13 @@ static void print_map(void)
 /*
 static lac_variant if_(const lac_variant expr, const lac_variant body)
 {
-	//ensure (expr.type == &ffi_type_block);
-	//ensure (body.type == &ffi_type_block);
-	FILE* es = fmemopen(s, strlen(s), "r")
+        //ensure (expr.type == &ffi_type_block);
+        //ensure (body.type == &ffi_type_block);
+        FILE* es = fmemopen(s, strlen(s), "r")
 
-	lac_variant expr_ = lac_evaluate_block(expr);
+        lac_variant expr_ = lac_evaluate_block(expr);
 
-	return lac_variant_true(expr_) ? lac_evaluate_block(body) : expr_;
+        return lac_variant_true(expr_) ? lac_evaluate_block(body) : expr_;
 }
 */
 
@@ -134,10 +133,10 @@ void lac_init(void)
     type[1] = &ffi_type_string;
     put_cif(dlsym, lac_cif_alloc(&ffi_type_pointer, dlsym, 2, type));
 
-#define X(A,B,C,D) put_ffi_type(B);
+#define X(A, B, C, D) put_ffi_type(B);
     FFI_TYPE_TABLE(X)
 #undef X
-	type[0] = &ffi_type_pointer;
+    type[0] = &ffi_type_pointer;
     type[1] = &ffi_type_string;
     put_cif(parse, lac_cif_alloc(&ffi_type_variant, parse_, 2, type));
 

@@ -1,11 +1,11 @@
 // lac.t.cpp
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <string.h>
-#include <time.h>
 #include "lac.h"
+#include <fcntl.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <unistd.h>
 
 int test_lac_ffi(void);
 int test_lac_parse(void);
@@ -20,13 +20,13 @@ int test_lac_token(void);
 /*
 static int timer(void(*f)(void), int n)
 {
-	clock_t b = clock();
-	for (int i = 0; i < n; ++i) {
-		f();
-	}
-	clock_t e = clock();
-	
-	return ((e - b)*1000)/CLOCKS_PER_SEC;
+        clock_t b = clock();
+        for (int i = 0; i < n; ++i) {
+                f();
+        }
+        clock_t e = clock();
+
+        return ((e - b)*1000)/CLOCKS_PER_SEC;
 }
 */
 
@@ -41,9 +41,9 @@ const char *lac_strerror;
 int main()
 {
     if (setjmp(lac_jmp_buf)) {
-	fputs(lac_strerror, stderr);
+        fputs(lac_strerror, stderr);
 
-	return -1;
+        return -1;
     }
 
     test_lac_parse();
@@ -51,9 +51,9 @@ int main()
     test_lac_map();
     test_lac_ffi();
     test_lac_token();
-    //test_lac();
-    //test_lac_tree();
-    //test_lac_data();
+    // test_lac();
+    // test_lac_tree();
+    // test_lac_data();
 
     return 0;
 }

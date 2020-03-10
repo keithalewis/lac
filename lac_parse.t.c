@@ -1,15 +1,18 @@
 // lac_parse.t.cpp - test parsing
 #define _GNU_SOURCE
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include "ensure.h"
 #include "lac_parse.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#define RAII_VARIABLE(T,V,I,D) \
-    void _cleanup_ ## V (T * v) { D(*v); } \
-	    T V __attribute__((cleanup(_cleanup_ ## V))) = (I)
+#define RAII_VARIABLE(T, V, I, D)                                              \
+    void _cleanup_##V(T *v)                                                    \
+    {                                                                          \
+        D(*v);                                                                 \
+    }                                                                          \
+    T V __attribute__((cleanup(_cleanup_##V))) = (I)
 
 // turn string into FILE*
 static char *lac_token_string(char *s, size_t *n)
@@ -45,18 +48,18 @@ static int test_skip_space()
     s = lac_token_string(" \n\t\ra", &n);
     ensure(1 == n);
     ensure('a' == s[0]);
-    ensure(0 == s[1]);		// null terminated
+    ensure(0 == s[1]); // null terminated
     free(s);
 
     s = lac_token_string(" \n\t\ra ", &n);
     ensure(1 == n);
     ensure('a' == s[0]);
-    ensure(0 == s[1]);		// null terminated
+    ensure(0 == s[1]); // null terminated
     free(s);
 
     s = lac_token_string(" \n\t\r\\", &n);
     ensure(1 == n);
-    ensure('\\' == s[0]);	// not skipped
+    ensure('\\' == s[0]); // not skipped
     ensure(0 == s[1]);
     free(s);
 
@@ -114,19 +117,18 @@ static int test_lac_token_parse(char *t, ...)
     char *u = va_arg(ap, char *);
     size_t n;
     while (u) {
-	t_ = lac_token_parse(s, &n);
+        t_ = lac_token_parse(s, &n);
 
-	if (n == (size_t) EOF) {
-	    ensure(0 == strcmp(t_, u));
-	}
-	else {
-	    ensure(strlen(t_) == n)
-		ensure(strlen(u) == n)
-		ensure(0 == strncmp(t_, u, n));
-	    free(t_);
-	}
+        if (n == (size_t)EOF) {
+            ensure(0 == strcmp(t_, u));
+        }
+        else {
+            ensure(strlen(t_) == n) ensure(strlen(u) == n)
+                ensure(0 == strncmp(t_, u, n));
+            free(t_);
+        }
 
-	u = va_arg(ap, char *);
+        u = va_arg(ap, char *);
     }
 
     t_ = lac_token_parse(s, &n);
@@ -163,10 +165,10 @@ static int test_repl()
     size_t n;
     s = lac_token_parse(stdin, &n);
     while (n) {
-	printf("%ld: >%s<\n", n, s);
-	fflush(stdout);
-	//fsync(1);
-	s = lac_token_parse(stdin, &n);
+        printf("%ld: >%s<\n", n, s);
+        fflush(stdout);
+        // fsync(1);
+        s = lac_token_parse(stdin, &n);
     }
 
     return 0;
@@ -175,11 +177,11 @@ static int test_repl()
 int test_lac_parse();
 int test_lac_parse()
 {
-    //test_repl();
+    // test_repl();
     test_skip_space();
     test_next_space();
-    //test_lac_token();
-    //test_lac_convert();
+    // test_lac_token();
+    // test_lac_convert();
 
     test_lac_token_parse("a b c", "a", "b", "c", 0);
     test_lac_token_parse("a\tb c", "a", "b", "c", 0);
@@ -197,22 +199,22 @@ int test_lac_parse()
 /*
 int test_lac_convert()
 {
-	{
-		lac_variant w = lac_variant_parse(&ffi_type_sint, "123");
-		ensure (w.type = &ffi_type_sint);
-		ensure (w.value._sint == 123);
-	}
-	{
-		lac_variant w = lac_variant_parse(&ffi_type_double, "1.23");
-		ensure (w.type = &ffi_type_double);
-		ensure (w.value._double == 1.23);
-	}
-	{
-		lac_variant w = lac_variant_parse(&ffi_type_string, "foo bar");
-		ensure (w.type = &ffi_type_string);
-		ensure (0 == strcmp(w.value._pointer, "foo bar"));
-	}
+        {
+                lac_variant w = lac_variant_parse(&ffi_type_sint, "123");
+                ensure (w.type = &ffi_type_sint);
+                ensure (w.value._sint == 123);
+        }
+        {
+                lac_variant w = lac_variant_parse(&ffi_type_double, "1.23");
+                ensure (w.type = &ffi_type_double);
+                ensure (w.value._double == 1.23);
+        }
+        {
+                lac_variant w = lac_variant_parse(&ffi_type_string, "foo bar");
+                ensure (w.type = &ffi_type_string);
+                ensure (0 == strcmp(w.value._pointer, "foo bar"));
+        }
 
-	return 0;
+        return 0;
 }
 */

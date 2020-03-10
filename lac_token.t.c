@@ -1,26 +1,26 @@
 // lac_token.t.cpp - test parsing
 #define _GNU_SOURCE
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include "ensure.h"
 #include "lac_token.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*
 #define RAII_VARIABLE(T,V,I,D) \
     void _cleanup_ ## V (T * v) { D(*v); } \
-	    T V __attribute__((cleanup(_cleanup_ ## V))) = (I)
+            T V __attribute__((cleanup(_cleanup_ ## V))) = (I)
 */
 
 // string, type, data, size
-#define TOKEN_TEST(X) \
-X(" \n\t\ra ", 'a', "a", 1) \
-X("\"a b\"", '"', "a b", 3) \
-X(" \"a b\"\r", '"', "a b", 3) \
-X(" {a b}\r", '{', "a b", 3) \
-X("{a {b c} d}", '{', "a {b c} d", 9) \
-X(" {a {b c} d}\r", '{', "a {b c} d", 9) \
+#define TOKEN_TEST(X)                                                          \
+    X(" \n\t\ra ", 'a', "a", 1)                                                \
+    X("\"a b\"", '"', "a b", 3)                                                \
+    X(" \"a b\"\r", '"', "a b", 3)                                             \
+    X(" {a b}\r", '{', "a b", 3)                                               \
+    X("{a {b c} d}", '{', "a {b c} d", 9)                                      \
+    X(" {a {b c} d}\r", '{', "a {b c} d", 9)
 
 // turn string into FILE*
 static lac_token lac_token_string(char *s)
@@ -37,14 +37,16 @@ static lac_token lac_token_string(char *s)
 static int test_skip_space()
 {
     lac_token t;
-#define X(I, T, D, S) \
-    t = lac_token_string(I); \
-    ensure (t.type == T); \
-    if (D != NULL) { ensure (0 == strcmp(t.data, D)); } \
-    ensure (t.size == S);
+#define X(I, T, D, S)                                                          \
+    t = lac_token_string(I);                                                   \
+    ensure(t.type == T);                                                       \
+    if (D != NULL) {                                                           \
+        ensure(0 == strcmp(t.data, D));                                        \
+    }                                                                          \
+    ensure(t.size == S);
     TOKEN_TEST(X)
 #undef X
-	return 0;
+    return 0;
 }
 
 /*
@@ -100,19 +102,19 @@ static int test_lac_token_parse(char *t, ...)
     char *u = va_arg(ap, char *);
     size_t n;
     while (u) {
-	t_ = lac_token_parse(s, &n);
+        t_ = lac_token_parse(s, &n);
 
-	if (n == (size_t) EOF) {
-	    ensure(0 == strcmp(t_, u));
-	}
-	else {
-	    ensure(strlen(t_) == n)
-		ensure(strlen(u) == n)
-		ensure(0 == strncmp(t_, u, n));
-	    free(t_);
-	}
+        if (n == (size_t) EOF) {
+            ensure(0 == strcmp(t_, u));
+        }
+        else {
+            ensure(strlen(t_) == n)
+                ensure(strlen(u) == n)
+                ensure(0 == strncmp(t_, u, n));
+            free(t_);
+        }
 
-	u = va_arg(ap, char *);
+        u = va_arg(ap, char *);
     }
 
     t_ = lac_token_parse(s, &n);
@@ -131,10 +133,10 @@ static int test_repl()
     lac_token t;
     t = lac_read_token(stdin);
     while (t.type != EOF) {
-	printf("%ld: >%s<\n", t.size, t.data);
-	fflush(stdout);
-	//fsync(1);
-	t = lac_read_token(stdin);
+        printf("%ld: >%s<\n", t.size, t.data);
+        fflush(stdout);
+        // fsync(1);
+        t = lac_read_token(stdin);
     }
 
     return 0;
@@ -144,7 +146,7 @@ int test_lac_token();
 int test_lac_token()
 {
     test_skip_space();
-    //test_repl();
+    // test_repl();
 
     return 0;
 }

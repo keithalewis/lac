@@ -5,23 +5,23 @@
 
 static void test_lac_variant_types()
 {
-#define X(A,B,C,D) \
-	lac_variant B ## _ = lac_variant_ ## B(0); \
-	ensure (lac_variant_false(B ## _)); \
-	ensure (!lac_variant_true(B ## _));
+#define X(A, B, C, D)                                                          \
+    lac_variant B##_ = lac_variant_##B(0);                                     \
+    ensure(lac_variant_false(B##_));                                           \
+    ensure(!lac_variant_true(B##_));
     FFI_TYPE_TABLE(X)
 #undef X
-#define X(A,B,C,D) \
-	ensure (*(A*)lac_variant_address(&B ## _) == 0); \
-	ensure (B ## _ .value._pointer == 0);
-	FFI_TYPE_TABLE(X)
+#define X(A, B, C, D)                                                          \
+    ensure(*(A *)lac_variant_address(&B##_) == 0);                             \
+    ensure(B##_.value._pointer == 0);
+    FFI_TYPE_TABLE(X)
 #undef X
-#define X(A,B,C,D) \
-	B ## _ . value._ ## B = (A)1; \
-	ensure (B ## _ .value._pointer != 0); \
-	ensure (!lac_variant_false(B ## _)); \
-	ensure (lac_variant_true(B ## _));
-	FFI_TYPE_TABLE(X)
+#define X(A, B, C, D)                                                          \
+    B##_.value._##B = (A)1;                                                    \
+    ensure(B##_.value._pointer != 0);                                          \
+    ensure(!lac_variant_false(B##_));                                          \
+    ensure(lac_variant_true(B##_));
+    FFI_TYPE_TABLE(X)
 #undef X
 }
 
@@ -40,17 +40,19 @@ static void test_lac_variant_print(const char *out, const lac_variant v)
     free(buf);
 }
 
-#define TEST_PARSE(TYPE, STRING, VALUE) \
-	{ lac_variant v = lac_variant_parse(&ffi_type_ ## TYPE, STRING); \
-	  ensure(VALUE == v.value._ ## TYPE); \
-	  test_lac_variant_print(STRING, v); }
+#define TEST_PARSE(TYPE, STRING, VALUE)                                        \
+    {                                                                          \
+        lac_variant v = lac_variant_parse(&ffi_type_##TYPE, STRING);           \
+        ensure(VALUE == v.value._##TYPE);                                      \
+        test_lac_variant_print(STRING, v);                                     \
+    }
 
 static int test_lac_variant_parse()
 {
     TEST_PARSE(schar, "x", 'x');
     TEST_PARSE(sint, "123", 123);
     TEST_PARSE(double, "1.23", 1.23);
-    //TEST_PARSE(float, "1.500000", 1.5);
+    // TEST_PARSE(float, "1.500000", 1.5);
     TEST_PARSE(float, "1.5", 1.5);
     TEST_PARSE(sint32, "123", 123);
     TEST_PARSE(uint32, "123", 123);

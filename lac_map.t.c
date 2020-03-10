@@ -1,8 +1,8 @@
 // lac_map.t.c - test lac_map
-#include <stdlib.h>
-#include <string.h>
 #include "ensure.h"
 #include "lac_map.h"
+#include <stdlib.h>
+#include <string.h>
 
 int test_lac_map();
 int test_lac_map()

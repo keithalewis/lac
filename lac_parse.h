@@ -13,4 +13,4 @@
 // If n == EOF then no more tokens
 // If n == 0 then parse failed and pointer has the failed parse.
 // Returned pointer must be free'd.
-char *lac_token_parse(FILE * is, size_t *n /*, size_t* nl */ );
+char *lac_token_parse(FILE *is, size_t *n /*, size_t* nl */);
