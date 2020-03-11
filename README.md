@@ -4,30 +4,17 @@
 
 Load and call C functions at runtime.
 
-This little language makes it possible to dynamically load C
+This simple language makes it possible to dynamically load C
 functions from shared libraries at runtime and call them using
 [libffi](https://github.com/libffi/libffi).
 
-If the `puts` function from the standard library has
+If the `puts` function from the C standard library has
 been **load**ed
 ```
 puts "Hello World!"
 ```
-will print `Hello World!` followed by a newline character
-and return an integer value, as documented in
-the [puts(3)](http://man7.org/linux/man-pages/man3/puts.3.html)
-man page.
-
-Lac reads space seperated tokens from the input stream, looks
-up its corresponding function, and calls it. The rest of the
-input on the remaining input.
-
-If the token in the
-
-and the corresponding
-C function is *call*ed. The `puts` function requires a string to be the
-next token on the input stream.  `Lac` uses double quotes for strings
-that may contain spaces. The result of the call is an integer value.
+will print `Hello World!` on the standard output stream followed by
+a newline character and return an integer value.
 
 An equivalent way to do this is
 ```
@@ -36,16 +23,76 @@ puts Hello\ World!
 since backslash (`\`) can be used to escape white space characters on the
 input stream.
 
+`Lac` reads space seperated tokens from standard input.
+When it sees `puts` it tries to find a _dictionary_ entry with that key.
+The value in the dictionary has the C symbol for `puts` from
+the C standard library and its signature `int puts(const char*)`.
+
+`Lac` then tries to read the required argument as a `const char*` from
+the input stream.  If that succeeds then `puts` is **call**ed with that
+argument and returns an `int` value.
+
+This continues until there are no characters remaining on the input stream.
+
+`Lac` is a simple language.
+
+## Dictionary
+
+The dictionary contains key-value pairs. Keys are strings and values
+are `void*` pointers to any C type. Lac knows about the usual C
+integral, floating point, and `void*` types. It uses a _variant_
+type called `lac_variant` that is a union of these types together with
+a `type` field to discriminate.
+
+It also knows about a special type called _cif_, a C InterFace.
+The `lac_cif` struct has a C symbol and its _signature_.  The signature
+specifies the return type and the types of all required arguments.
+
+`Lac` uses the dictionary to define variables. Once added to the
+dictionary it is looked up as described above on any remaining input.
+
+The dictionary can have multiple entries with the same key. The most
+recently added key is found during lookup.
+
+This is used to provide a form of lexical scoping for function call
+stacks. Any variables added in the body of a function are removed
+when the function returns.
+
+Lac reads space seperated tokens from the input stream and looks
+them up in a _dictionary_.
+
+## Evaluation
+
+`Lac` reads space seperated tokens from the input stream. It looks
+up the tokens encountered in the dictionary.
+
+If the corresponding dictionary value is a cif then its required arguments
+are evaluated from the stream, the function is called, and the result
+is the return type of the function.
+
+If the value is not a function the result is the value.
+
+If the token is not in the dictionary then it is parsed to a value
+based on the required token type.
+
+This continues until there are no characters remaining on the input stream.
+
+If a token starts with a backtick character (`'`'`) then it is
+not looked up in the dictionary and the backtick is removed.
+The required type must be a string.
+
+## Load
+
 The `puts` function from the C standard library can be placed
 in the dictionary using
 ```
-_ puts load sint ( dlsym ( dlopen libc.so ) puts ) pointer void
+: puts load sint ( dlsym ( dlopen libc.so ) puts ) pointer void
 ```
-The _underscore_ (`_`) function is used to place a _key_ and a _value_ into
+The _colon_ (`:`) function is used to place a _key_ and a _value_ into
 the dictionary. 
 
 Use `load` to specify the _signature_ of the pointer returned by
-`dlsym` to create a _cif_: a C InterFace. The signature specifies
+`dlsym` to create a cif. The signature specifies
 the return type of the function, a pointer to a C function, and the
 required arguments. The required arguments are terminated by `void`.
 The type `void` is not a valid argument type and indicates the end of
@@ -68,38 +115,28 @@ ensures all required arguments have been supplied.
 
 An equivalent way to do the above is
 ```
-_ puts ( load int dlsym dlopen libc.so puts string )
+: puts ( load int dlsym dlopen libc.so puts string )
 ```
 The tokens inside the parentheses are evaluated to a cif
 that is associated with the key `puts` in the dictionary.
 
-## Evaluation
+New functions to be interpreted by `lac` can be defined by
+specifying their name, signature, and body.
+```
+: skipws void {
+    : c getc
+    while isspace c {
+        : c getc
+    }
+} void
+```
 
-`Lac` _evaluates_ an _input stream_ of white space
-separated string tokens and returns the _required type_. 
-It evaluates the input stream until no more tokens are found.
-
-If the required type is not a string then its _value_ is looked up in
-the dictionary.  Values can be any of the standard C integal types,
-floating point numbers, or pointers.
-
-If the value is a `cif` then it evaluates the input stream based on its
-required argument types and calls the corresponding C function to produce
-the required type.  This must match the return value of the function.
-
-If the value is not a `cif` its type must must match the required type.
-
-If the value is not found in the dictionary then the string token is
-parsed based on the required type.
-
-If a token starts with a backtick character (`'`'`) then it is
-not looked up in the dictionary and the backtick is removed.
-The required type must be a string.
 
 ### Tokens
 
 A `lac` program parses a stream of characters from a file into _tokens_.
-Tokens are separated by white space according to `isspace`.
+Tokens are separated by white space according to `isspace` or the
+end of the input stream.
 
 A _string_ token starts with a quote character (`'"'`) and all characters
 are included up to the next quote character. Quote characters preceded by
@@ -109,7 +146,7 @@ A string token does not include the beginning and ending quote characters.
 
 A _block token_ starts with a left brace character (`'{'`) and all
 characters are included up to the next right brace character (`'}'`) at
-the same nesting level.  Right brace characters preceded by a  backslash
+the same nesting level.  Left and right brace characters preceded by a  backslash
 (`'\'`) get included in the token.
 
 A block token does not include the beginning and ending brace characters.
@@ -197,4 +234,11 @@ _ puts int (dlsym ...) {double sint}
 ```
 ```
 _ printf int (dlsym ...) {string ...}
+```
+
+The dictonary is a stack. Local variables are push on it and popped
+at the end of a function.
+
+```
+: puts (...) int pointer void
 ```
