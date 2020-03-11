@@ -74,7 +74,7 @@ based on the required token type.
 
 This continues until there are no characters remaining on the input stream.
 
-If a token starts with a backtick character (`'`'`) then it is
+If a token starts with a backtick character (`\``) then it is
 not looked up in the dictionary and the backtick is removed.
 The required type must be a string.
 
