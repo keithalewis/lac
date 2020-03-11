@@ -58,13 +58,10 @@ This is used to provide a form of lexical scoping for function call
 stacks. Any variables added in the body of a function are removed
 when the function returns.
 
-Lac reads space seperated tokens from the input stream and looks
-them up in a _dictionary_.
-
 ## Evaluation
 
-`Lac` reads space seperated tokens from the input stream. It looks
-up the tokens encountered in the dictionary.
+`Lac` reads space seperated tokens from the input stream and
+looks them up in the dictionary.
 
 If the corresponding dictionary value is a cif then its required arguments
 are evaluated from the stream, the function is called, and the result
