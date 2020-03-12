@@ -1,38 +1,43 @@
 // lac_eval.c
 #define _GNU_SOURCE
-#include "lac_eval.h"
 #include "ensure.h"
+#include "lac_eval.h"
 #include "lac_cif.h"
 #include "lac_map.h"
 #include "lac_parse.h"
+#include "lac_token.h"
 #include <stdio.h>
 
-// read a string token from the input stream
-static lac_variant lac_token(FILE *fp)
-{
-    lac_variant v = {.type = &ffi_type_string_malloc};
-
-    size_t n;
-    v.value._pointer = lac_token_parse(fp, &n);
-    ensure(n != (size_t)EOF); // pass pointer to ensure???
-    // free pointer ???
-
-    return v;
-}
+#define DEBUG(x) x
 
 // read token from stream and convert to type
 lac_variant lac_eval_type(FILE *fp, ffi_type *type)
 {
-    lac_variant token = lac_token(fp);
+    lac_token t = lac_token_read(fp);
+	DEBUG(printf("lac_eval_type(%s) type: %c data: >%s<\n", lac_name(type), t.type, t.data));
 
-    if (type == &ffi_type_string || type == &ffi_type_string_malloc) {
-        return token; // returns type &ffi_type_string_malloc
-    }
+	if (t.type == EOF) {
+		// no more tokens
+		return (lac_variant){.type = &ffi_type_void, .value._pointer = NULL};
+	}
 
-    const lac_variant *pv = lac_map_get(token.value._pointer);
+	if (t.type == 0) {
+		// parse error
+		fflush(stdout);
+		fputs("lac_token_read failed: >", stderr);
+		fputs(t.data, stderr);
+		fputs("<\n", stderr);
+
+		return (lac_variant){.type = &ffi_type_void, .value._pointer = NULL};
+	}
 
     lac_variant result;
+    const lac_variant *pv = lac_map_get(t.data);
+
     if (pv) { // in dictionary
+DEBUG(fprintf(stderr, "lac_eval_type: key: %s value: %s\n", t.data, ""));
+DEBUG(lac_variant_print(stderr, pv));
+DEBUG(fputs("\n", stderr));
         if (pv->type == &ffi_type_cif) {
             // ensure (type == &ffi_type_cif || type == &ffi_type_cif_malloc);
             lac_cif *cif = pv->value._pointer;
@@ -45,7 +50,10 @@ lac_variant lac_eval_type(FILE *fp, ffi_type *type)
     }
     else {
         // ensure type is scalar???
-        result = lac_variant_scan(type, token.value._pointer);
+        result = lac_variant_scan(type, t.data);
+DEBUG(fprintf(stderr, "lac_eval_type: data: %s result: ", t.data));
+DEBUG(lac_variant_print(stderr, &result));
+DEBUG(fputs("\n", stderr));
     }
 
     return result;

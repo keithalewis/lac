@@ -30,7 +30,7 @@ static lac_variant get_(const char *key)
 
 static lac_variant parse_(ffi_type *type, char *s)
 {
-    return lac_variant_parse(type, s);
+    return lac_variant_scan(type, s);
 }
 
 static ffi_type *double_(void)
