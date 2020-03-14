@@ -208,6 +208,7 @@ static inline lac_variant lac_variant_scan(ffi_type *type, char *s)
 
     int ret = -1;
     if (type == &ffi_type_pointer) {
+        // string
         ret = 0;
         v.value._pointer = s;
     }

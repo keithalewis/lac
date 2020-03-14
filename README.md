@@ -8,7 +8,8 @@ This simple language makes it possible to dynamically load C
 functions from shared libraries at runtime and call them using
 [libffi](https://github.com/libffi/libffi).
 
-If the `puts` function from the C standard library has
+If the [`puts`](http://man7.org/linux/man-pages/man3/puts.3.html)
+function from the C standard library has
 been **load**ed
 ```
 puts "Hello World!"
@@ -23,12 +24,12 @@ puts Hello\ World!
 since backslash (`\`) can be used to escape white space characters on the
 input stream.
 
-`Lac` reads space seperated tokens from standard input.
+`Lac` reads space separated tokens from standard input.
 When it sees `puts` it tries to find a _dictionary_ entry with that key.
-The value in the dictionary has the C symbol for `puts` from
+The value in the dictionary knows the C symbol for `puts` from
 the C standard library and its signature `int puts(const char*)`.
 
-`Lac` then tries to read the required argument as a `const char*` from
+`Lac` then tries to read the required argument from
 the input stream.  If that succeeds then `puts` is **call**ed with that
 argument and returns an `int` value.
 
@@ -49,7 +50,7 @@ The `lac_cif` struct has a C symbol and its _signature_.  The signature
 specifies the return type and the types of all required arguments.
 
 `Lac` uses the dictionary to define variables. Once added to the
-dictionary it is looked up as described above on any remaining input.
+dictionary it is looked up as described above on remaining input.
 
 The dictionary can have multiple entries with the same key. The most
 recently added key is found during lookup.
@@ -60,35 +61,35 @@ when the function returns.
 
 ## Evaluation
 
-`Lac` reads space seperated tokens from the input stream and
-looks them up in the dictionary.
+`Lac` reads space separated tokens from the input stream and converts
+them to values based on the required type.
 
-If the corresponding dictionary value is a cif then its required arguments
-are evaluated from the stream, the function is called, and the result
-is the return type of the function.
+If a token starts with a backtick character (```) then it is
+not looked up in the dictionary and the backtick is removed.
+The required type must be a string.
 
-If the value is not a function the result is the value.
+If the token is in the dictionary and its value is a cif then the
+arguments required by the cif are evaluated from the stream, the function
+is called, and the result is the return type of the function.
+
+If the value is not a function the result is the dictionary value.
 
 If the token is not in the dictionary then it is parsed to a value
 based on the required token type.
 
 This continues until there are no characters remaining on the input stream.
 
-If a token starts with a backtick character (`\``) then it is
-not looked up in the dictionary and the backtick is removed.
-The required type must be a string.
-
 ## Load
 
 The `puts` function from the C standard library can be placed
 in the dictionary using
 ```
-: puts load sint ( dlsym ( dlopen libc.so ) puts ) pointer void
+load puts sint ( dlsym ( dlopen libc.so ) puts ) pointer void
 ```
-The _colon_ (`:`) function is used to place a _key_ and a _value_ into
+The `load` function is used to place a _key_ and a _value_ into
 the dictionary. 
 
-Use `load` to specify the _signature_ of the pointer returned by
+Note the _signature_ of the pointer returned by
 `dlsym` to create a cif. The signature specifies
 the return type of the function, a pointer to a C function, and the
 required arguments. The required arguments are terminated by `void`.
@@ -100,7 +101,7 @@ preloaded.
 
 The standard C types are also preloaded. The token `sint` indicates
 the type of a signed int that is native to the platform. The `pointer`
-type is a `void*` pointer.
+type is a `void*` pointer. `Lac` has no notion of `const`.
 
 The parentheses are not required since `dlsym` knows it needs two
 arguments, a pointer returned by `dlopen` and the string name of
@@ -112,15 +113,13 @@ ensures all required arguments have been supplied.
 
 An equivalent way to do the above is
 ```
-: puts ( load int dlsym dlopen libc.so puts string )
+load puts ( int dlsym dlopen libc.so puts string )
 ```
-The tokens inside the parentheses are evaluated to a cif
-that is associated with the key `puts` in the dictionary.
 
 New functions to be interpreted by `lac` can be defined by
 specifying their name, signature, and body.
 ```
-: skipws void {
+proc skipws void {
     : c getc
     while isspace c {
         : c getc
@@ -233,7 +232,7 @@ _ puts int (dlsym ...) {double sint}
 _ printf int (dlsym ...) {string ...}
 ```
 
-The dictonary is a stack. Local variables are push on it and popped
+The dictionary is a stack. Local variables are push on it and popped
 at the end of a function.
 
 ```
