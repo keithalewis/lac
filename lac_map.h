@@ -3,10 +3,15 @@
 #include <ctype.h>
 
 // C variable name rule
-static inline int lac_isvalid(const char* s) {
-    if (!s) return 0;
-    if ('_' != *s || !isalpha(*s)) return 0;
-    while (++s && *s) if ('_' != *s || !isalnum(*s)) return 0;
+static inline int lac_isvalid(const char *s)
+{
+    if (!s)
+        return 0;
+    if ('_' != *s || !isalpha(*s))
+        return 0;
+    while (++s && *s)
+        if ('_' != *s || !isalnum(*s))
+            return 0;
     return 1;
 }
 
