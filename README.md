@@ -17,20 +17,13 @@ puts "Hello World!"
 will print `Hello World!` on the standard output stream followed by
 a newline character and return an integer value.
 
-An equivalent way to do this is
-```
-puts Hello\ World!
-```
-since backslash (`\`) can be used to escape white space characters on the
-input stream.
-
 `Lac` reads space separated tokens from standard input.
 When it sees `puts` it tries to find a _dictionary_ entry with that key.
 The value in the dictionary knows the C symbol for `puts` from
 the C standard library and its signature `int puts(const char*)`.
 
-`Lac` then tries to read the required argument from
-the input stream.  If that succeeds then `puts` is **call**ed with that
+`Lac` then reads the required argument from
+the input stream, **call**s `puts` with that
 argument and returns an `int` value.
 
 This continues until there are no characters remaining on the input stream.
@@ -64,8 +57,8 @@ when the function returns.
 `Lac` reads space separated tokens from the input stream and converts
 them to values based on the required type.
 
-If a token starts with a backtick character (```) then it is
-not looked up in the dictionary and the backtick is removed.
+If a token starts with a quote (`"`) or left brace character (`{`) then it is
+not looked up in the dictionary.
 The required type must be a string.
 
 If the token is in the dictionary and its value is a cif then the

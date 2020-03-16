@@ -43,7 +43,8 @@ static int test_skip_space()
     if (D != NULL) {                                                           \
         ensure(0 == strcmp(t.data, D));                                        \
     }                                                                          \
-    ensure(t.size == S);
+    ensure(t.size == S); \
+    free(t.data);
     TOKEN_TEST(X)
 #undef X
     return 0;
