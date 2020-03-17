@@ -73,6 +73,11 @@ print: $(SRCS_T) $(HDRS)
 deps: $(SRCS_T)
 	@$(foreach c, $(SRCS_T), cc -MM $(c);)
 
+cmake:
+	@rm -rf build
+	cmake . -B build
+	(cd build; make)
+
 # r!make deps
 lac.t.o: lac.t.c lac.h ensure.h lac_parse.h lac_variant.h lac_map.h \
  lac_init.h lac_cif.h lac_eval.h
