@@ -57,9 +57,8 @@ when the function returns.
 `Lac` reads space separated tokens from the input stream and converts
 them to values based on the required type.
 
-If a token starts with a quote (`"`) or left brace character (`{`) then it is
-not looked up in the dictionary.
-The required type must be a string.
+If a token starts with a quote (`"`) or left brace character (`{`) then it
+is not looked up in the dictionary.  The required type must be a string.
 
 If the token is in the dictionary and its value is a cif then the
 arguments required by the cif are evaluated from the stream, the function
@@ -231,3 +230,4 @@ at the end of a function.
 ```
 : puts (...) int pointer void
 ```
+Lable and goto using setjmp longjmp.
