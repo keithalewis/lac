@@ -13,7 +13,9 @@ extern "C" {
 }
 #endif
 #include "lac_variant.h"
-typedef struct { // thunk corresponding to string name of symbol
+
+// cif with symbol and memory for arg_types
+typedef struct {
     void *sym;
     ffi_cif cif;
     ffi_type *arg_types[]; // flexible length array

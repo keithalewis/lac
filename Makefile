@@ -2,7 +2,7 @@ LAC_ = lac_parse.c lac_variant.c lac_map.c lac_cif.c lac_init.c lac_eval.c lac_t
 SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
 
-LAC_T  = lac_parse.t.c lac_variant.t.c lac_map.t.c lac_cif.t.c lac_token.t.c
+LAC_T  = lac_parse.t.c lac_variant.t.c lac_map.t.c lac_cif.t.c lac_token.t.c lac_eval.t.c
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 

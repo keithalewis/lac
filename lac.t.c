@@ -15,6 +15,7 @@ int test_lac_variant(void);
 int test_lac_tree(void);
 int test_lac_data(void);
 int test_lac_token(void);
+int test_lac_eval(void);
 
 // call f n times and return millisecnds
 /*
@@ -51,6 +52,7 @@ int main()
     test_lac_map();
     test_lac_ffi();
     test_lac_token();
+    test_lac_eval();
     // test_lac();
     // test_lac_tree();
     // test_lac_data();

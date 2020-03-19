@@ -16,7 +16,7 @@
 
 typedef struct {
     int type;    // initial non whitespace character;
-    char *data;  // string of characters
+    char *data;  // token characters
     size_t size; // number of characters read
 } lac_token;
 
