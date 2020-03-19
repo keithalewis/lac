@@ -6,4 +6,4 @@ IndentWidth: 4
 AllowShortFunctionsOnASingleLine: None
 KeepEmptyLinesAtTheStartOfBlocks: false
 BreakBeforeBraces: Stroustrup
-PointerAlignmentStyle: Left
+# PointerAlignmentStyle: Left

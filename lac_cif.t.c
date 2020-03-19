@@ -121,6 +121,30 @@ static int test_lac_cif()
 
         free(p);
     }
+    {
+		// compound literal http://port70.net/~nsz/c/c11/n1570.html#6.5.2.5
+        lac_cif *pcif = lac_cif_alloc(&ffi_type_sint, printf, 1, (ffi_type*[]){&ffi_type_pointer});
+        pcif->cif.nargs = -pcif->cif.nargs; // varargs
+
+        // newly allocated cif
+        lac_cif *p = lac_cif_prep_var(pcif, 1, (ffi_type*[]){&ffi_type_pointer});
+        free(pcif);
+
+        void *values[2];
+        char *s, *fmt;
+
+        values[0] = &fmt;
+        fmt = "%s\n";
+
+        values[1] = &s;
+        s = "Hello compound literal";
+
+        lac_variant result;
+        lac_cif_call(p, &result, values);
+        ensure(result.value._sint == (int)(strlen(s) + 1));
+
+        free(p);
+    }
 
     return 0;
 }
