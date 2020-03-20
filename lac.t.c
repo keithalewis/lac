@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 int test_lac_ffi(void);
-int test_lac_parse(void);
+//int test_lac_parse(void);
 int test_lac_map(void);
 int test_lac(void);
 int test_lac_variant(void);
@@ -47,7 +47,7 @@ int main()
         return -1;
     }
 
-    test_lac_parse();
+    //test_lac_parse();
     test_lac_variant();
     test_lac_map();
     test_lac_ffi();

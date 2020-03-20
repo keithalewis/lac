@@ -1,15 +1,15 @@
-LAC_ = lac_parse.c lac_variant.c lac_map.c lac_cif.c lac_init.c lac_eval.c lac_token.c
+LAC_ = lac_variant.c lac_map.c lac_cif.c lac_init.c lac_eval.c lac_token.c
 SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
 
-LAC_T  = lac_parse.t.c lac_variant.t.c lac_map.t.c lac_cif.t.c lac_token.t.c lac_eval.t.c
+LAC_T  = lac_variant.t.c lac_map.t.c lac_cif.t.c lac_token.t.c lac_eval.t.c
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 
 CFLAGS = -g -Wall -I $(FFI_DIR)/include
 
 HDRS = ensure.h lac.h lac_cif.h lac_eval.h lac_init.h lac_map.h \
-	lac_parse.h lac_variant.h lac_token.h
+	lac_variant.h lac_token.h
 
 all: libffi lac lac.t
 
@@ -79,16 +79,18 @@ cmake:
 	(cd build; make)
 
 # r!make deps
-lac.t.o: lac.t.c lac.h ensure.h lac_parse.h lac_variant.h lac_map.h \
- lac_init.h lac_cif.h lac_eval.h
-lac_parse.o: lac_parse.c lac_parse.h
+lac.t.o: lac.t.c lac.h ensure.h lac_cif.h lac_variant.h lac_eval.h \
+ lac_init.h lac_map.h
 lac_variant.o: lac_variant.c lac_variant.h
-lac_map.o: lac_map.c ensure.h lac_map.h
-lac_cif.o: lac_cif.c ensure.h lac_cif.h lac_variant.h
-lac_init.o: lac_init.c lac_map.h lac_cif.h lac_variant.h lac_init.h
-lac_eval.o: lac_eval.c ensure.h lac_parse.h lac_map.h lac_cif.h \
- lac_variant.h lac_eval.h
-lac_parse.t.o: lac_parse.t.c ensure.h lac_parse.h
+lac_map.o: lac_map.c lac_map.h ensure.h
+lac_cif.o: lac_cif.c lac_cif.h lac_variant.h ensure.h
+lac_init.o: lac_init.c lac_init.h ensure.h lac_cif.h lac_variant.h \
+ lac_eval.h lac_map.h
+lac_eval.o: lac_eval.c lac_eval.h lac_cif.h lac_variant.h ensure.h \
+ lac_map.h lac_token.h
+lac_token.o: lac_token.c lac_token.h
 lac_variant.t.o: lac_variant.t.c ensure.h lac_variant.h
 lac_map.t.o: lac_map.t.c ensure.h lac_map.h
 lac_cif.t.o: lac_cif.t.c ensure.h lac_cif.h lac_variant.h
+lac_token.t.o: lac_token.t.c ensure.h lac_token.h
+lac_eval.t.o: lac_eval.t.c ensure.h lac_cif.h lac_variant.h lac_eval.h
