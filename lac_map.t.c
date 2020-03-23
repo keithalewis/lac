@@ -15,7 +15,7 @@ int test_lac_map()
     v = lac_map_get(key);
     ensure(0 == strcmp(v, val));
     v = lac_map_get("foo");
-    lac_map_del(key);
+    lac_map_del(key, 0);
     v = lac_map_get(key);
     ensure(0 == v);
 

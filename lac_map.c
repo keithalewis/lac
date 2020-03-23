@@ -8,14 +8,14 @@
 
 struct lac_entry {
     char *key;
-    const void *val;
+    void *val;
     LIST_ENTRY(lac_entry) st;
     // struct { struct entry* next; struct entry* prev } st;
 };
 
 static LIST_HEAD(head, lac_entry) map = LIST_HEAD_INITIALIZER(struct head);
 
-void lac_map_put(const char *key, const void *val)
+void lac_map_put(const char *key, void *val)
 {
     // static LIST_HEAD(head, entry) map = LIST_HEAD_INITIALIZER(struct head);
     // struct head { struct entry* lh_first} map = { NULL };
@@ -43,13 +43,16 @@ static struct lac_entry *lac_map_find(const char *key)
     return elm;
 }
 
-void lac_map_del(const char *key)
+void lac_map_del(const char *key, void (*del)(void*))
 {
     struct lac_entry *elm = lac_map_find(key);
 
     if (0 != elm) {
-        LIST_REMOVE(elm, st);
         free(elm->key);
+        if (del) {
+            del(elm->val);
+        }
+        LIST_REMOVE(elm, st);
         free(elm);
     }
 }

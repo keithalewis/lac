@@ -122,12 +122,14 @@ static int test_lac_cif()
         free(p);
     }
     {
-		// compound literal http://port70.net/~nsz/c/c11/n1570.html#6.5.2.5
-        lac_cif *pcif = lac_cif_alloc(&ffi_type_sint, printf, 1, (ffi_type*[]){&ffi_type_pointer});
+        // compound literal http://port70.net/~nsz/c/c11/n1570.html#6.5.2.5
+        lac_cif *pcif = lac_cif_alloc(&ffi_type_sint, printf, 1,
+                                      (ffi_type *[]){&ffi_type_pointer});
         pcif->cif.nargs = -pcif->cif.nargs; // varargs
 
         // newly allocated cif
-        lac_cif *p = lac_cif_prep_var(pcif, 1, (ffi_type*[]){&ffi_type_pointer});
+        lac_cif *p =
+            lac_cif_prep_var(pcif, 1, (ffi_type *[]){&ffi_type_pointer});
         free(pcif);
 
         void *values[2];
