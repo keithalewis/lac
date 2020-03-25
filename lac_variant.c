@@ -13,6 +13,7 @@ struct struct_align_pointer {
             FFI_TYPE_POINTER, NULL                                             \
     }
 
+ffi_type ffi_type_pointer_malloc = FFI_POINTER;
 ffi_type ffi_type_string = FFI_POINTER;
 ffi_type ffi_type_string_malloc = FFI_POINTER;
 ffi_type ffi_type_cif = FFI_POINTER;

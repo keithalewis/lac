@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ensure.h"
 
 //    type            ffi_type    print   scan
 #define FFI_TYPE_TABLE(X)                                                      \
@@ -48,7 +49,10 @@ typedef struct {
 extern void ffi_type_variant_prep(void);
 extern ffi_type ffi_type_variant;
 
-// pointer to null terminated characters
+// pointer that has been malloc'd
+extern ffi_type ffi_type_pointer_malloc;
+
+// pointer to null terminate chars
 extern ffi_type ffi_type_string;
 // pointer that has been malloc'd
 extern ffi_type ffi_type_string_malloc;
@@ -204,31 +208,22 @@ FFI_TYPE_TABLE(X)
 
 static inline lac_variant lac_variant_scan(ffi_type *type, char *s)
 {
-    lac_variant v = {.type = type};
-
-    int ret = -1;
     if (type == &ffi_type_pointer) {
-        // string
-        ret = 0;
-        v.value._pointer = s;
+        return (lac_variant){.type = type, .value._pointer = s};
     }
-#define X(A, B, C, D)                                                          \
-    else if (type == &ffi_type_##B)                                            \
-    {                                                                          \
-        ret = sscanf(s, "%" D, &(v.value._##B));                               \
+
+    lac_variant v = {.type = type};
+    if (0) {
+        ; // first match below
+    }
+#define X(A, B, C, D)            \
+    else if (type == &ffi_type_##B) { \
+        ensure(0 <= sscanf(s, "%" D, &(v.value._##B))); \
     }
     FFI_TYPE_TABLE(X)
 #undef X
-    else
-    {
-        // ffi_type_cif is dubious
-        ret = 0;
-        v.value._pointer = s;
-    }
-
-    if (ret < 0) { // scan failed
-        v.type = &ffi_type_void;
-        v.value._pointer = NULL;
+    else {
+        ensure(!"unknown type");
     }
 
     return v;

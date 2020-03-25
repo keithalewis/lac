@@ -1,10 +1,12 @@
 // lac_eval.c
+#include "debug.h"
 #define _GNU_SOURCE
 #include "lac_eval.h"
 #include "ensure.h"
 #include "lac_cif.h"
 #include "lac_map.h"
 //#include "lac_parse.h"
+#include "lac_variant.h"
 #include "lac_token.h"
 #include <stdio.h>
 
@@ -14,30 +16,38 @@
 lac_variant lac_eval_type(FILE *fp, ffi_type *type)
 {
     lac_token t = lac_token_read(fp);
-    DEBUG(printf("lac_eval_type(%s) type: %c data: >%s<\n", lac_name(type),
-                 t.type, t.data));
+    DEBUG_("type: %s(%c) data: >%s<\n", lac_name(type), t.type, t.data);
+
+    if (t.type == 0) {
+        DEBUG_("parse error at: >%s<\n", t.data);
+    }
+    ensure (t.type != 0);
 
     if (t.type == EOF) {
         // no more tokens
         return (lac_variant){.type = &ffi_type_void, .value._pointer = NULL};
     }
 
-    if (t.type == 0) {
-        // parse error
-        fflush(stdout);
-        fputs("lac_token_read failed: >", stderr);
-        fputs(t.data, stderr);
-        fputs("<\n", stderr);
-
-        return (lac_variant){.type = &ffi_type_void, .value._pointer = NULL};
-    }
-
     lac_variant result;
 
-    if (t.type == '"' || t.type == '{') {
-        // check type?
-        result.type = &ffi_type_string_malloc;
+    // return block
+    if (t.type == '{') {
+        ensure (type == &ffi_type_pointer);
+        result.type = &ffi_type_pointer_malloc;
         result.value._pointer = t.data;
+
+        return result;
+    }
+
+    if (t.type == '"') {
+        if (type == &ffi_type_pointer) {
+            result.type = &ffi_type_pointer_malloc;
+            result.value._pointer = t.data;
+        }
+        else {
+            result = lac_variant_scan(type, t.data);
+            free (t.data);
+        }
 
         return result;
     }
@@ -45,10 +55,7 @@ lac_variant lac_eval_type(FILE *fp, ffi_type *type)
     const lac_variant *pv = lac_map_get(t.data);
 
     if (pv) { // in dictionary
-        DEBUG(
-            fprintf(stderr, "lac_eval_type: key: %s value: %s\n", t.data, ""));
-        DEBUG(lac_variant_print(stderr, pv));
-        DEBUG(fputs("\n", stderr));
+        DEBUG_("key: %s\n", t.data);
         if (pv->type == &ffi_type_cif) {
             // ensure (type == &ffi_type_cif || type == &ffi_type_cif_malloc);
             lac_cif *cif = pv->value._pointer;
@@ -60,11 +67,14 @@ lac_variant lac_eval_type(FILE *fp, ffi_type *type)
         }
     }
     else {
-        // ensure type is scalar???
+        DEBUG_("scan: >%s<\n", t.data);
         result = lac_variant_scan(type, t.data);
-        DEBUG(fprintf(stderr, "lac_eval_type: data: %s result: ", t.data));
-        DEBUG(lac_variant_print(stderr, &result));
-        DEBUG(fputs("\n", stderr));
+        if (type == &ffi_type_pointer) {
+            result.type = &ffi_type_pointer_malloc;
+        }
+        else {
+            free (t.data);
+        }
     }
 
     return result;
@@ -94,11 +104,9 @@ lac_variant lac_call_cif(FILE *fp, lac_cif *cif)
         ffi_call(ffi, cif->sym, lac_variant_address(&result), addr);
 
         for (int i = 0; i < n; ++i) {
-            /*
-               if (args[i].type == &ffi_pointer_malloc) {
+           if (args[i].type == &ffi_type_pointer_malloc) {
                free (args[i].value._pointer);
-               }
-             */
+           }
         }
     }
     else {

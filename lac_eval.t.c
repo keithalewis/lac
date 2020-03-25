@@ -15,30 +15,27 @@ static inline FILE *os(char **s, size_t *n)
     return open_memstream(s, n);
 }
 
+// call cif by converting string to file stream
+static inline lac_variant call_cif(char* s, lac_cif* pcif)
+{
+    FILE* i = is(s);
+    lac_variant v = lac_call_cif(i, pcif);
+    fclose(i);
+
+    return v;
+}
+
 static int test_lac_eval_cif()
 {
     {
         char *s = "\"hello cif\"";
         lac_cif *pcif = lac_cif_alloc(&ffi_type_sint, puts, 1,
                                       (ffi_type *[]){&ffi_type_pointer});
-        lac_variant v = lac_call_cif(is(s), pcif);
+        lac_variant v = call_cif(s, pcif);
         ensure(v.type == &ffi_type_sint);
         ensure(v.value._sint = strlen(s) + 1);
         free(pcif);
     }
-    /*
-    {
-            char ibuf[1024];
-            char* obuf;
-            size_t n;
-            FILE* o = os(&obuf, &n);
-            FILE* i = is(s);
-    lac_cif *pcif = lac_cif_alloc(&ffi_type_sint, puts, 1,
-    (ffi_type*[]){&ffi_type_pointer}); lac_variant v = lac_call_cif(is(s),
-    pcif); ensure (v.type == &ffi_type_sint); ensure (v.value._sint = strlen(s)
-    + 1); free(pcif);
-    }
-    */
 
     return 0;
 }

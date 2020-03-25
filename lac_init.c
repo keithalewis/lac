@@ -112,17 +112,17 @@ void lac_init(void)
     put_pointer(stdout);
     put_pointer(stderr);
 
-    type[0] = &ffi_type_string;
+    type[0] = &ffi_type_pointer;
     type[1] = &ffi_type_variant;
     put_cif(put, lac_cif_alloc(&ffi_type_void, put_, 2, type));
 
-    type[0] = &ffi_type_string;
+    type[0] = &ffi_type_pointer;
     put_cif(get, lac_cif_alloc(&ffi_type_variant, get_, 1, type));
 
     put_int(RTLD_LAZY);
     put_int(RTLD_NOW);
 
-    type[0] = &ffi_type_string;
+    type[0] = &ffi_type_pointer;
     type[1] = &ffi_type_sint;
     put_cif(dlopen, lac_cif_alloc(&ffi_type_pointer, dlopen, 2, type));
 
@@ -130,14 +130,14 @@ void lac_init(void)
     put_cif(dlclose, lac_cif_alloc(&ffi_type_sint, dlclose, 1, type));
 
     type[0] = &ffi_type_pointer;
-    type[1] = &ffi_type_string;
+    type[1] = &ffi_type_pointer;
     put_cif(dlsym, lac_cif_alloc(&ffi_type_pointer, dlsym, 2, type));
 
 #define X(A, B, C, D) put_ffi_type(B);
     FFI_TYPE_TABLE(X)
 #undef X
     type[0] = &ffi_type_pointer;
-    type[1] = &ffi_type_string;
+    type[1] = &ffi_type_pointer;
     put_cif(parse, lac_cif_alloc(&ffi_type_variant, parse_, 2, type));
 
     type[0] = &ffi_type_variant;
@@ -146,7 +146,7 @@ void lac_init(void)
     put_cif(nl, lac_cif_alloc(&ffi_type_void, nl_, 0, NULL));
     put_cif(tab, lac_cif_alloc(&ffi_type_void, tab_, 0, NULL));
 
-    type[0] = &ffi_type_string;
+    type[0] = &ffi_type_pointer;
     put_cif(puts, lac_cif_alloc(&ffi_type_sint, puts, 1, type));
 
     put_cif(_, lac_cif_alloc(&ffi_type_void, print_map, 0, NULL));
