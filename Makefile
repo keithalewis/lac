@@ -2,7 +2,8 @@ LAC_ = lac_variant.c lac_map.c lac_cif.c lac_init.c lac_eval.c lac_token.c
 SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
 
-LAC_T  = lac_variant.t.c lac_map.t.c lac_cif.t.c lac_token.t.c lac_eval.t.c
+LAC_T  = lac_variant.t.c lac_map.t.c lac_cif.t.c lac_token.t.c \
+    lac_eval.t.c lac_init.t.c
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 
@@ -81,7 +82,7 @@ cmake:
 # r!make deps
 lac.t.o: lac.t.c lac.h ensure.h lac_cif.h lac_variant.h lac_eval.h \
  lac_init.h lac_map.h
-lac_variant.o: lac_variant.c lac_variant.h
+lac_variant.o: lac_variant.c lac_variant.h ensure.h
 lac_map.o: lac_map.c lac_map.h ensure.h
 lac_cif.o: lac_cif.c lac_cif.h lac_variant.h ensure.h
 lac_init.o: lac_init.c lac_init.h ensure.h lac_cif.h lac_variant.h \
@@ -94,3 +95,4 @@ lac_map.t.o: lac_map.t.c ensure.h lac_map.h
 lac_cif.t.o: lac_cif.t.c ensure.h lac_cif.h lac_variant.h
 lac_token.t.o: lac_token.t.c ensure.h lac_token.h
 lac_eval.t.o: lac_eval.t.c ensure.h lac_cif.h lac_variant.h lac_eval.h
+lac_init.t.o: lac_init.t.c lac_init.h

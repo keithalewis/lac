@@ -40,10 +40,90 @@ static int test_lac_eval_cif()
     return 0;
 }
 
+static int test_lac_eval_type()
+{
+    {
+        char* s = "hello";
+
+        FILE* i = is(s);
+        lac_variant v = lac_eval_type(i, &ffi_type_pointer);
+        fclose(i);
+
+        ensure (v.type == &ffi_type_pointer_malloc);
+        ensure (0 == strcmp(v.value._pointer, s));
+        free (v.value._pointer);
+    }
+    {
+        char* s = "\"hello\"";
+
+        FILE* i = is(s);
+        lac_variant v = lac_eval_type(i, &ffi_type_pointer);
+        fclose(i);
+
+        ensure (v.type == &ffi_type_pointer_malloc);
+        ensure (0 == strcmp(v.value._pointer, "hello"));
+        free (v.value._pointer);
+    }
+    {
+        char* s = "{hello}";
+
+        FILE* i = is(s);
+        lac_variant v = lac_eval_type(i, &ffi_type_pointer);
+        fclose(i);
+
+        ensure (v.type == &ffi_type_pointer_malloc);
+        ensure (0 == strcmp(v.value._pointer, "hello"));
+        free (v.value._pointer);
+    }
+    {
+        char* s = "123";
+
+        FILE* i = is(s);
+        lac_variant v = lac_eval_type(i, &ffi_type_sint);
+        fclose(i);
+
+        ensure (v.type == &ffi_type_sint);
+        ensure (v.value._sint == 123);
+    }
+    {
+        char* s = "123";
+
+        FILE* i = is(s);
+        lac_variant v = lac_eval_type(i, &ffi_type_uint);
+        fclose(i);
+
+        ensure (v.type == &ffi_type_uint);
+        ensure (v.value._uint == 123);
+    }
+    {
+        char* s = "1.23";
+
+        FILE* i = is(s);
+        lac_variant v = lac_eval_type(i, &ffi_type_double);
+        fclose(i);
+
+        ensure (v.type == &ffi_type_double);
+        ensure (v.value._double == 1.23);
+    }
+    {
+        char* s = "1.5";
+
+        FILE* i = is(s);
+        lac_variant v = lac_eval_type(i, &ffi_type_float);
+        fclose(i);
+
+        ensure (v.type == &ffi_type_float);
+        ensure (v.value._float == 1.5);
+    }
+    
+    return 0;
+}
+
 int test_lac_eval();
 extern int test_lac_eval()
 {
     test_lac_eval_cif();
+    test_lac_eval_type();
 
     return 0;
 }
