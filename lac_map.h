@@ -20,6 +20,6 @@ extern void lac_map_put(const char *, void *val);
 // return 0 if entry not found
 extern const void *lac_map_get(const char *);
 // remove entry from map
-extern void lac_map_del(const char *, void(*)(void*));
+extern void lac_map_del(const char *, void (*)(void *));
 // call action on each key-value pair in map
 extern void lac_map_foreach(void (*action)(const char *, const void *));

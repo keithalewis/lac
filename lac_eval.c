@@ -1,13 +1,13 @@
 // lac_eval.c
 #include "debug.h"
 #define _GNU_SOURCE
-#include "lac_eval.h"
 #include "ensure.h"
 #include "lac_cif.h"
+#include "lac_eval.h"
 #include "lac_map.h"
 //#include "lac_parse.h"
-#include "lac_variant.h"
 #include "lac_token.h"
+#include "lac_variant.h"
 #include <stdio.h>
 
 #define DEBUG(x) x
@@ -20,8 +20,8 @@ lac_variant lac_eval_type(FILE *fp, ffi_type *type)
 
     if (t.type == 0) {
         DEBUG_("parse error at: >%s<\n", t.data);
+        ensure(t.type != 0);
     }
-    ensure (t.type != 0);
 
     if (t.type == EOF) {
         // no more tokens
@@ -32,7 +32,7 @@ lac_variant lac_eval_type(FILE *fp, ffi_type *type)
 
     // return block
     if (t.type == '{') {
-        ensure (type == &ffi_type_pointer);
+        ensure(type == &ffi_type_pointer);
         result.type = &ffi_type_pointer_malloc;
         result.value._pointer = t.data;
 
@@ -46,7 +46,7 @@ lac_variant lac_eval_type(FILE *fp, ffi_type *type)
         }
         else {
             result = lac_variant_scan(type, t.data);
-            free (t.data);
+            free(t.data);
         }
 
         return result;
@@ -73,7 +73,7 @@ lac_variant lac_eval_type(FILE *fp, ffi_type *type)
             result.type = &ffi_type_pointer_malloc;
         }
         else {
-            free (t.data);
+            free(t.data);
         }
     }
 
@@ -104,9 +104,9 @@ lac_variant lac_call_cif(FILE *fp, lac_cif *cif)
         ffi_call(ffi, cif->sym, lac_variant_address(&result), addr);
 
         for (int i = 0; i < n; ++i) {
-           if (args[i].type == &ffi_type_pointer_malloc) {
-               free (args[i].value._pointer);
-           }
+            if (args[i].type == &ffi_type_pointer_malloc) {
+                free(args[i].value._pointer);
+            }
         }
     }
     else {
@@ -119,7 +119,7 @@ lac_variant lac_call_cif(FILE *fp, lac_cif *cif)
 
 lac_variant lac_eval(FILE *fp)
 {
-    lac_variant result;
+    lac_variant result = {.type = &ffi_type_void, .value._pointer = NULL};
 
     while (!feof(fp)) {
         result = lac_eval_type(fp, &ffi_type_cif);

@@ -22,7 +22,7 @@ int test_lac_map()
     }
     {
         const char key[] = "key";
-        char* val = strdup("val");
+        char *val = strdup("val");
         lac_map_put(key, val);
         const char *v = lac_map_get(key);
         ensure(0 == strcmp(v, val));

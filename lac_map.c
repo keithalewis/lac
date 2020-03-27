@@ -43,7 +43,7 @@ static struct lac_entry *lac_map_find(const char *key)
     return elm;
 }
 
-void lac_map_del(const char *key, void (*del)(void*))
+void lac_map_del(const char *key, void (*del)(void *))
 {
     struct lac_entry *elm = lac_map_find(key);
 

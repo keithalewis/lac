@@ -1,12 +1,12 @@
 // lac_variant.h -  variant type for argument stack
 #pragma once
+#include "ensure.h"
 #include <ffi.h>
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ensure.h"
 
 //    type            ffi_type    print   scan
 #define FFI_TYPE_TABLE(X)                                                      \
@@ -216,13 +216,15 @@ static inline lac_variant lac_variant_scan(ffi_type *type, char *s)
     if (0) {
         ; // first match below
     }
-#define X(A, B, C, D)            \
-    else if (type == &ffi_type_##B) { \
-        ensure(0 <= sscanf(s, "%" D, &(v.value._##B))); \
+#define X(A, B, C, D)                                                          \
+    else if (type == &ffi_type_##B)                                            \
+    {                                                                          \
+        ensure(0 <= sscanf(s, "%" D, &(v.value._##B)));                        \
     }
     FFI_TYPE_TABLE(X)
 #undef X
-    else {
+    else
+    {
         ensure(!"unknown type");
     }
 

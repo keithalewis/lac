@@ -5,6 +5,7 @@
 #include "lac_eval.h"
 #include "lac_map.h"
 #include <dlfcn.h>
+#include <stdbool.h>
 
 // pointed to value must exist
 static void put_(char *key, const lac_variant val)
@@ -88,25 +89,34 @@ static void print_map(void)
     lac_map_foreach(print_entry);
 }
 
-// if expr body
-/*
-static lac_variant if_(const lac_variant expr, const lac_variant body)
+// while {cond} {body}
+static lac_variant while_(char *cond, char *body)
 {
-        //ensure (expr.type == &ffi_type_block);
-        //ensure (body.type == &ffi_type_block);
-        FILE* es = fmemopen(s, strlen(s), "r")
+    lac_variant vcond;
+    lac_variant vbody = {.type = &ffi_type_void, .value._pointer = NULL};
 
-        lac_variant expr_ = lac_evaluate_block(expr);
+    FILE *pcond = fmemopen(cond, strlen(cond), "r");
+    FILE *pbody = fmemopen(body, strlen(body), "r");
 
-        return lac_variant_true(expr_) ? lac_evaluate_block(body) : expr_;
+    vcond = lac_eval(pcond);
+    while (lac_variant_true(vcond)) {
+        vbody = lac_eval(pbody);
+        rewind(pbody);
+        rewind(pcond);
+        vcond = lac_eval(pcond);
+    }
+
+    return vbody;
 }
-*/
 
 void lac_init(void)
 {
     ffi_type_variant_prep();
 
     ffi_type *type[8];
+
+    put_int(true);
+    put_int(false);
 
     put_pointer(stdin);
     put_pointer(stdout);
@@ -162,6 +172,9 @@ void lac_init(void)
        type[1] = &ffi_type_variant;
        put_cif(if, lac_cif_alloc(&ffi_type_variant, if_, 2, type));
      */
+    type[0] = &ffi_type_pointer;
+    type[1] = &ffi_type_pointer;
+    put_cif(while, lac_cif_alloc(&ffi_type_variant, while_, 2, type));
 }
 
 void lac_fini(void)
