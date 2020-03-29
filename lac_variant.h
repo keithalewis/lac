@@ -8,32 +8,35 @@
 #include <stdlib.h>
 #include <string.h>
 
+// clang-format off
 //    type            ffi_type    print   scan
+// !}column -t -s,
 #define FFI_TYPE_TABLE(X)                                                      \
-    X(char, schar, "c", "c")                                                   \
-    X(unsigned char, uchar, "c", "c")                                          \
-    X(int, sint, "i", "i")                                                     \
-    X(unsigned int, uint, "u", "u")                                            \
-    X(short, sshort, "hi", "hi")                                               \
-    X(unsigned short, ushort, "hu", "hu")                                      \
-    X(long, slong, "li", "li")                                                 \
-    X(unsigned long, ulong, "lu", "lu")                                        \
-    X(float, float, "g", "f")                                                  \
-    X(double, double, "g", "lf")                                               \
-    X(uint8_t, uint8, PRIu8, SCNu8)                                            \
-    X(int8_t, sint8, PRIi8, SCNi8)                                             \
-    X(uint16_t, uint16, PRIu16, SCNu16)                                        \
-    X(int16_t, sint16, PRIi16, SCNi16)                                         \
-    X(uint32_t, uint32, PRIu32, SCNu32)                                        \
-    X(int32_t, sint32, PRIi32, SCNi32)                                         \
-    X(uint64_t, uint64, PRIu64, SCNu64)                                        \
-    X(int64_t, sint64, PRIi64, SCNi64)                                         \
-    X(void *, pointer, "p", "p")
+ X(char,             schar,     "c",      "c")    \
+ X(unsigned char,    uchar,     "c",      "c")    \
+ X(int,              sint,      "i",      "i")    \
+ X(unsigned int,     uint,      "u",      "u")    \
+ X(short,            sshort,    "hi",     "hi")   \
+ X(unsigned short,   ushort,    "hu",     "hu")   \
+ X(long,             slong,     "li",     "li")   \
+ X(unsigned long,    ulong,     "lu",     "lu")   \
+ X(float,            float,     "g",      "f")    \
+ X(double,           double,    "g",      "lf")   \
+ X(uint8_t,          uint8,     PRIu8,    SCNu8)  \
+ X(int8_t,           sint8,     PRIi8,    SCNi8)  \
+ X(uint16_t,         uint16,    PRIu16,   SCNu16) \
+ X(int16_t,          sint16,    PRIi16,   SCNi16) \
+ X(uint32_t,         uint32,    PRIu32,   SCNu32) \
+ X(int32_t,          sint32,    PRIi32,   SCNi32) \
+ X(uint64_t,         uint64,    PRIu64,   SCNu64) \
+ X(int64_t,          sint64,    PRIi64,   SCNi64) \
+ X(void *,           pointer,   "p",      "p")
 
 // X(FFI_TYPE_VOID,       void,        &ffi_type_void,
 // X(FFI_TYPE_LONGDOUBLE, long double, &ffi_type_longdouble,
 // X(FFI_TYPE_COMPLEX
 // X(FFI_TYPE_STRUCT,     void**,      &ffi_type_pointer,
+// clang-format on
 
 // variant data type
 typedef struct {
@@ -60,6 +63,20 @@ extern ffi_type ffi_type_string_malloc;
 // pointer to lac_cif
 extern ffi_type ffi_type_cif;
 extern ffi_type ffi_type_cif_malloc;
+
+/*
+static inline int lac_variant_is_integral(const lac_variant v)
+{
+    switch ((intptr_t)v.type) {
+    case &ffi_type_sint:
+        return 1;
+
+        break;
+    default:
+        return 0;
+    }
+}
+*/
 
 static inline lac_variant *lac_variant_alloc(void)
 {

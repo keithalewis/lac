@@ -90,23 +90,20 @@ static void print_map(void)
 }
 
 // while {cond} {body}
-static lac_variant while_(char *cond, char *body)
+static void while_(char *cond, char *body)
 {
     lac_variant vcond;
-    lac_variant vbody = {.type = &ffi_type_void, .value._pointer = NULL};
 
     FILE *pcond = fmemopen(cond, strlen(cond), "r");
     FILE *pbody = fmemopen(body, strlen(body), "r");
 
     vcond = lac_eval(pcond);
     while (lac_variant_true(vcond)) {
-        vbody = lac_eval(pbody);
+        lac_eval(pbody);
         rewind(pbody);
         rewind(pcond);
         vcond = lac_eval(pcond);
     }
-
-    return vbody;
 }
 
 void lac_init(void)
@@ -174,7 +171,7 @@ void lac_init(void)
      */
     type[0] = &ffi_type_pointer;
     type[1] = &ffi_type_pointer;
-    put_cif(while, lac_cif_alloc(&ffi_type_variant, while_, 2, type));
+    put_cif(while, lac_cif_alloc(&ffi_type_void, while_, 2, type));
 }
 
 void lac_fini(void)
