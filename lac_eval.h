@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+/*
 // Evaluate tokens on input stream based on required type.
 extern lac_variant lac_eval(FILE *fp);
 
@@ -21,7 +22,14 @@ static inline lac_variant lac_eval_str(char *is)
 
     return result;
 }
+*/
+// look up token in dictionary and call if cif
+extern lac_variant lac_eval(FILE*);
+extern lac_variant lac_eval_s(char*, FILE*);
 
-extern lac_variant lac_eval_s(FILE*);
-extern lac_variant lac_call_cif_s(FILE *fp, lac_cif *cif);
-extern lac_variant lac_eval_type_s(FILE*, ffi_type*);
+//!!! reverse args ???
+extern lac_variant lac_call_cif(FILE *fp, lac_cif *cif);
+
+// convert next token to type ???scan/parse
+extern lac_variant lac_eval_type(FILE*, ffi_type*);
+extern lac_variant lac_eval_type_s(char*, FILE*, ffi_type*);

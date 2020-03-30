@@ -36,11 +36,6 @@ static lac_variant parse_(lac_variant type, char *s)
     return lac_variant_scan(type.value._pointer, s);
 }
 
-static ffi_type *double_(void)
-{
-    return &ffi_type_double;
-}
-
 static int print_(const lac_variant pv)
 {
     return lac_variant_print(stdout, &pv);

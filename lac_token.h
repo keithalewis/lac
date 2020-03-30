@@ -1,5 +1,6 @@
 // lac_token.h - read string token from input stream
 #pragma once
+#include <stdlib.h>
 #include <stdio.h>
 
 // Tokens are separated by white space (isspace) or end of file.
@@ -21,3 +22,7 @@ typedef struct {
 } lac_token;
 
 extern lac_token lac_token_read(FILE *is /*, size_t* nl */);
+static inline void lac_token_free(lac_token* p)
+{
+    free (p->data);
+}

@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 #define DEBUG(x) x
-
+/*
 // read token from stream and convert to type
 lac_variant lac_eval_type(FILE *fp, ffi_type *type)
 {
@@ -146,9 +146,9 @@ static char* get_token(FILE* fp, char* t, size_t n)
 
     return t;
 }
-
+*/
 // read arguments from stream and call cif
-lac_variant lac_call_cif_s(FILE *fp, lac_cif *cif)
+lac_variant lac_call_cif(FILE *fp, lac_cif *cif)
 {
     lac_variant result;
 
@@ -167,16 +167,14 @@ lac_variant lac_call_cif_s(FILE *fp, lac_cif *cif)
         void *addr[n];
 
         for (int i = 0; i < n; ++i) {
-            args[i] = lac_eval_type_s(fp, ffi->arg_types[i]);
+            args[i] = lac_eval_type(fp, ffi->arg_types[i]);
             addr[i] = lac_variant_address(&args[i]);
         }
 
         ffi_call(ffi, cif->sym, raddr, addr);
 
         for (int i = 0; i < n; ++i) {
-            if (args[i].type == &ffi_type_pointer_malloc) {
-                free(args[i].value._pointer);
-            }
+            lac_variant_free(&args[i]);
         }
     }
     else {
@@ -188,22 +186,46 @@ lac_variant lac_call_cif_s(FILE *fp, lac_cif *cif)
 }
 
 // lookup token in dict and call if cif
-extern lac_variant lac_eval_s(FILE* fp)
+extern lac_variant lac_eval_s(char* t, FILE* fp)
 {
-    const lac_variant *pv = lac_map_get(lac_token_read(fp).data);
+    const lac_variant *pv = lac_map_get(t);
 
     ensure (pv);
 
     return pv->type == &ffi_type_cif
-        ? lac_call_cif_s(fp, pv->value._pointer)
+        ? lac_call_cif(fp, pv->value._pointer)
         : *pv;
 
 }
+extern lac_variant lac_eval(FILE* fp)
+{
+    lac_variant result;
+
+    lac_token t = lac_token_read(fp);
+    // ensure ...
+    result = lac_eval_s(t.data, fp);
+    lac_token_free(&t);
+
+    return result;
+}
 
 // if type is lac_variant use eval
-extern lac_variant lac_eval_type_s(FILE* fp, ffi_type* type)
+extern lac_variant lac_eval_type_s(char* t, FILE* fp, ffi_type* type)
 {
     return type == &ffi_type_variant
-        ? lac_eval_s(fp)
-        : lac_variant_scan(type, lac_token_read(fp).data);
+        ? lac_eval_s(t, fp)
+        : lac_variant_scan(type, t);
+}
+extern lac_variant lac_eval_type(FILE* fp, ffi_type* type)
+{
+    lac_variant result;
+
+    lac_token t = lac_token_read(fp);
+    // ensure ...
+    result = lac_eval_type_s(t.data, fp, type);
+    if (type == &ffi_type_pointer) {
+        result.type = &ffi_type_pointer_malloc;
+    }
+
+    return result;
 }

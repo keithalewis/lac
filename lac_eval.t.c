@@ -49,9 +49,7 @@ static int test_lac_eval_type()
         lac_variant v = lac_eval_type(i, &ffi_type_pointer);
         fclose(i);
 
-        ensure(v.type == &ffi_type_pointer_malloc);
         ensure(0 == strcmp(v.value._pointer, s));
-        free(v.value._pointer);
     }
     {
         char *s = "\"hello\"";

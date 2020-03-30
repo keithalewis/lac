@@ -27,7 +27,7 @@ int main(int ac, const char *av[])
 	// for file ... lac_execute
 	lac_variant result;
 	while (!feof(fp)) {
-		result = lac_eval_s(fp); // eval figures out type
+		result = lac_eval(fp); // eval figures out type
 		lac_variant_free(&result);
 	}
 
