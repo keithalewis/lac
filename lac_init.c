@@ -29,9 +29,11 @@ static lac_variant get_(const char *key)
     return *val;
 }
 
-static lac_variant parse_(ffi_type *type, char *s)
+static lac_variant parse_(lac_variant type, char *s)
 {
-    return lac_variant_scan(type, s);
+    ensure (type.type == &ffi_type_pointer);
+
+    return lac_variant_scan(type.value._pointer, s);
 }
 
 static ffi_type *double_(void)
@@ -143,7 +145,7 @@ void lac_init(void)
 #define X(A, B, C, D) put_ffi_type(B);
     FFI_TYPE_TABLE(X)
 #undef X
-    type[0] = &ffi_type_pointer;
+    type[0] = &ffi_type_variant;
     type[1] = &ffi_type_pointer;
     put_cif(parse, lac_cif_alloc(&ffi_type_variant, parse_, 2, type));
 

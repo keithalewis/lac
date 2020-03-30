@@ -127,3 +127,83 @@ lac_variant lac_eval(FILE *fp)
 
     return result;
 }
+
+static char* get_token(FILE* fp, char* t, size_t n)
+{
+    char* u = t;
+
+    // skip whitespace
+    int c = getc(fp);
+    while (c != EOF && isspace(c)) {
+        c = getc(fp);
+    }
+    while (c != EOF && !isspace(c)) {
+        ensure (0 != n--);
+        *u++ = c;
+        c = getc(fp);
+    }
+    *u = 0;
+
+    return t;
+}
+
+// read arguments from stream and call cif
+lac_variant lac_call_cif_s(FILE *fp, lac_cif *cif)
+{
+    lac_variant result;
+
+    void* raddr = lac_variant_address(&result);
+    ffi_cif *ffi = &cif->cif;
+    int n = (int)ffi->nargs;
+    result.type = ffi->rtype;
+    // allocate memory for result based on result.type???
+    // ffi_type knows its size
+
+    if (n == 0) {
+        ffi_call(ffi, cif->sym, raddr, NULL);
+    }
+    else if (n > 0) {
+        lac_variant args[n];
+        void *addr[n];
+
+        for (int i = 0; i < n; ++i) {
+            args[i] = lac_eval_type_s(fp, ffi->arg_types[i]);
+            addr[i] = lac_variant_address(&args[i]);
+        }
+
+        ffi_call(ffi, cif->sym, raddr, addr);
+
+        for (int i = 0; i < n; ++i) {
+            if (args[i].type == &ffi_type_pointer_malloc) {
+                free(args[i].value._pointer);
+            }
+        }
+    }
+    else {
+        ensure(n < 0);
+        // variadic
+    }
+
+    return result;
+}
+
+// lookup token in dict and call if cif
+extern lac_variant lac_eval_s(FILE* fp)
+{
+    const lac_variant *pv = lac_map_get(lac_token_read(fp).data);
+
+    ensure (pv);
+
+    return pv->type == &ffi_type_cif
+        ? lac_call_cif_s(fp, pv->value._pointer)
+        : *pv;
+
+}
+
+// if type is lac_variant use eval
+extern lac_variant lac_eval_type_s(FILE* fp, ffi_type* type)
+{
+    return type == &ffi_type_variant
+        ? lac_eval_s(fp)
+        : lac_variant_scan(type, lac_token_read(fp).data);
+}

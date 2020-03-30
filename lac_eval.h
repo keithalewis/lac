@@ -21,3 +21,7 @@ static inline lac_variant lac_eval_str(char *is)
 
     return result;
 }
+
+extern lac_variant lac_eval_s(FILE*);
+extern lac_variant lac_call_cif_s(FILE *fp, lac_cif *cif);
+extern lac_variant lac_eval_type_s(FILE*, ffi_type*);
