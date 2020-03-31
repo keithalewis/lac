@@ -44,12 +44,13 @@ static int test_lac_eval_type()
 {
     {
         char *s = "hello";
-
         FILE *i = is(s);
-        lac_variant v = lac_eval_type(i, &ffi_type_pointer);
-        fclose(i);
 
+        lac_variant v = lac_eval_type(i, &ffi_type_pointer);
         ensure(0 == strcmp(v.value._pointer, s));
+
+        fclose(i);
+        lac_variant_free(&v);
     }
     {
         char *s = "\"hello\"";
@@ -60,7 +61,7 @@ static int test_lac_eval_type()
 
         ensure(v.type == &ffi_type_pointer_malloc);
         ensure(0 == strcmp(v.value._pointer, "hello"));
-        free(v.value._pointer);
+        lac_variant_free(&v);
     }
     {
         char *s = "{hello}";
@@ -71,7 +72,7 @@ static int test_lac_eval_type()
 
         ensure(v.type == &ffi_type_pointer_malloc);
         ensure(0 == strcmp(v.value._pointer, "hello"));
-        free(v.value._pointer);
+        lac_variant_free(&v);
     }
     {
         char *s = "123";
@@ -120,7 +121,7 @@ static int test_lac_eval_type()
 int test_lac_eval();
 extern int test_lac_eval()
 {
-    test_lac_eval_cif();
+    //test_lac_eval_cif();
     test_lac_eval_type();
 
     return 0;

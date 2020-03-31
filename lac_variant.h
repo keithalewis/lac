@@ -96,6 +96,9 @@ static inline void lac_variant_free(lac_variant *pv)
     if (pv->type == &ffi_type_string_malloc) {
         free(pv->value._pointer);
     }
+    else if (pv->type == &ffi_type_pointer_malloc) {
+        free(pv->value._pointer);
+    }
     else if (pv->type == &ffi_type_cif_malloc) {
         free(pv->value._pointer);
     }
