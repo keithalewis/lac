@@ -226,6 +226,9 @@ extern lac_variant lac_eval_type(FILE* fp, ffi_type* type)
     if (type == &ffi_type_pointer) {
         result.type = &ffi_type_pointer_malloc;
     }
+    else {
+        lac_token_free(&t);
+    }
 
     return result;
 }

@@ -87,8 +87,8 @@ lac_map.o: lac_map.c lac_map.h ensure.h
 lac_cif.o: lac_cif.c lac_cif.h lac_variant.h ensure.h
 lac_init.o: lac_init.c lac_init.h ensure.h lac_cif.h lac_variant.h \
  lac_eval.h lac_map.h
-lac_eval.o: lac_eval.c debug.h lac_eval.h lac_cif.h lac_variant.h \
- ensure.h lac_map.h lac_token.h
+lac_eval.o: lac_eval.c debug.h ensure.h lac_cif.h lac_variant.h \
+ lac_eval.h lac_map.h lac_token.h
 lac_token.o: lac_token.c lac_token.h
 lac_variant.t.o: lac_variant.t.c ensure.h lac_variant.h
 lac_map.t.o: lac_map.t.c ensure.h lac_map.h

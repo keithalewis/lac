@@ -1,16 +1,18 @@
 Don't special case things!
 
-read a token from input stream, look it up, execute
-
-eval fp 
-    read token 
-    lookup
-    if cif exec
+read a token from input stream
+look it up
+    if cif execute
     else value
+    free token
 
-eval_type fp type
-    read token
-    convert to type
+cif execute
+    foreach arg
+        read token from stream
+            argi = eval_type
+    call function
+    foreach arg
+        free arg
 
 ## Parsing
 
@@ -26,6 +28,16 @@ Ole-Johan Dahl syntax.
 -------------------------------------------
 {P} loop: S; while B: T; repeat; {Q and ~B} 
 ```
+loop {S} while {!B} {T} repeat
+loop while {!B} {T} repeat
+loop {S} while {!B} repeat
+loop {S} repeat // break and continue?
+
+if {B} then {T} else {F}
+if {B} then {T}
+
+for {C} {S} // for {var i iota} { print i }
+
 Use file descriptors.
 
 Use backtick to execute shell command in child and open pipe to read.
