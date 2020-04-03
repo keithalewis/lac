@@ -185,49 +185,50 @@ lac_variant lac_call_cif(FILE *fp, lac_cif *cif)
     return result;
 }
 
-// lookup token in dict and call if cif
-extern lac_variant lac_eval_s(char* t, FILE* fp)
-{
-    const lac_variant *pv = lac_map_get(t);
-
-    ensure (pv);
-
-    return pv->type == &ffi_type_cif
-        ? lac_call_cif(fp, pv->value._pointer)
-        : *pv;
-
-}
 extern lac_variant lac_eval(FILE* fp)
 {
-    lac_variant result;
-
-    lac_token t = lac_token_read(fp);
-    // ensure ...
-    result = lac_eval_s(t.data, fp);
-    lac_token_free(&t);
-
-    return result;
+    return lac_eval_type(fp, &ffi_type_variant);
 }
 
-// if type is lac_variant use eval
-extern lac_variant lac_eval_type_s(char* t, FILE* fp, ffi_type* type)
-{
-    return type == &ffi_type_variant
-        ? lac_eval_s(t, fp)
-        : lac_variant_scan(type, t);
-}
 extern lac_variant lac_eval_type(FILE* fp, ffi_type* type)
 {
     lac_variant result;
 
     lac_token t = lac_token_read(fp);
-    // ensure ...
-    result = lac_eval_type_s(t.data, fp, type);
-    if (type == &ffi_type_pointer) {
-        result.type = &ffi_type_pointer_malloc;
+
+    if (t.type == EOF) {
+        result.type = &ffi_type_void;
+        result.value._pointer = NULL;
+    }
+
+    else if (type == &ffi_type_variant) {
+        if (t.type == '"' || t.type == '{') {
+            // string or block
+            result.type = &ffi_type_pointer_malloc;
+            result.value._pointer = t.data;
+        }
+        else {
+            const lac_variant *pv = lac_map_get(t.data);
+            ensure (pv || !"dictionary entry not found");
+
+            if (pv->type == &ffi_type_cif) {
+                lac_cif *cif = pv->value._pointer;
+                result = lac_call_cif(fp, cif);
+            }
+            else {
+                result = *pv; // must not be free'd!!!
+                // ensure (pv->type == type);
+            }
+        }
     }
     else {
-        lac_token_free(&t);
+        result = lac_variant_scan(type, t.data);
+        if (type == &ffi_type_pointer) {
+            result.type = &ffi_type_pointer_malloc;
+        }
+        else {
+            lac_token_free(&t);
+        }
     }
 
     return result;

@@ -31,5 +31,5 @@ int main(int ac, const char *av[])
 		lac_variant_free(&result);
 	}
 
-	return result.type == &ffi_type_sint ? result.value._sint : 0;
+	return result.type == &ffi_type_sint ? result.value._sint : -1;
 }

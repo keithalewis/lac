@@ -48,4 +48,6 @@ Use backtick to execute shell command in child and open pipe to read.
 
 `eval_token`
 
+## Token
 
+A _token_ is a string of characters. String. Block.
