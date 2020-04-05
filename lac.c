@@ -28,7 +28,7 @@ int main(int ac, const char *av[])
 	lac_variant result;
 	while (!feof(fp)) {
 		result = lac_eval(fp); // eval figures out type
-		lac_variant_free(&result);
+		//lac_variant_free(&result);
 	}
 
 	return result.type == &ffi_type_sint ? result.value._sint : -1;

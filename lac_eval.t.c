@@ -121,7 +121,7 @@ static int test_lac_eval_type()
 int test_lac_eval();
 extern int test_lac_eval()
 {
-    //test_lac_eval_cif();
+    // test_lac_eval_cif();
     test_lac_eval_type();
 
     return 0;

@@ -152,7 +152,7 @@ lac_variant lac_call_cif(FILE *fp, lac_cif *cif)
 {
     lac_variant result;
 
-    void* raddr = lac_variant_address(&result);
+    void *raddr = lac_variant_address(&result);
     ffi_cif *ffi = &cif->cif;
     int n = (int)ffi->nargs;
     result.type = ffi->rtype;
@@ -174,7 +174,7 @@ lac_variant lac_call_cif(FILE *fp, lac_cif *cif)
         ffi_call(ffi, cif->sym, raddr, addr);
 
         for (int i = 0; i < n; ++i) {
-            lac_variant_free(&args[i]);
+            // lac_variant_free(&args[i]);
         }
     }
     else {
@@ -185,12 +185,7 @@ lac_variant lac_call_cif(FILE *fp, lac_cif *cif)
     return result;
 }
 
-extern lac_variant lac_eval(FILE* fp)
-{
-    return lac_eval_type(fp, &ffi_type_variant);
-}
-
-extern lac_variant lac_eval_type(FILE* fp, ffi_type* type)
+extern lac_variant lac_eval_type(FILE *fp, ffi_type *type)
 {
     lac_variant result;
 
@@ -209,7 +204,7 @@ extern lac_variant lac_eval_type(FILE* fp, ffi_type* type)
         }
         else {
             const lac_variant *pv = lac_map_get(t.data);
-            ensure (pv || !"dictionary entry not found");
+            ensure(pv || !"dictionary entry not found");
 
             if (pv->type == &ffi_type_cif) {
                 lac_cif *cif = pv->value._pointer;
@@ -232,4 +227,9 @@ extern lac_variant lac_eval_type(FILE* fp, ffi_type* type)
     }
 
     return result;
+}
+
+extern lac_variant lac_eval(FILE *fp)
+{
+    return lac_eval_type(fp, &ffi_type_variant);
 }

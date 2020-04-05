@@ -40,23 +40,23 @@ static void test_lac_variant_print(const char *out, const lac_variant v)
     free(buf);
 }
 
-#define TEST_PARSE(TYPE, STRING, VALUE)                                        \
+#define TEST_SCAN(TYPE, STRING, VALUE)                                        \
     {                                                                          \
-        lac_variant v = lac_variant_parse(&ffi_type_##TYPE, STRING);           \
+        lac_variant v = lac_variant_scan(&ffi_type_##TYPE, STRING);           \
         ensure(VALUE == v.value._##TYPE);                                      \
         test_lac_variant_print(STRING, v);                                     \
     }
 
 static int test_lac_variant_parse()
 {
-    TEST_PARSE(schar, "x", 'x');
-    TEST_PARSE(sint, "123", 123);
-    TEST_PARSE(double, "1.23", 1.23);
-    // TEST_PARSE(float, "1.500000", 1.5);
-    TEST_PARSE(float, "1.5", 1.5);
-    TEST_PARSE(sint32, "123", 123);
-    TEST_PARSE(uint32, "123", 123);
-    TEST_PARSE(sint32, "-123", -123);
+    TEST_SCAN(schar, "x", 'x');
+    TEST_SCAN(sint, "123", 123);
+    TEST_SCAN(double, "1.23", 1.23);
+    // TEST_SCAN(float, "1.500000", 1.5);
+    TEST_SCAN(float, "1.5", 1.5);
+    TEST_SCAN(sint32, "123", 123);
+    TEST_SCAN(uint32, "123", 123);
+    TEST_SCAN(sint32, "-123", -123);
 
     return 0;
 }

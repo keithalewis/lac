@@ -252,6 +252,7 @@ static inline lac_variant lac_variant_scan(ffi_type *type, char *s)
 }
 
 // convert from string to type
+/*
 static inline lac_variant lac_variant_parse(ffi_type *type, char *s)
 {
     lac_variant v = {.type = type};
@@ -293,6 +294,7 @@ static inline lac_variant lac_variant_parse(ffi_type *type, char *s)
 
     return v;
 }
+*/
 
 // print formatted value to output stream
 static inline int lac_variant_print(FILE *os, const lac_variant *pv)

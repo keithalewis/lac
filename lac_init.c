@@ -11,9 +11,18 @@
 static void put_(char *key, const lac_variant val)
 {
     lac_variant *pv = lac_variant_alloc();
-
     ensure(pv);
-    *pv = val; // pointers must exist
+
+    *pv = val;
+    if (val.type == &ffi_type_pointer) {
+        pv->value._pointer = strdup(val.value._pointer);
+        ensure(pv->value._pointer)
+        pv->type = &ffi_type_pointer_malloc;
+    }
+    else if (val.type == &ffi_type_pointer_malloc) {
+        pv->value._pointer = strdup(val.value._pointer);
+        ensure(pv->value._pointer)
+    }
 
     lac_map_put(key, pv);
 }
@@ -28,10 +37,11 @@ static lac_variant get_(const char *key)
 
     return *val;
 }
+//static lac_variant set_(const char *key) { }
 
 static lac_variant parse_(lac_variant type, char *s)
 {
-    ensure (type.type == &ffi_type_pointer);
+    ensure(type.type == &ffi_type_pointer);
 
     return lac_variant_scan(type.value._pointer, s);
 }
