@@ -307,6 +307,12 @@ static inline int lac_variant_print(FILE *os, const lac_variant *pv)
     else if (pv->type == &ffi_type_string_malloc) {
         ret = fputs(pv->value._pointer, os);
     }
+    if (pv->type == &ffi_type_pointer) {
+        ret = fputs(pv->value._pointer, os);
+    }
+    else if (pv->type == &ffi_type_pointer_malloc) {
+        ret = fputs(pv->value._pointer, os);
+    }
     else if (pv->type == &ffi_type_variant) {
         ret = lac_variant_print(os, (const lac_variant *)pv->value._pointer);
     }
