@@ -1,5 +1,7 @@
 Don't special case things!
 
+prog: 
+
 read a token from input stream
 look it up
     if cif execute
@@ -51,3 +53,9 @@ Use backtick to execute shell command in child and open pipe to read.
 ## Token
 
 A _token_ is a string of characters. String. Block.
+
+Use a dictionary stack.
+Push new dict on call, pop on exit.
+Variables are shadowed.
+
+Associate dict stack with cif.

@@ -104,33 +104,31 @@ lac_token lac_token_read(FILE *is /*, int* nl */)
     lac_token token;
     int ret;
 
-    int c = stream_skip_space(is);
+    token.type = stream_skip_space(is);
 
-    if (c == EOF) {
-        token.type = EOF;
+    if (token.type == EOF) {
         token.data = NULL;
         token.size = 0;
 
         return token;
     }
 
-    token.type = c;
     FILE *os = open_memstream(&token.data, &token.size);
 
-    if (c == '"') {
+    if (token.type == '"') {
         ret = stream_next_quote(is, os, '"');
         if (ret != '"') {
             ret = 0; // error
         }
     }
-    else if (c == '{') {
+    else if (token.type == '{') {
         ret = stream_next_match(is, os, '{', '}');
         if (ret != '}') {
             ret = 0; // error
         }
     }
     else {
-        fputc(c, os);
+        fputc(token.type, os);
         ret = stream_next_space(is, os);
         if (!isspace(ret) && ret != EOF) {
             ret = 0; // error

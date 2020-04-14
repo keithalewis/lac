@@ -193,10 +193,12 @@ extern lac_variant lac_eval_type(FILE *fp, ffi_type *type)
 
     if (t.type == EOF) {
         result.type = &ffi_type_void;
-        result.value._pointer = NULL;
+        result.value._pointer = (void*)-1;
+
+        return result;
     }
 
-    else if (type == &ffi_type_variant) {
+    if (type == &ffi_type_variant) {
         if (t.type == '"' || t.type == '{') {
             // string or block
             result.type = &ffi_type_pointer_malloc;
@@ -215,15 +217,16 @@ extern lac_variant lac_eval_type(FILE *fp, ffi_type *type)
                 // ensure (pv->type == type);
             }
         }
+
+        return result;
+    }
+
+    result = lac_variant_scan(type, t.data);
+    if (type == &ffi_type_pointer) {
+        result.type = &ffi_type_pointer_malloc;
     }
     else {
-        result = lac_variant_scan(type, t.data);
-        if (type == &ffi_type_pointer) {
-            result.type = &ffi_type_pointer_malloc;
-        }
-        else {
-            lac_token_free(&t);
-        }
+        lac_token_free(&t);
     }
 
     return result;
