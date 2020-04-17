@@ -59,3 +59,36 @@ Push new dict on call, pop on exit.
 Variables are shadowed.
 
 Associate dict stack with cif.
+
+---
+
+Use file descriptors to accomodate sockets and pipes.
+Use coroutines - https://gist.github.com/laindir/6369535
+proc/coro
+
+token t = token_read(i)
+token {
+    char type
+    size_t size
+    char data[]
+}
+
+object obj = object_parse(type, token_read(i)); token_free(t);
+object {
+    lac_type type // int, ..., pointer, cif, string, block, key, key_ptr
+    size_t size
+    char data[]
+}
+
+put var obj // add var to dictionary
+getp var // &var - pointer to var
+getv var // *var - value of var
+
+void object_print(obj, o)
+
+All objects require a parse and print function.
+
+object call(cif, i)
+{
+    switch    
+}
