@@ -73,7 +73,8 @@ token {
     char data[]
 }
 
-object obj = object_parse(type, token_read(i)); token_free(t);
+// read token and free if needed
+object obj = object_parse(type, i);
 object {
     lac_type type // int, ..., pointer, cif, string, block, key, key_ptr
     size_t size
