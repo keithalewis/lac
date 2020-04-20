@@ -31,6 +31,8 @@ static inline void lac_type_free(lac_type* p)
 {
     free (p);
 }
+
+// non-allocating
 static inline lac_type lac_type_make(ffi_type* type)
 {
     lac_type t;
