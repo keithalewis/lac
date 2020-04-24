@@ -64,32 +64,68 @@ Associate dict stack with cif.
 
 Use file descriptors to accomodate sockets and pipes.
 Use coroutines - https://gist.github.com/laindir/6369535
-proc/coro
 
-token t = token_read(i)
+Use proc/coro to define functions.
+
+token* pt = token_read(i)
 token {
-    char type
+    char type // first character
     size_t size
     char data[]
 }
+token_free(pt) to free data
 
 // read token and free if needed
-object obj = object_parse(type, i);
+object* po = object_parse(type, i);
 object {
     lac_type type // int, ..., pointer, cif, string, block, key, key_ptr
-    size_t size
-    char data[]
+    size_t size // use size = 0 to indicate data should not be freed
+    char data[8] // 8 bytes to hold scalars?
 }
+object_free(po)
+void* object_addr returns &data[0];
 
 put var obj // add var to dictionary
 getp var // &var - pointer to var
 getv var // *var - value of var
 
-void object_print(obj, o)
+void object_print(obj, o) // send to output stream
 
 All objects require a parse and print function.
+All objects require a new and del function.
 
-object call(cif, i)
+object* eval(po, i)
 {
-    switch    
+    switch (po->type) {
+		case cif:
+			return call(po, i)
+			break;
+	}
+}
+
+Use dict for RAII?
+When dict goes out of scope free all values
+
+Use 'set' for immutable values???
+
+===
+
+wc.lac
+
+let i fdopen stdin r
+let c getc i
+while != *c EOF {
+	let skip false
+	incr &c
+	if isspace *c {
+		incr &w
+		let skip true
+	}
+	else {
+		let skip false
+	}
+	if == *c '\n' {
+		incr &l
+	}
+	let c getc i
 }
