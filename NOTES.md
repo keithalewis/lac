@@ -1,5 +1,8 @@
 Don't special case things!
 
+_ var val
+_var -> value
+
 prog: 
 
 read a token from input stream
