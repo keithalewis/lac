@@ -30,27 +30,40 @@ This continues until there are no characters remaining on the input stream.
 
 `Lac` is a simple language.
 
-## Dictionary
+## Types
 
-The dictionary contains key-value pairs. Keys are strings and values
-are `void*` pointers to any C type. Lac knows about the usual C
-integral, floating point, and `void*` types. It uses a _variant_
-type called `lac_variant` that is a union of these types together with
-a `type` field to discriminate.
+`Lac` knows about all the standard C types.
+The scalar types are `schar`, `uchar`, `sshort`, `ushort`,
+`sint`, `uint`, `slong`, `ulong`, `float`, `double`, `sint8`, `uint8`,
+`sint16`, `uint16`, `sint32`, `uint32`, `sint64`, `uint64`, and
+`pointer`. Users can define types for structures and unions using
+the `struct` and `union` commands.
 
-It also knows about a special type called _cif_, a C InterFace.
-The `lac_cif` struct has a C symbol and its _signature_.  The signature
-specifies the return type and the types of all required arguments.
+There are also types for C functions (`func`) and user defined procedures (`proc`).
 
-`Lac` uses the dictionary to define variables. Once added to the
-dictionary it is looked up as described above on remaining input.
+## Values
 
-The dictionary can have multiple entries with the same key. The most
-recently added key is found during lookup.
+A _value_ is the bits associated with a type 
+Every type has a `parse` function
+that creates the bits from a _file descriptor_. The bits 
+The corresponding `write` function
+serializes the bits to a file descriptor.
 
-This is used to provide a form of lexical scoping for function call
-stacks. Any variables added in the body of a function are removed
-when the function returns.
+## Dictionaries
+
+A dictionary contains key-value pairs where keys are strings.
+Pairs are added to a dictionary using `set key value`,
+retrieved using `get key`, and removed using `del key`.
+
+Scoping and object lifetime is performed using `{` and `}`. 
+The function `{` pushes a new dictionary on the top of the stack
+and `}` deletes all entries added since the previous matching `{`.
+
+Key lookup is performed by seaching the dictionary stack. If there
+are duplicate keys then the most recent value is returned.
+
+(Possible to return dictionaries?)
+(Possible to use dictionaries as arguments?)
 
 ## Evaluation
 
@@ -231,3 +244,8 @@ at the end of a function.
 : puts (...) int pointer void
 ```
 Lable and goto using setjmp longjmp.
+
+```
+parse sint 123
+write sint 123
+```

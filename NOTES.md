@@ -38,12 +38,13 @@ loop while {!B} {T} repeat
 loop {S} while {!B} repeat
 loop {S} repeat // break and continue?
 
+proc # { loop while != '\n' getc repeat }
+
 if {B} then {T} else {F}
 if {B} then {T}
 
 for {C} {S} // for {var i iota} { print i }
 
-Use file descriptors.
 
 Use backtick to execute shell command in child and open pipe to read.
 
