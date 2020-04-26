@@ -81,12 +81,25 @@ token_free(pt) to free data
 // read token and free if needed
 object* po = object_parse(type, i);
 object {
-    lac_type type // int, ..., pointer, cif, string, block, key, key_ptr
+    lac_type type; // int, ..., pointer, cif, string, block
+    /*
+    int (*write)(int); // decode to file descriptor
+    int (*parse)(object*, int); // encode from file descriptor
+    object* (*make)(lac_type, size_t);
+    void (*copy)(const object*); // assign from object
+    void (*free)(object*); // based on type
+    */
     size_t size // use size = 0 to indicate data should not be freed
     char data[8] // 8 bytes to hold scalars?
 }
 object_free(po)
+object_write(po, o) { write(o, po->data, po->size); }
 void* object_addr returns &data[0];
+
+// type maps
+int (*write)(int) type_write(type);
+...
+void (*free)(object*) type_free(type);
 
 put var obj // add var to dictionary
 getp var // &var - pointer to var
@@ -96,6 +109,10 @@ void object_print(obj, o) // send to output stream
 
 All objects require a parse and print function.
 All objects require a new and del function.
+
+Every statement starts with a cif.
+The cif parses the arguments from the input stream based on arg types
+and calls the function.
 
 object* eval(po, i)
 {
@@ -115,7 +132,7 @@ Use 'set' for immutable values???
 
 wc.lac
 
-let i fdopen stdin r
+let i fdopen 0 r
 let c getc i
 while != *c EOF {
 	let skip false

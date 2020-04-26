@@ -9,16 +9,21 @@ typedef struct {
     ffi_type* elements[1]; // storage for type.elements array
 } lac_type;
 
-static inline lac_type* lac_type_struct(size_t n, const ffi_type* elements)
+static inline lac_type* lac_type_make(const ffi_type* type, size_t n, const ffi_type* elements)
 {
+    if (n == 0) {
+        // assume elements is null terminated
+        while (elements[n]) {
+            ++n;
+        }
+    }
+
     lac_type* p = malloc(sizeof(lac_type) + (n + 1)*sizeof(ffi_type));
     if (!p) {
-        return p;
+        return NULL;
     }
-    
-    p->type.type = FFI_TYPE_STRUCT;
-    p->type.size = 0;
-    p->type.alignment = 0; // set by ffi_prep_cif
+
+    *p->type = *type;
     p->type.elements = p->elements;
     if (elements) { // copy all or nothing
         memcpy(p->elements, elements, n*sizeof(ffi_type*));
