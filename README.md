@@ -15,7 +15,8 @@ been **load**ed
 puts "Hello World!"
 ```
 will print `Hello World!` on the standard output stream followed by
-a newline character and return an integer value.
+a newline character and return an integer value, exactly as described in
+the man page.
 
 `Lac` reads space separated tokens from standard input.
 When it sees `puts` it tries to find a _dictionary_ entry with that key.
@@ -32,22 +33,20 @@ This continues until there are no characters remaining on the input stream.
 
 ## Types
 
-`Lac` knows about all the standard C types.
-The scalar types are `schar`, `uchar`, `sshort`, `ushort`,
-`sint`, `uint`, `slong`, `ulong`, `float`, `double`, `sint8`, `uint8`,
-`sint16`, `uint16`, `sint32`, `uint32`, `sint64`, `uint64`, and
-`pointer`. Users can define types for structures and unions using
-the `struct` and `union` commands.
+`Lac` knows about all the standard C types.  The scalar types are `schar`,
+`uchar`, `sshort`, `ushort`, `sint`, `uint`, `slong`, `ulong`, `float`,
+`double`, `sint8`, `uint8`, `sint16`, `uint16`, `sint32`, `uint32`,
+`sint64`, `uint64`, and `pointer`. Users can define types for structures
+and unions using the `struct` and `union` commands.
 
 There are also types for C functions (`func`) and user defined procedures (`proc`).
 
 ## Values
 
-A _value_ is the bits associated with a type 
-Every type has a `parse` function
-that creates the bits from a _file descriptor_. The bits 
-The corresponding `write` function
-serializes the bits to a file descriptor.
+A _value_ is the bits associated with a type.
+Every type has a `parse` function that creates the bits from the input stream. 
+The corresponding `print` function serializes the bits to the output stream.
+Every type also has a `copy` and `free` function.
 
 ## Dictionaries
 
@@ -121,6 +120,14 @@ An equivalent way to do the above is
 load puts ( int dlsym dlopen libc.so puts string )
 ```
 
+## Data Structures
+
+Every type is associated with a unique small integer.
+This is used as an index into arrays for parsing, printing,
+allocating, copying, and freeing values of that type.
+
+---
+
 New functions to be interpreted by `lac` can be defined by
 specifying their name, signature, and body.
 ```
@@ -193,7 +200,7 @@ Use `loop {block}` to repeatedly call _block_
 
 ## Examples
 
-This program reads `stdin` and writes to `stdout`.
+This program reads `stdin` and prints to `stdout`.
 It uses the predefined `FILE*` pointers `stdin` and `stdout`
 and the predefined signed integer `EOF`.
 

@@ -1,5 +1,7 @@
 Don't special case things!
 
+convert string to fd: memfd_create and write the string (use lseek?)
+
 _ var val
 _var -> value
 
@@ -84,7 +86,7 @@ object* po = object_parse(type, i);
 object {
     lac_type type; // int, ..., pointer, cif, string, block
     /*
-    int (*write)(int); // decode to file descriptor
+    int (*print)(int); // decode to file descriptor
     int (*parse)(object*, int); // encode from file descriptor
     object* (*make)(lac_type, size_t);
     void (*copy)(const object*); // assign from object
@@ -94,11 +96,11 @@ object {
     char data[8] // 8 bytes to hold scalars?
 }
 object_free(po)
-object_write(po, o) { write(o, po->data, po->size); }
+object_print(po, o) { print(o, po->data, po->size); }
 void* object_addr returns &data[0];
 
 // type maps
-int (*write)(int) type_write(type);
+int (*print)(int) type_print(type);
 ...
 void (*free)(object*) type_free(type);
 
@@ -129,18 +131,17 @@ When dict goes out of scope free all values
 
 Use 'set' for immutable values???
 
-===
-
+```
 wc.lac
 
 let i fdopen 0 r
 let c getc i
 while != *c EOF {
-	let skip false
+	set skip false
 	incr &c
-	if isspace *c {
+	if and skip isspace *c {
 		incr &w
-		let skip true
+		set skip true
 	}
 	else {
 		let skip false
@@ -150,3 +151,27 @@ while != *c EOF {
 	}
 	let c getc i
 }
+
+```
+struct tm { 
+    sint tm_sec
+    ...
+    sint tm_isdst
+}
+
+
+```
+
+```
+
+int parse_sint(int is, lac_object** po)
+{
+    *po = lac_object_make(
+    FILE* fs = fdopen(is, "r");
+    int n = fscanf(fs, "%d", *po->data);
+
+    return n;
+}
+
+```
+
