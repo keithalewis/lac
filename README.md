@@ -18,20 +18,41 @@ will print `Hello World!` on the standard output stream followed by
 a newline character and return an integer value, exactly as described in
 the man page.
 
-`Lac` reads space separated tokens from standard input.
+`Lac` reads _tokens_ from standard input.
 When it sees `puts` it tries to find a _dictionary_ entry with that key.
 The value in the dictionary knows the C symbol for `puts` from
 the C standard library and its signature `int puts(const char*)`.
 
-`Lac` then reads the required argument from
-the input stream, **call**s `puts` with that
-argument and returns an `int` value.
+`Lac` then reads the token `Hello World!`, **call**s `puts` with a
+pointer to that string, and returns an `int` value.
 
 This continues until there are no characters remaining on the input stream.
 
-`Lac` is a simple language.
+`Lac` is a simple language. It takes inspiration from [Tcl](https://www.tcl-lang.org/)
+and uses `libffi` to obviate the need to compile code.
 
-## Types
+## Streams
+
+Lac uses file descriptors for input, output, and error streams.
+By default these are `stdin`, `stdout`, and `stderr`.
+These can be redirected using syntax similar to the unix shell.
+The token `<` replaces `stdin` with the file named by the following token
+and `>` replaces `stdout`similarly. Use `>&` to duplicate the current
+output.
+
+## Types and Values
+
+A (_value_) _type_ describes the bits of its possible _value_s.
+Every type has a _parse_ function for converting an _input stream_ of
+characters into the bits of the type and a _print_ function to serialize
+the bits back to a stream of characters.
+
+The parse function allocates the bits associated with a type. Every type
+has a _free_ function that deallocates these bits.
+
+Every value also has a _copy_ function that creates a new value of the same
+type with identical bits. The _same_ function takes two values and
+returns `true` if and only if they are the same type and have the same bits.
 
 `Lac` knows about all the standard C types.  The scalar types are `schar`,
 `uchar`, `sshort`, `ushort`, `sint`, `uint`, `slong`, `ulong`, `float`,
@@ -39,14 +60,12 @@ This continues until there are no characters remaining on the input stream.
 `sint64`, `uint64`, and `pointer`. Users can define types for structures
 and unions using the `struct` and `union` commands.
 
-There are also types for C functions (`func`) and user defined procedures (`proc`).
-
-## Values
-
-A _value_ is the bits associated with a type.
-Every type has a `parse` function that creates the bits from the input stream. 
-The corresponding `print` function serializes the bits to the output stream.
-Every type also has a `copy` and `free` function.
+There are also types for C functions (`func`). It has the corresponding
+C symbol and its _signature_. The signature is its return type and
+arguments types.  The corresponding value is created using `bind`
+by providing the values of the argument types. The `call` function
+evaluates the function using these arguments and returns the value of
+the result type.
 
 ## Dictionaries
 
@@ -58,7 +77,7 @@ Scoping and object lifetime is performed using `{` and `}`.
 The function `{` pushes a new dictionary on the top of the stack
 and `}` deletes all entries added since the previous matching `{`.
 
-Key lookup is performed by seaching the dictionary stack. If there
+Key lookup is performed by searching the dictionary stack. If there
 are duplicate keys then the most recent value is returned.
 
 (Possible to return dictionaries?)
