@@ -78,10 +78,11 @@ static inline void lac_array_free(lac_array* a)
 // push pointer to back of array and return its index
 static inline size_t lac_array_push(lac_array* a, void* p)
 {
+	++a->item;
     if (a->item == a->size)
         return (size_t)-1;
 
     a->data[a->item] = p;
 
-    return a->item++;
+    return a->item;
 }

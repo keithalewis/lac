@@ -1,11 +1,11 @@
 // lac.t.cpp
-#include "lac.h"
 #include <fcntl.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include "lac.h"
 
 int test_lac_ffi(void);
 // int test_lac_parse(void);
@@ -58,6 +58,7 @@ int main()
     // test_lac();
     // test_lac_tree();
     // test_lac_data();
+	test_lac_array();
 
     return 0;
 }
