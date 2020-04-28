@@ -1,9 +1,9 @@
-LAC_ = lac_variant.c lac_map.c lac_cif.c lac_init.c lac_eval.c lac_token.c
+LAC_ = lac_variant.c lac_map.c lac_cif.c lac_init.c lac_eval.c lac_token.c lac_array.c
 SRCS = lac.c $(LAC_)
 OBJS = $(SRCS:.c=.o)
 
 LAC_T  = lac_variant.t.c lac_map.t.c lac_cif.t.c lac_token.t.c \
-    lac_eval.t.c lac_init.t.c
+    lac_eval.t.c lac_init.t.c lac_array.t.c
 SRCS_T = lac.t.c $(LAC_) $(LAC_T)
 OBJS_T = $(SRCS_T:.c=.o)
 
@@ -29,6 +29,7 @@ SFLAGS = -Wall -Wextra -Wcast-align -Wcast-qual -Wdisabled-optimization \
 	-Wmissing-include-dirs -Wredundant-decls -Wsign-conversion \
 	-Wswitch-default -Wundef -Wno-unused-function -fno-strict-aliasing
 CFLAGS = -g $(SFLAGS) -I $(FFI_DIR)/include
+lac.t: CFLAGS += -D_DEBUG
 # link to static lib
 LDLIBS = -ldl -L $(FFI_DIR)/.libs -l:libffi.a
 

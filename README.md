@@ -33,16 +33,18 @@ and uses `libffi` to obviate the need to compile code.
 
 ## Streams
 
-Lac uses file descriptors for input, output, and error streams.
+Lac uses `FILE*` handles for input, output, and error streams.
 By default these are `stdin`, `stdout`, and `stderr`.
+
 These can be redirected using syntax similar to the unix shell.
-The token `<` replaces `stdin` with the file named by the following token
-and `>` replaces `stdout`similarly. Use `>&` to duplicate the current
-output.
+The tokens `< `_path_ replaces `stdin` with the file named by _path_.
+It is equivalent to calling `stdin = freopen(`_path_`, "r", stdin)`.
+
+Similarly `>` replaces `stdout` for writing. Use `>&` to duplicate the current output.
 
 ## Types and Values
 
-A (_value_) _type_ describes the bits of its possible _value_s.
+A (_value_) _type_ describes the bits of its possible _values_.
 Every type has a _parse_ function for converting an _input stream_ of
 characters into the bits of the type and a _print_ function to serialize
 the bits back to a stream of characters.
@@ -52,12 +54,12 @@ has a _free_ function that deallocates these bits.
 
 Every value also has a _copy_ function that creates a new value of the same
 type with identical bits. The _same_ function takes two values and
-returns `true` if and only if they are the same type and have the same bits.
+returns `true` if they are the same type and have the same bits and `false` otherwise.
 
 `Lac` knows about all the standard C types.  The scalar types are `schar`,
 `uchar`, `sshort`, `ushort`, `sint`, `uint`, `slong`, `ulong`, `float`,
 `double`, `sint8`, `uint8`, `sint16`, `uint16`, `sint32`, `uint32`,
-`sint64`, `uint64`, and `pointer`. Users can define types for structures
+`sint64`, `uint64`, and `pointer`. You can define types for structures
 and unions using the `struct` and `union` commands.
 
 There are also types for C functions (`func`). It has the corresponding

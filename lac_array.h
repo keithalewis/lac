@@ -3,11 +3,42 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _DEBUG
+extern int test_lac_array();
+#endif
+
 typedef struct {
     size_t item; // next free index
     size_t size; // capacity of array
     void*  data[];
 } lac_array;
+
+// index of last array entry
+static inline size_t lac_array_item(const lac_array* a)
+{
+    return a ? a->item : (size_t)-1;
+}
+
+// array capacity
+static inline size_t lac_array_size(const lac_array* a)
+{
+    return a ? a->size : (size_t)-1;
+}
+
+// pointer to initial item
+static inline void* lac_array_data(lac_array* a)
+{
+    return a ? a->data : NULL;
+}
+// last item in array
+static inline void* lac_array_back(lac_array* a)
+{
+    if (a && a->item != (size_t)-1) {
+        return a->data[a->item];
+    }
+
+    return NULL;
+}
 
 static inline lac_array* lac_array_make(size_t n)
 {
@@ -15,23 +46,25 @@ static inline lac_array* lac_array_make(size_t n)
     if (!a)
         return NULL;
 
-    a->item = 0;
+    a->item = (size_t)-1;
     a->size = n;
 
     return a;
 }
 
-static inline lac_array* lac_array_copy(const lac_array* a)
+// copy a to a_ and return a_, or NULL on error
+static inline lac_array* lac_array_copy(lac_array* a_, const lac_array* a)
 {
-    if (!a)
+    if (!a || !a_)
         return NULL;
 
-    lac_array* a_ = lac_array_make(a->size);
-    if (!a_)
+    if (a_->size < a->item)
         return NULL;
 
+    if (a->item != (size_t)-1) {
+        memcpy(a_->data, a->data, a->item*sizeof(void*));
+    }
     a_->item = a->item;
-    memcpy(a_->data, a->data, a->item*sizeof(void*));
 
     return a_;
 }
@@ -41,29 +74,8 @@ static inline void lac_array_free(lac_array* a)
     free(a);
 }
 
-static inline size_t lac_array_item(const lac_array* a)
-{
-    if (!a)
-        return (size_t)-1;
 
-    return a->item;
-}
-static inline size_t lac_array_size(const lac_array* a)
-{
-    if (!a)
-        return (size_t)-1;
-
-    return a->size;
-}
-static inline void* lac_array_data(lac_array* a)
-{
-    if (!a)
-        return NULL;
-
-    return a->data;
-}
-
-// add pointer and return index
+// push pointer to back of array and return its index
 static inline size_t lac_array_push(lac_array* a, void* p)
 {
     if (a->item == a->size)

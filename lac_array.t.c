@@ -4,5 +4,12 @@
 
 int test_lac_array()
 {
+    lac_array* a = lac_array_make(3);
+    assert (a);
+    assert ((size_t)-1 == lac_array_item(a));
+    assert (3 == lac_array_size(a));
+    assert (0 == lac_array_push(a, (void*)2));
+    assert ((void*)2 == lac_array_back(a));
+
     return 0;
 }
