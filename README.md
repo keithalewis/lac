@@ -277,3 +277,7 @@ Lable and goto using setjmp longjmp.
 parse sint 123
 write sint 123
 ```
+
+## Remarks
+
+Replace `libffi` with direct assembly. Function calls are 10x slower when using it.
