@@ -58,6 +58,7 @@ int main()
     // test_lac();
     // test_lac_tree();
     // test_lac_data();
+    test_lac_array();
 
     return 0;
 }

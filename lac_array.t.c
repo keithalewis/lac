@@ -10,6 +10,7 @@ int test_lac_array()
     assert (3 == lac_array_size(a));
     assert (0 == lac_array_push(a, (void*)2));
     assert ((void*)2 == lac_array_back(a));
+    lac_array_free(a);
 
     return 0;
 }
