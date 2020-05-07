@@ -4,9 +4,9 @@
 
 Load and call C functions at runtime.
 
-This simple language makes it possible to dynamically load C
-functions from shared libraries at runtime and call them using
-[libffi](https://github.com/libffi/libffi).
+This simple language makes it possible to dynamically load C functions
+from shared libraries at runtime and call them. It is written in C and
+uses [libffi](https://github.com/libffi/libffi).
 
 If the [`puts`](http://man7.org/linux/man-pages/man3/puts.3.html)
 function from the C standard library has
@@ -30,6 +30,22 @@ This continues until there are no characters remaining on the input stream.
 
 `Lac` is a simple language. It takes inspiration from [Tcl](https://www.tcl-lang.org/)
 and uses `libffi` to obviate the need to compile code.
+
+## Evaluation
+
+Evaluating a lac program requires a _context_. 
+
+Input is broken into character _tokens_ based on whitespace according to
+[isspace](https://en.cppreference.com/w/c/string/byte/isspace).
+
+
+A tokens having  double quote character (`'"'`) and the following characters
+are included up to, but not including, the next double quote character. Double uote characters preceded by
+a backslash (`'\'`) are included in the token.
+A _block_ token starts with a left brace character (`'{'`) and all
+characters are included up to, but not including, the next right brace character (`'}'`) at
+the same nesting level.  Left and right brace characters preceded by a  backslash
+(`'\'`) are included in the token.
 
 ## Streams
 
